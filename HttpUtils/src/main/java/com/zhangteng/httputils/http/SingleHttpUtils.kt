@@ -70,7 +70,7 @@ class SingleHttpUtils private constructor() {
     }
 
     /**
-     * 局部设置CallAdapter.Factory,默认RxJava2CallAdapterFactory.create()
+     * 局部设置CallAdapter.Factory,默认FlowCallAdapterFactory.create()、CoroutineCallAdapterFactory.create()
      */
     fun addCallAdapterFactory(factory: CallAdapter.Factory?): SingleHttpUtils {
         if (factory != null) {

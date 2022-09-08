@@ -1,5 +1,3 @@
 rootProject.name = "HttpUtils"
 include ':app'
 include ':HttpUtils'
-include ':RxHttpUtils'
-include ':FlowHttpUtils'

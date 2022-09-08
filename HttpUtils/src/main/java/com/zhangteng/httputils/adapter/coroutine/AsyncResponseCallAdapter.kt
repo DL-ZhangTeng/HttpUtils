@@ -1,4 +1,4 @@
-package com.zhangteng.flowhttputils.async
+package com.zhangteng.httputils.adapter.coroutine
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred

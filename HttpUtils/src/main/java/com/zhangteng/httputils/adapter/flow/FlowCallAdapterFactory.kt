@@ -1,9 +1,5 @@
-package com.zhangteng.flowhttputils
+package com.zhangteng.httputils.adapter.flow
 
-import com.zhangteng.flowhttputils.async.AsyncBodyFlowCallAdapter
-import com.zhangteng.flowhttputils.async.AsyncResponseFlowCallAdapter
-import com.zhangteng.flowhttputils.sync.BodyFlowCallAdapter
-import com.zhangteng.flowhttputils.sync.ResponseFlowCallAdapter
 import kotlinx.coroutines.flow.Flow
 import retrofit2.CallAdapter
 import retrofit2.Response

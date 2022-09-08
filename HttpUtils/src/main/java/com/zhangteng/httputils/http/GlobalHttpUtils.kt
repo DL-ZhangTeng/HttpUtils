@@ -5,6 +5,8 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.zhangteng.httputils.adapter.coroutine.CoroutineCallAdapterFactory
+import com.zhangteng.httputils.adapter.flow.FlowCallAdapterFactory
 import com.zhangteng.httputils.config.EncryptConfig
 import com.zhangteng.httputils.interceptor.*
 import com.zhangteng.httputils.interceptor.CallBackInterceptor.CallBack
@@ -19,7 +21,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.io.InputStream
@@ -69,7 +70,8 @@ class GlobalHttpUtils private constructor() {
             }
             if (field == null) {
                 if (retrofitBuilder.callAdapterFactories().isEmpty()) {
-                    retrofitBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    retrofitBuilder.addCallAdapterFactory(CoroutineCallAdapterFactory.create())
+                    retrofitBuilder.addCallAdapterFactory(FlowCallAdapterFactory.create())
                 }
                 if (retrofitBuilder.converterFactories().isEmpty()) {
                     retrofitBuilder.addConverterFactory(GsonConverterFactory.create())
@@ -100,7 +102,7 @@ class GlobalHttpUtils private constructor() {
      *
      * @param baseUrl 接口前缀
      */
-    fun setBaseUrl(baseUrl: String?): GlobalHttpUtils {
+    fun setBaseUrl(baseUrl: String): GlobalHttpUtils {
         retrofitBuilder.baseUrl(baseUrl)
         return this
     }
@@ -108,15 +110,15 @@ class GlobalHttpUtils private constructor() {
     /**
      * description 设置Converter.Factory,默认GsonConverterFactory.create()
      */
-    fun addConverterFactory(factory: Converter.Factory?): GlobalHttpUtils {
+    fun addConverterFactory(factory: Converter.Factory): GlobalHttpUtils {
         retrofitBuilder.addConverterFactory(factory)
         return this
     }
 
     /**
-     * description 设置CallAdapter.Factory,默认RxJava2CallAdapterFactory.create()
+     * description 设置CallAdapter.Factory,默认FlowCallAdapterFactory.create()、CoroutineCallAdapterFactory.create()
      */
-    fun addCallAdapterFactory(factory: CallAdapter.Factory?): GlobalHttpUtils {
+    fun addCallAdapterFactory(factory: CallAdapter.Factory): GlobalHttpUtils {
         retrofitBuilder.addCallAdapterFactory(factory)
         return this
     }
@@ -245,7 +247,7 @@ class GlobalHttpUtils private constructor() {
      * @param path    缓存文件路径
      * @param maxSize 缓存文件大小
      */
-    fun setCache(isCache: Boolean, path: String?, maxSize: Long): GlobalHttpUtils {
+    fun setCache(isCache: Boolean, path: String, maxSize: Long): GlobalHttpUtils {
         if (isCache) {
             val cacheInterceptor = CacheInterceptor()
             val file = File(path)
@@ -521,16 +523,10 @@ class GlobalHttpUtils private constructor() {
         okhttpBuilder = OkHttpClient.Builder()
         retrofitBuilder = Retrofit.Builder()
         priorityInterceptors = TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
-            Integer.compare(
-                o.priority,
-                r.priority
-            )
+            o.priority.compareTo(r.priority)
         }
         networkInterceptors = TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
-            Integer.compare(
-                o.priority,
-                r.priority
-            )
+            o.priority.compareTo(r.priority)
         }
     }
 }

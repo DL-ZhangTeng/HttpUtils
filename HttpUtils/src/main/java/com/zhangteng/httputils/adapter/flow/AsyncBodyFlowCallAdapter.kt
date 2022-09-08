@@ -1,13 +1,10 @@
-package com.zhangteng.flowhttputils.async
+package com.zhangteng.httputils.adapter.flow
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import retrofit2.Call
-import retrofit2.CallAdapter
-import retrofit2.Callback
-import retrofit2.Response
+import retrofit2.*
 import java.lang.reflect.Type
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.intercepted
@@ -15,25 +12,28 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class AsyncResponseFlowCallAdapter<R>(private val responseBodyType: R) :
-    CallAdapter<R, Flow<Response<R>>> {
+class AsyncBodyFlowCallAdapter<R>(private val responseBodyType: R) : CallAdapter<R, Flow<*>> {
+
     override fun responseType() = responseBodyType as Type
 
-    override fun adapt(call: Call<R>): Flow<Response<R>> = flow {
+    override fun adapt(call: Call<R>): Flow<R> = flow {
         try {
-            suspendCancellableCoroutine<Response<R>> { continuation ->
+            suspendCancellableCoroutine<R> { continuation ->
                 continuation.invokeOnCancellation {
                     call.cancel()
                 }
                 call.enqueue(object : Callback<R> {
                     override fun onResponse(call: Call<R>, response: Response<R>) {
-                        continuation.resume(response)
+                        if (response.isSuccessful) {
+                            continuation.resume(response.body()!!)
+                        } else {
+                            continuation.resumeWithException(HttpException(response))
+                        }
                     }
 
                     override fun onFailure(call: Call<R>, t: Throwable) {
                         continuation.resumeWithException(t)
                     }
-
                 })
             }.let {
                 emit(it)
@@ -48,3 +48,7 @@ class AsyncResponseFlowCallAdapter<R>(private val responseBodyType: R) :
         }
     }
 }
+
+
+
+

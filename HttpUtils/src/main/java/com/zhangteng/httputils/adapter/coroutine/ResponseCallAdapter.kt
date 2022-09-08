@@ -1,18 +1,20 @@
-package com.zhangteng.flowhttputils.sync
+package com.zhangteng.httputils.adapter.coroutine
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import retrofit2.*
+import retrofit2.Call
+import retrofit2.CallAdapter
+import retrofit2.Response
 import java.lang.reflect.Type
 
-class BodyCallAdapter<T>(
+class ResponseCallAdapter<T>(
     private val responseType: T
-) : CallAdapter<T, Deferred<T>> {
+) : CallAdapter<T, Deferred<Response<T>>> {
 
     override fun responseType() = responseType as Type
 
-    override fun adapt(call: Call<T>): Deferred<T> {
-        val deferred = CompletableDeferred<T>()
+    override fun adapt(call: Call<T>): Deferred<Response<T>> {
+        val deferred = CompletableDeferred<Response<T>>()
 
         deferred.invokeOnCompletion {
             if (deferred.isCancelled) {
@@ -22,11 +24,7 @@ class BodyCallAdapter<T>(
 
         try {
             val response = call.execute()
-            if (response.isSuccessful) {
-                deferred.complete(response.body()!!)
-            } else {
-                deferred.completeExceptionally(HttpException(response))
-            }
+            deferred.complete(response)
         } catch (e: Exception) {
             deferred.completeExceptionally(e)
         }

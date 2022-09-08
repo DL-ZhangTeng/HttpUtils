@@ -10,9 +10,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/FlowHttpUtils" />
             <option value="$PROJECT_DIR$/HttpUtils" />
-            <option value="$PROJECT_DIR$/RxHttpUtils" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
