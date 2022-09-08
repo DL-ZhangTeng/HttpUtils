@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.transformer
+package com.zhangteng.httputils.result.rxjava.transformer
 
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
@@ -19,7 +19,7 @@ class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
     private var tag: Any? = null
     private var disposable: Disposable? = null
 
-    constructor() {}
+    constructor()
     constructor(tag: Any?) {
         this.tag = tag
         if (tag is LifecycleOwner) {

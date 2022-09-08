@@ -38,24 +38,20 @@ class GlobalHttpUtils private constructor() {
     /**
      * description: 全局okhttpBuilder，保证使用一个网络实例
      */
-    private val okhttpBuilder: OkHttpClient.Builder
-    /**
-     * description 全局 retrofitBuilder
-     */
+    private val okhttpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
+
     /**
      * description: 全局retrofitBuilder，保证使用一个网络实例
      */
-    val retrofitBuilder: Retrofit.Builder
+    val retrofitBuilder: Retrofit.Builder = Retrofit.Builder()
 
     /**
      * description: 全局okHttpClient，保证使用一个网络实例
      */
     private var okHttpClient: OkHttpClient? = null
+
     /**
-     * description 全局 retrofit，当retrofit构建完成后无法修改全局baseUrl
-     */
-    /**
-     * description: 全局retrofit，保证使用一个网络实例
+     * description: 全局retrofit，保证使用一个网络实例，当retrofit构建完成后无法修改全局baseUrl
      */
     var retrofit: Retrofit? = null
         get() {
@@ -90,12 +86,18 @@ class GlobalHttpUtils private constructor() {
     /**
      * description: 拦截器集合,按照优先级从小到大排序
      */
-    private val priorityInterceptors: TreeSet<PriorityInterceptor>
+    private val priorityInterceptors: TreeSet<PriorityInterceptor> =
+        TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
+            o.priority.compareTo(r.priority)
+        }
 
     /**
      * description: 网络拦截器集合,按照优先级从小到大排序
      */
-    private val networkInterceptors: TreeSet<PriorityInterceptor>
+    private val networkInterceptors: TreeSet<PriorityInterceptor> =
+        TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
+            o.priority.compareTo(r.priority)
+        }
 
     /**
      * description 设置网络baseUrl
@@ -479,8 +481,9 @@ class GlobalHttpUtils private constructor() {
     /**
      * description 全局 okhttpBuilder
      */
-    val okHttpClientBuilder: OkHttpClient.Builder
-        get() = okhttpBuilder
+    fun getOkHttpClientBuilder(): OkHttpClient.Builder {
+        return okhttpBuilder
+    }
 
     /**
      * description 全局 okHttpClient，当okHttpClient构建完成后无法新增全局参数
@@ -519,14 +522,4 @@ class GlobalHttpUtils private constructor() {
         private var cache_size = MAX_SIZE
     }
 
-    init {
-        okhttpBuilder = OkHttpClient.Builder()
-        retrofitBuilder = Retrofit.Builder()
-        priorityInterceptors = TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
-            o.priority.compareTo(r.priority)
-        }
-        networkInterceptors = TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
-            o.priority.compareTo(r.priority)
-        }
-    }
 }

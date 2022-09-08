@@ -36,18 +36,24 @@ class SingleHttpUtils private constructor() {
     private var writeTimeout: Long = 0
     private var connectTimeout: Long = 0
     private var sslParams: SSLUtils.SSLParams? = null
-    private val converterFactories: MutableList<Converter.Factory>
-    private val adapterFactories: MutableList<CallAdapter.Factory>
+    private val converterFactories: MutableList<Converter.Factory> = ArrayList()
+    private val adapterFactories: MutableList<CallAdapter.Factory> = ArrayList()
 
     /**
      * description: 拦截器集合,按照优先级从小到大排序
      */
-    private val priorityInterceptors: TreeSet<PriorityInterceptor>
+    private val priorityInterceptors: TreeSet<PriorityInterceptor> =
+        TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
+            o.priority.compareTo(r.priority)
+        }
 
     /**
      * description: 网络拦截器集合,按照优先级从小到大排序
      */
-    private val networkInterceptors: TreeSet<PriorityInterceptor>
+    private val networkInterceptors: TreeSet<PriorityInterceptor> =
+        TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
+            o.priority.compareTo(r.priority)
+        }
 
     /**
      * description 设置网络baseUrl
@@ -386,7 +392,7 @@ class SingleHttpUtils private constructor() {
      * description 单个RetrofitBuilder
      */
     private val singleRetrofitBuilder: Retrofit.Builder
-        private get() {
+        get() {
             val singleRetrofitBuilder = Retrofit.Builder()
             if (converterFactories.isEmpty()) {
                 //获取全局的对象重新设置
@@ -417,7 +423,7 @@ class SingleHttpUtils private constructor() {
                     GlobalHttpUtils.instance.retrofit!!.baseUrl()
                 )
             } else {
-                singleRetrofitBuilder.baseUrl(baseUrl)
+                singleRetrofitBuilder.baseUrl(baseUrl!!)
             }
             singleRetrofitBuilder.client(singleOkHttpBuilder.build())
             clearParams()
@@ -428,7 +434,7 @@ class SingleHttpUtils private constructor() {
      * description 获取单个 OkHttpClient.Builder
      */
     private val singleOkHttpBuilder: OkHttpClient.Builder
-        private get() {
+        get() {
             val singleOkHttpBuilder = OkHttpClient.Builder()
             singleOkHttpBuilder.retryOnConnectionFailure(true)
             if (dns != null) {
@@ -482,23 +488,6 @@ class SingleHttpUtils private constructor() {
     companion object {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             SingleHttpUtils()
-        }
-    }
-
-    init {
-        converterFactories = ArrayList()
-        adapterFactories = ArrayList()
-        priorityInterceptors = TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
-            Integer.compare(
-                o.priority,
-                r.priority
-            )
-        }
-        networkInterceptors = TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
-            Integer.compare(
-                o.priority,
-                r.priority
-            )
         }
     }
 }

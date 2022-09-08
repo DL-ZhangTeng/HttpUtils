@@ -1,11 +1,10 @@
-package com.zhangteng.httputils.transformer
+package com.zhangteng.httputils.result.rxjava.transformer
 
 import android.app.Dialog
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
 /**
@@ -16,7 +15,7 @@ import io.reactivex.schedulers.Schedulers
 class ProgressDialogObservableTransformer<T> : ObservableTransformer<T, T> {
     private var mProgressDialog: Dialog? = null
 
-    constructor() {}
+    constructor()
     constructor(mProgressDialog: Dialog?) {
         this.mProgressDialog = mProgressDialog
     }
@@ -24,7 +23,7 @@ class ProgressDialogObservableTransformer<T> : ObservableTransformer<T, T> {
     override fun apply(upstream: Observable<T>): ObservableSource<T> {
         return upstream
             .subscribeOn(Schedulers.io())
-            .doOnSubscribe { disposable: Disposable? ->
+            .doOnSubscribe {
                 if (mProgressDialog != null) {
                     mProgressDialog!!.show()
                 }

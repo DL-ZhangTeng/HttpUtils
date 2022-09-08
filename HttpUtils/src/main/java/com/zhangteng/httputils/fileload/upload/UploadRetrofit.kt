@@ -2,7 +2,7 @@ package com.zhangteng.httputils.fileload.upload
 
 import android.text.TextUtils
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.httputils.transformer.ProgressDialogObservableTransformer
+import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
 import io.reactivex.Observable
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -13,8 +13,6 @@ import okhttp3.ResponseBody
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 
 /**
@@ -22,7 +20,24 @@ import java.io.File
  */
 class UploadRetrofit private constructor() {
     private var mRetrofit: Retrofit? = null
-    private val builder: Retrofit.Builder
+    private val builder: Retrofit.Builder = Retrofit.Builder().apply {
+        //默认使用全局配置
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofitBuilder.callAdapterFactories().forEach {
+            addCallAdapterFactory(it)
+        }
+        //默认使用全局配置
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofitBuilder.converterFactories().forEach {
+            addConverterFactory(it)
+        }
+        //默认使用全局baseUrl
+        baseUrl(
+            HttpUtils.instance.ConfigGlobalHttpUtils().retrofitBuilder
+                .build().baseUrl()
+        )
+        //默认使用全局配置
+        client(HttpUtils.instance.ConfigGlobalHttpUtils().getOkHttpClient())
+    }
+
     val retrofit: Retrofit?
         get() {
             if (mRetrofit == null) {
@@ -38,12 +53,8 @@ class UploadRetrofit private constructor() {
      * @return UploadRetrofit
      */
     fun setBaseUrl(baseUrl: String?): UploadRetrofit {
-        if (TextUtils.isEmpty(baseUrl)) {
-            builder.baseUrl(
-                HttpUtils.instance.ConfigGlobalHttpUtils()!!.retrofit!!.baseUrl()
-            )
-        } else {
-            builder.baseUrl(baseUrl ?: "")
+        if (!TextUtils.isEmpty(baseUrl)) {
+            builder.baseUrl(baseUrl!!)
         }
         return this
     }
@@ -55,18 +66,14 @@ class UploadRetrofit private constructor() {
      * @return UploadRetrofit
      */
     fun setBaseUrl(baseUrl: HttpUrl?): UploadRetrofit {
-        if (baseUrl == null) {
-            builder.baseUrl(
-                HttpUtils.instance.ConfigGlobalHttpUtils()!!.retrofit!!.baseUrl()
-            )
-        } else {
+        if (baseUrl != null) {
             builder.baseUrl(baseUrl)
         }
         return this
     }
 
     /**
-     * description 设置Converter.Factory,传null时默认GsonConverterFactory.create()
+     * description 设置Converter.Factory
      *
      * @param factory Converter.Factory
      * @return UploadRetrofit
@@ -74,14 +81,12 @@ class UploadRetrofit private constructor() {
     fun addConverterFactory(factory: Converter.Factory?): UploadRetrofit {
         if (factory != null) {
             builder.addConverterFactory(factory)
-        } else {
-            builder.addConverterFactory(GsonConverterFactory.create())
         }
         return this
     }
 
     /**
-     * description 设置CallAdapter.Factory,传null时默认RxJava2CallAdapterFactory.create()
+     * description 设置CallAdapter.Factory
      *
      * @param factory CallAdapter.Factory
      * @return UploadRetrofit
@@ -89,8 +94,6 @@ class UploadRetrofit private constructor() {
     fun addCallAdapterFactory(factory: CallAdapter.Factory?): UploadRetrofit {
         if (factory != null) {
             builder.addCallAdapterFactory(factory)
-        } else {
-            builder.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
         }
         return this
     }
@@ -102,11 +105,7 @@ class UploadRetrofit private constructor() {
      * @return UploadRetrofit
      */
     fun setOkHttpClient(client: OkHttpClient?): UploadRetrofit {
-        if (client == null) {
-            builder.client(
-                HttpUtils.instance.ConfigGlobalHttpUtils()!!.getOkHttpClient()
-            )
-        } else {
+        if (client != null) {
             builder.client(client)
         }
         return this
@@ -121,25 +120,14 @@ class UploadRetrofit private constructor() {
          * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
          *
          * @param uploadUrl 后台url
-         * @param filePath  文件路径
-         * @return Observable<ResponseBody>
-         * */
-        fun uploadFile(uploadUrl: String, filePath: String): Observable<ResponseBody?> {
-            return uploadFile(uploadUrl, "uploaded_file", filePath)
-        }
-
-        /**
-         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
-         *
-         * @param uploadUrl 后台url
          * @param fieldName 后台接收图片流的参数名
          * @param filePath  文件路径
          * @return Observable<ResponseBody>
          */
         fun uploadFile(
             uploadUrl: String,
-            fieldName: String?,
-            filePath: String
+            filePath: String,
+            fieldName: String = "uploaded_file"
         ): Observable<ResponseBody?> {
             val file = File(filePath)
             val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
@@ -194,22 +182,5 @@ class UploadRetrofit private constructor() {
                 .uploadFiles(uploadUrl, parts)
                 .compose(ProgressDialogObservableTransformer())
         }
-    }
-
-    init {
-        builder = Retrofit.Builder() //默认使用全局配置
-            .addCallAdapterFactory(
-                HttpUtils.instance.ConfigGlobalHttpUtils()!!.retrofitBuilder
-                    .callAdapterFactories().get(0)
-            ) //默认使用全局配置
-            .addConverterFactory(
-                HttpUtils.instance.ConfigGlobalHttpUtils()!!.retrofitBuilder
-                    .converterFactories().get(0)
-            ) //默认使用全局baseUrl
-            .baseUrl(
-                HttpUtils.instance.ConfigGlobalHttpUtils()!!.retrofitBuilder
-                    .build().baseUrl()
-            ) //默认使用全局配置
-            .client(HttpUtils.instance.ConfigGlobalHttpUtils()!!.getOkHttpClient())
     }
 }

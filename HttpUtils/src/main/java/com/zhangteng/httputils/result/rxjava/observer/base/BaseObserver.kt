@@ -1,6 +1,6 @@
-package com.zhangteng.httputils.observer.base
+package com.zhangteng.httputils.result.rxjava.observer.base
 
-import com.zhangteng.httputils.observer.interfaces.ISubscriber
+import com.zhangteng.httputils.result.rxjava.observer.interfaces.ISubscriber
 import com.zhangteng.utils.IException.Companion.handleException
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -10,7 +10,7 @@ import io.reactivex.disposables.Disposable
  */
 abstract class BaseObserver<T> : Observer<T>, ISubscriber<T> {
     protected val isHideToast: Boolean
-        protected get() = false
+        get() = false
 
     override fun onSubscribe(d: Disposable) {
         doOnSubscribe(d)

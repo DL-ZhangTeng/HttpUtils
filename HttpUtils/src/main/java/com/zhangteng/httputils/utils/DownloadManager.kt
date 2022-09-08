@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.fileload.download
+package com.zhangteng.httputils.utils
 
 import com.zhangteng.httputils.http.HttpUtils
 import okhttp3.ResponseBody
@@ -6,6 +6,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.*
 
 /**
  * Created by swing on 2018/4/24.
@@ -21,28 +22,29 @@ class DownloadManager {
      */
     @Throws(IOException::class)
     fun saveFile(
-        response: ResponseBody,
+        response: ResponseBody?,
         destFileName: String?,
         progressListener: ProgressListener
     ): File {
         val destFileDir: String =
             HttpUtils.instance.context!!.getExternalFilesDir(null)
                 .toString() + File.separator
-        val contentLength = response.contentLength()
-        var `is`: InputStream? = null
+        var contentLength: Long? = null
+        var inputStream: InputStream? = null
         val buf = ByteArray(2048)
         var len = 0
         var fos: FileOutputStream? = null
         return try {
-            `is` = response.byteStream()
+            contentLength = response!!.contentLength()
+            inputStream = response.byteStream()
             var sum: Long = 0
             val dir = File(destFileDir)
             if (!dir.exists()) {
                 dir.mkdirs()
             }
-            val file = File(dir, destFileName)
+            val file = File(dir, destFileName ?: UUID.randomUUID().toString())
             fos = FileOutputStream(file)
-            while (`is`.read(buf).also { len = it } != -1) {
+            while (inputStream.read(buf).also { len = it } != -1) {
                 sum += len.toLong()
                 fos.write(buf, 0, len)
                 val finalSum = sum
@@ -57,15 +59,31 @@ class DownloadManager {
             fos.flush()
             file
         } finally {
-            try {
-                response.close()
-                `is`?.close()
-            } catch (e: IOException) {
-            }
-            try {
-                fos?.close()
-            } catch (e: IOException) {
-            }
+            response?.close()
+            inputStream?.close()
+            fos?.close()
         }
+    }
+
+    /**
+     * Created by swing on 2018/4/24.
+     */
+    interface ProgressListener {
+        /**
+         * 下载进度监听
+         *
+         * @param bytesRead     已经下载文件的大小
+         * @param contentLength 文件的大小
+         * @param progress      当前进度
+         * @param done          是否下载完成
+         * @param filePath      文件路径
+         */
+        fun onResponseProgress(
+            bytesRead: Long,
+            contentLength: Long,
+            progress: Int,
+            done: Boolean,
+            filePath: String?
+        )
     }
 }

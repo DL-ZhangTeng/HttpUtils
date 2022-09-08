@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.observer.interfaces
+package com.zhangteng.httputils.result.rxjava.observer.interfaces
 
 import io.reactivex.disposables.Disposable
 import com.zhangteng.utils.IException

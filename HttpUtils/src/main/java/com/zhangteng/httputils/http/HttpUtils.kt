@@ -24,28 +24,28 @@ class HttpUtils private constructor() {
     /**
      * description 全局网络请求工具
      */
-    fun ConfigGlobalHttpUtils(): GlobalHttpUtils? {
+    fun ConfigGlobalHttpUtils(): GlobalHttpUtils {
         return GlobalHttpUtils.instance
     }
 
     /**
      * description 单个网络请求工具
      */
-    fun ConfigSingleInstance(): SingleHttpUtils? {
+    fun ConfigSingleInstance(): SingleHttpUtils {
         return SingleHttpUtils.instance
     }
 
     /**
      * description 上传请求工具
      */
-    fun UploadRetrofit(): UploadRetrofit? {
+    fun UploadRetrofit(): UploadRetrofit {
         return UploadRetrofit.instance
     }
 
     /**
      * description 下载请求工具
      */
-    fun DownloadRetrofit(): DownloadRetrofit? {
+    fun DownloadRetrofit(): DownloadRetrofit {
         return DownloadRetrofit.instance
     }
 
