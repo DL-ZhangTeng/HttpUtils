@@ -1,26 +1,28 @@
-package com.zhangteng.httputils.result.coroutine
+package com.zhangteng.httputils.result.flow
 
 import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
-import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver.Companion.isLifecycleDestroy
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.io.Closeable
 
 /**
- * 不过滤请求结果
+ * 无请求结果
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param block 请求体
- * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
  * @param mProgressDialog 显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun CoroutineScope.launchGo(
+fun <T> CoroutineScope.launchFlowGo(
     block: suspend CoroutineScope.() -> Unit,
     success: () -> Unit,
     error: (IException) -> Unit,
@@ -28,27 +30,24 @@ fun CoroutineScope.launchGo(
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
     var job: Job? = null
     job = launch {
-        try {
-            withContext(Dispatchers.IO) {
-                block
-            }.also {
-                if (!isInterrupt(job, tag)) {
-                    success()
-                }
+        flow { emit(block()) }
+            .onStart {
+                mProgressDialog?.show()
             }
-        } catch (e: Throwable) {
-            if (!isInterrupt(job, tag)) {
-                error(IException.handleException(e))
-            }
-        } finally {
-            if (!isInterrupt(job, tag)) {
+            .flowOn(Dispatchers.IO)
+            .onCompletion {
+                if (isInterrupt(job, tag)) return@onCompletion
                 mProgressDialog?.dismiss()
                 complete()
             }
-        }
+            .catch {
+                if (isInterrupt(job, tag)) return@catch
+                error(IException.handleException(it))
+            }.collect {
+                success()
+            }
     }
     //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
     if (this !is Closeable) {
@@ -61,7 +60,7 @@ fun CoroutineScope.launchGo(
 }
 
 /**
- * 过滤请求结果，其他全抛异常
+ * 过滤IResponse.isSuccess()结果，其他全抛异常
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param block 请求体
  * @param success 成功回调
@@ -70,39 +69,40 @@ fun CoroutineScope.launchGo(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchOnlyResult(
+fun <T> CoroutineScope.launchFlowOnlyResult(
     block: suspend CoroutineScope.() -> IResponse<T>,
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
     var job: Job? = null
     job = launch {
-        try {
-            withContext(Dispatchers.IO) {
-                block().let {
-                    if (it.isSuccess()) it.getResult()
-                    else
-                        throw IException(it.getMsg(), it.getCode())
-                }
-            }.also {
+        flow { emit(block()) }
+            .onStart {
+                mProgressDialog?.show()
+            }
+            .flowOn(Dispatchers.IO)
+            .onCompletion {
                 if (!isInterrupt(job, tag)) {
-                    success(it)
+                    mProgressDialog?.dismiss()
+                    complete()
                 }
             }
-        } catch (e: Throwable) {
-            if (!isInterrupt(job, tag)) {
-                error(IException.handleException(e))
+            .catch {
+                if (!isInterrupt(job, tag)) {
+                    error(IException.handleException(it))
+                }
+            }.collect {
+                if (!isInterrupt(job, tag)) {
+                    if (it.isSuccess()) {
+                        success(it)
+                    } else {
+                        error(IException.handleException(IException(it.getMsg(), it.getCode())))
+                    }
+                }
             }
-        } finally {
-            if (!isInterrupt(job, tag)) {
-                mProgressDialog?.dismiss()
-                complete()
-            }
-        }
     }
     //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
     if (this !is Closeable) {
@@ -118,7 +118,7 @@ fun <T> CoroutineScope.launchOnlyResult(
  * description: 是否中断后续程序
  */
 private fun isInterrupt(job: Job?, tag: Any?): Boolean {
-    if (tag is LifecycleOwner && isLifecycleDestroy(tag as LifecycleOwner?)) {
+    if (tag is LifecycleOwner && HttpLifecycleEventObserver.isLifecycleDestroy(tag as LifecycleOwner?)) {
         //页面销毁状态取消网络请求
         //观察者会清理全部请求
         return true
