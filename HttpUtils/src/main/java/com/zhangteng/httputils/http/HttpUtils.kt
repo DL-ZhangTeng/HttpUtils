@@ -7,6 +7,7 @@ import com.zhangteng.httputils.fileload.download.DownloadRetrofit
 import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.utils.getFromSPToSet
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Job
 
 /**
  * Created by swing on 2018/4/24.
@@ -49,22 +50,12 @@ class HttpUtils private constructor() {
         return DownloadRetrofit.instance
     }
 
-    val cookie: HashSet<String>?
-        get() = Companion.context.getFromSPToSet(
+    fun getCookie(): HashSet<String>? {
+        return Companion.context.getFromSPToSet(
             SPConfig.FILE_NAME,
             SPConfig.COOKIE,
             HashSet()
         ) as HashSet<String>?
-
-    /**
-     * description 添加可处理对象集合
-     *
-     * @param disposable 可取消的对象
-     */
-    fun addDisposable(disposable: Disposable?) {
-        if (disposables != null) {
-            disposables!![disposable] = null
-        }
     }
 
     /**
@@ -73,9 +64,44 @@ class HttpUtils private constructor() {
      * @param disposable 可取消的对象
      * @param tag        标记
      */
-    fun addDisposable(disposable: Disposable?, tag: Any?) {
-        if (disposables != null) {
-            disposables!![disposable] = tag
+    fun addDisposable(disposable: Any?, tag: Any? = null) {
+        disposables[disposable] = tag
+    }
+
+    /**
+     * description 取消单个请求，且单个请求结束后需要移除disposables时也可使用本方法
+     *
+     * @param any 1、可取消的对象 Disposable或者Job
+     *            2、单个请求的标识（推荐使用Activity/Fragment.this）,多个请求可以使用同一个tag，取消请求时会同时取消。通过tag取消请求，tag可以通过CommonObserver/LifecycleObservableTransformer创建时传入
+     */
+    fun cancelSingleRequest(any: Any?) {
+        if (any is Job? && any?.isCancelled == false) {//如果是Job直接取消
+            any?.cancel()
+            disposables.remove(any)
+        } else if (any is Disposable? && any?.isDisposed == false) {//如果是Disposable直接取消
+            any?.dispose()
+            disposables.remove(any)
+        } else {//其它情况按照tag处理
+            val set: MutableSet<MutableMap.MutableEntry<Any?, Any?>> = disposables.entries
+            val iterator = set.iterator()
+            while (iterator.hasNext()) {
+                val (disposable, value) = iterator.next()
+                if (disposable is Job?) {//如果tag对应的可取消类型是Job
+                    if (any == value && disposable?.isCancelled == false) {
+                        disposable?.cancel()
+                    }
+                    if (disposable?.isCancelled == true) {
+                        iterator.remove()
+                    }
+                } else if (disposable is Disposable?) {//如果tag对应的可取消类型是Disposable
+                    if (any == value && disposable?.isDisposed == false) {
+                        disposable?.dispose()
+                    }
+                    if (disposable?.isDisposed == true) {
+                        iterator.remove()
+                    }
+                }
+            }
         }
     }
 
@@ -83,46 +109,14 @@ class HttpUtils private constructor() {
      * description 清除所有请求
      */
     fun cancelAllRequest() {
-        if (disposables != null) {
-            for (disposable in disposables!!.keys) {
-                disposable!!.dispose()
-            }
-            disposables!!.clear()
-        }
-    }
-
-    /**
-     * description 取消单个请求，且单个请求结束后需要移除disposables时也可使用本方法
-     *
-     * @param disposable 可取消的对象
-     */
-    fun cancelSingleRequest(disposable: Disposable?) {
-        if (disposable != null && !disposable.isDisposed) {
-            disposable.dispose()
-        }
-        if (disposables != null) {
-            disposables!!.remove(disposable)
-        }
-    }
-
-    /**
-     * @param tag 单个请求的标识（推荐使用Activity/Fragment.this）,多个请求可以使用同一个tag，取消请求时会同时取消
-     * @description 通过tag取消请求，tag可以通过CommonObserver/LifecycleObservableTransformer创建时传入
-     */
-    fun cancelSingleRequest(tag: Any?) {
-        if (tag != null && disposables != null) {
-            val set: MutableSet<MutableMap.MutableEntry<Disposable?, Any?>> = disposables!!.entries
-            val iterator = set.iterator()
-            while (iterator.hasNext()) {
-                val (disposable, value) = iterator.next()
-                if (tag == value && !disposable!!.isDisposed) {
-                    disposable.dispose()
-                }
-                if (disposable!!.isDisposed) {
-                    iterator.remove()
-                }
+        for (disposable in disposables.keys) {
+            if (disposable is Job? && disposable?.isCancelled == false) {//如果是Job直接取消
+                disposable?.cancel()
+            } else if (disposable is Disposable? && disposable?.isDisposed == false) {//如果是Disposable直接取消
+                disposable?.dispose()
             }
         }
+        disposables.clear()
     }
 
     companion object {
@@ -130,7 +124,7 @@ class HttpUtils private constructor() {
             HttpUtils()
         }
         private var context: Application? = null
-        private var disposables: HashMap<Disposable?, Any?>? = null
+        private var disposables: HashMap<Any?, Any?> = HashMap()
 
         /**
          * description 初始化context
@@ -145,9 +139,5 @@ class HttpUtils private constructor() {
                 throw ExceptionInInitializerError("请先在全局Application中调用 HttpUtils.init() 初始化！")
             }
         }
-    }
-
-    init {
-        disposables = HashMap()
     }
 }
