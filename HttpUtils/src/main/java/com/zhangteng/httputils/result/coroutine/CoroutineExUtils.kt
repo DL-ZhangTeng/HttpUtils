@@ -4,6 +4,7 @@ import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
+import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver.Companion.isLifecycleDestroy
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
 import kotlinx.coroutines.*
@@ -30,16 +31,15 @@ fun CoroutineScope.launchGo(
     job = launch {
         handleException(
             withContext(Dispatchers.IO) { block },
-            { error(it) },
             {
-//                if (job != null) {
-//                    HttpUtils.instance.cancelSingleRequest(job)
-//                }
-//                if (isTargetDestroy) return
-                mProgressDialog?.dismiss()
-                complete()
+                if (isInterrupt(job, tag)) return@handleException
+                error(it)
             }
-        )
+        ) {
+            if (isInterrupt(job, tag)) return@handleException
+            mProgressDialog?.dismiss()
+            complete()
+        }
     }
     //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
     if (this !is Closeable) {
@@ -80,14 +80,20 @@ fun <T> CoroutineScope.launchOnlyResult(
                         else
                             throw IException(it.getMsg(), it.getCode())
                     }
-                }.also { success(it) }
+                }.also {
+                    if (isInterrupt(job, tag)) return@handleException
+                    success(it)
+                }
             },
-            { error(it) },
             {
-                mProgressDialog?.dismiss()
-                complete()
+                if (isInterrupt(job, tag)) return@handleException
+                error(it)
             }
-        )
+        ) {
+            if (isInterrupt(job, tag)) return@handleException
+            mProgressDialog?.dismiss()
+            complete()
+        }
     }
     //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
     if (this !is Closeable) {
@@ -116,4 +122,21 @@ suspend fun handleException(
             complete()
         }
     }
+}
+
+/**
+ * description: 是否中断后续程序
+ */
+private fun isInterrupt(job: Job?, tag: Any?): Boolean {
+    if (tag is LifecycleOwner && isLifecycleDestroy(tag as LifecycleOwner?)) {
+        //页面销毁状态取消网络请求
+        //观察者会清理全部请求
+        return true
+    }
+    if (job != null) {
+        //主动取消并清理请求集合
+        //如果是viewModelScope域下HttpUtils未添加job因此取消请求代码不生效（viewModelScope自动取消请求）
+        HttpUtils.instance.cancelSingleRequest(job)
+    }
+    return false
 }

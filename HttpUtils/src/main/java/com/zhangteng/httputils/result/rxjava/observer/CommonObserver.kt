@@ -4,6 +4,7 @@ import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
+import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver.Companion.isLifecycleDestroy
 import com.zhangteng.httputils.result.rxjava.observer.base.BaseObserver
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.showShortToast
@@ -12,7 +13,7 @@ import io.reactivex.disposables.Disposable
 /**
  * Created by swing on 2018/4/24.
  */
-abstract class CommonObserver<T>(
+abstract class CommonObserver<T : Any>(
     private var mProgressDialog: Dialog? = null,
     private var tag: Any? = null
 ) : BaseObserver<T>() {
@@ -32,7 +33,7 @@ abstract class CommonObserver<T>(
      */
     protected abstract fun onSuccess(t: T)
 
-    override fun doOnSubscribe(d: Disposable?) {
+    override fun doOnSubscribe(d: Disposable) {
         disposable = d
         if (tag == null) {
             HttpUtils.instance.addDisposable(d)
@@ -42,11 +43,7 @@ abstract class CommonObserver<T>(
     }
 
     override fun doOnError(iException: IException) {
-        if (disposable != null) {
-            HttpUtils.instance.cancelSingleRequest(disposable)
-            disposable = null
-        }
-        if (isTargetDestroy) return
+        if (isInterrupt()) return
         if (mProgressDialog != null && mProgressDialog!!.isShowing) {
             mProgressDialog!!.dismiss()
         }
@@ -57,27 +54,34 @@ abstract class CommonObserver<T>(
     }
 
     override fun doOnCompleted() {
-        if (disposable != null) {
-            HttpUtils.instance.cancelSingleRequest(disposable)
-            disposable = null
-        }
-        if (isTargetDestroy) return
+        if (isInterrupt()) return
         if (mProgressDialog != null && mProgressDialog!!.isShowing) {
             mProgressDialog!!.dismiss()
         }
     }
 
     override fun doOnNext(t: T) {
-        if (isTargetDestroy) return
+        if (isInterrupt()) return
         onSuccess(t)
     }
 
     /**
-     * description 目标是否销毁
+     * description: 是否中断后续程序
      */
-    private val isTargetDestroy: Boolean
-        get() = (tag != null && tag is LifecycleOwner
-                && !HttpLifecycleEventObserver.isLifecycleActive(tag as LifecycleOwner?))
+    private fun isInterrupt(): Boolean {
+        if (tag is LifecycleOwner && isLifecycleDestroy(tag as LifecycleOwner?)) {
+            //页面销毁状态取消网络请求
+            //观察者会清理全部请求
+            disposable = null
+            return true
+        }
+        if (disposable != null) {
+            //主动取消并清理请求集合
+            HttpUtils.instance.cancelSingleRequest(disposable!!)
+            disposable = null
+        }
+        return false
+    }
 
     init {
         if (tag is LifecycleOwner) {

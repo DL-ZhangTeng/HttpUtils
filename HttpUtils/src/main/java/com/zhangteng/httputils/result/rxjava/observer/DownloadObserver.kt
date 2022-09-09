@@ -5,6 +5,7 @@ import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
+import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver.Companion.isLifecycleDestroy
 import com.zhangteng.httputils.result.rxjava.observer.base.BaseObserver
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
@@ -23,7 +24,7 @@ abstract class DownloadObserver(
     private var fileName: String? = null,
     private var mProgressDialog: Dialog? = null,
     private var tag: Any? = null
-) : BaseObserver<ResponseBody?>() {
+) : BaseObserver<ResponseBody>() {
     private var disposable: Disposable? = null
 
     /**
@@ -50,7 +51,7 @@ abstract class DownloadObserver(
         filePath: String?
     )
 
-    override fun doOnSubscribe(d: Disposable?) {
+    override fun doOnSubscribe(d: Disposable) {
         disposable = d
         if (tag == null) {
             HttpUtils.instance.addDisposable(d)
@@ -60,11 +61,7 @@ abstract class DownloadObserver(
     }
 
     override fun doOnError(iException: IException) {
-        if (disposable != null) {
-            HttpUtils.instance.cancelSingleRequest(disposable)
-            disposable = null
-        }
-        if (isTargetDestroy) return
+        if (isInterrupt()) return
         if (mProgressDialog != null && mProgressDialog!!.isShowing) {
             mProgressDialog!!.dismiss()
         }
@@ -75,19 +72,15 @@ abstract class DownloadObserver(
     }
 
     override fun doOnCompleted() {
-        if (disposable != null) {
-            HttpUtils.instance.cancelSingleRequest(disposable)
-            disposable = null
-        }
-        if (isTargetDestroy) return
+        if (isInterrupt()) return
         if (mProgressDialog != null && mProgressDialog!!.isShowing) {
             mProgressDialog!!.dismiss()
         }
     }
 
     @SuppressLint("CheckResult")
-    override fun doOnNext(t: ResponseBody?) {
-        if (isTargetDestroy) return
+    override fun doOnNext(t: ResponseBody) {
+        if (isInterrupt()) return
         Observable
             .just(t)
             .subscribeOn(Schedulers.io())
@@ -126,11 +119,22 @@ abstract class DownloadObserver(
     }
 
     /**
-     * description 目标是否销毁
+     * description: 是否中断后续程序
      */
-    private val isTargetDestroy: Boolean
-        get() = (tag != null && tag is LifecycleOwner
-                && !HttpLifecycleEventObserver.isLifecycleActive(tag as LifecycleOwner?))
+    private fun isInterrupt(): Boolean {
+        if (tag is LifecycleOwner && isLifecycleDestroy(tag as LifecycleOwner?)) {
+            //页面销毁状态取消网络请求
+            //观察者会清理全部请求
+            disposable = null
+            return true
+        }
+        if (disposable != null) {
+            //主动取消并清理请求集合
+            HttpUtils.instance.cancelSingleRequest(disposable!!)
+            disposable = null
+        }
+        return false
+    }
 
     init {
         if (tag is LifecycleOwner) {

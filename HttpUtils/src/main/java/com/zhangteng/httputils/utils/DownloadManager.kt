@@ -22,7 +22,7 @@ class DownloadManager {
      */
     @Throws(IOException::class)
     fun saveFile(
-        response: ResponseBody?,
+        response: ResponseBody,
         destFileName: String?,
         progressListener: ProgressListener
     ): File {
@@ -35,7 +35,7 @@ class DownloadManager {
         var len = 0
         var fos: FileOutputStream? = null
         return try {
-            contentLength = response!!.contentLength()
+            contentLength = response.contentLength()
             inputStream = response.byteStream()
             var sum: Long = 0
             val dir = File(destFileDir)
@@ -59,7 +59,7 @@ class DownloadManager {
             fos.flush()
             file
         } finally {
-            response?.close()
+            response.close()
             inputStream?.close()
             fos?.close()
         }

@@ -15,7 +15,7 @@ import io.reactivex.schedulers.Schedulers
  * author: Swing
  * date: 2021/10/9
  */
-class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
+open class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
     private var tag: Any? = null
     private var disposable: Disposable? = null
 
@@ -30,7 +30,7 @@ class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
     override fun apply(upstream: Observable<T>): ObservableSource<T> {
         return upstream
             .subscribeOn(Schedulers.io())
-            .doOnSubscribe { d: Disposable? ->
+            .doOnSubscribe { d: Disposable ->
                 disposable = d
                 if (tag == null) {
                     HttpUtils.instance.addDisposable(d)
@@ -41,8 +41,13 @@ class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
             .subscribeOn(AndroidSchedulers.mainThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {
-                if (disposable != null) {
-                    HttpUtils.instance.cancelSingleRequest(disposable)
+                //页面销毁状态自动取消网络请求
+                if (tag is LifecycleOwner && HttpLifecycleEventObserver.isLifecycleDestroy(tag as LifecycleOwner?)) {
+                    //观察者会清理全部请求
+                    disposable = null
+                } else if (disposable != null) {
+                    //主动取消并清理请求集合
+                    HttpUtils.instance.cancelSingleRequest(disposable!!)
                     disposable = null
                 }
             }

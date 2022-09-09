@@ -8,7 +8,7 @@ import io.reactivex.disposables.Disposable
 /**
  * Created by swing on 2018/4/24.
  */
-abstract class BaseObserver<T> : Observer<T>, ISubscriber<T> {
+abstract class BaseObserver<T : Any> : Observer<T>, ISubscriber<T> {
     protected val isHideToast: Boolean
         get() = false
 

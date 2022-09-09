@@ -40,5 +40,12 @@ class HttpLifecycleEventObserver : LifecycleEventObserver {
         fun isLifecycleActive(lifecycleOwner: LifecycleOwner?): Boolean {
             return lifecycleOwner != null && lifecycleOwner.lifecycle.currentState != Lifecycle.State.DESTROYED
         }
+
+        /**
+         * 判断宿主是否处于死亡状态
+         */
+        fun isLifecycleDestroy(lifecycleOwner: LifecycleOwner?): Boolean {
+            return lifecycleOwner != null && lifecycleOwner.lifecycle.currentState == Lifecycle.State.DESTROYED
+        }
     }
 }
