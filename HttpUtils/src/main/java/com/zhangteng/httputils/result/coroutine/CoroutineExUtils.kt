@@ -70,7 +70,7 @@ fun CoroutineScope.launchGo(
  * @param mProgressDialog 显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun CoroutineScope.launchGo(
+fun CoroutineScope.launchGoDeferred(
     block: CoroutineScope.() -> Deferred<Unit>,
     success: () -> Unit,
     error: (IException) -> Unit,
@@ -120,7 +120,7 @@ fun CoroutineScope.launchGo(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchOnlyResult(
+fun <T> CoroutineScope.launchGoIResponse(
     block: suspend CoroutineScope.() -> IResponse<T>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
@@ -175,7 +175,7 @@ fun <T> CoroutineScope.launchOnlyResult(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchOnlyResult(
+fun <T> CoroutineScope.launchGoDeferredIResponse(
     block: CoroutineScope.() -> Deferred<IResponse<T>>,
     success: (T) -> Unit,
     error: (IException) -> Unit,

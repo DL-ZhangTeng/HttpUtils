@@ -22,7 +22,7 @@ import java.io.Closeable
  * @param mProgressDialog 显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun CoroutineScope.launchFlowGo(
+fun CoroutineScope.launchGo(
     block: suspend CoroutineScope.() -> Unit,
     success: () -> Unit,
     error: (IException) -> Unit,
@@ -33,10 +33,10 @@ fun CoroutineScope.launchFlowGo(
     var job: Job? = null
     job = launch {
         flow { emit(block()) }
+            .flowOn(Dispatchers.IO)
             .onStart {
                 mProgressDialog?.show()
             }
-            .flowOn(Dispatchers.IO)
             .onCompletion {
                 if (isInterrupt(job, tag)) return@onCompletion
                 mProgressDialog?.dismiss()
@@ -45,7 +45,9 @@ fun CoroutineScope.launchFlowGo(
             .catch {
                 if (isInterrupt(job, tag)) return@catch
                 error(IException.handleException(it))
-            }.collect {
+            }
+            .flowOn(Dispatchers.Main)
+            .collect {
                 success()
             }
     }
@@ -68,7 +70,7 @@ fun CoroutineScope.launchFlowGo(
  * @param mProgressDialog 显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun CoroutineScope.launchFlowGo(
+fun CoroutineScope.launchGoFlow(
     block: CoroutineScope.() -> Flow<Unit>,
     success: () -> Unit,
     error: (IException) -> Unit,
@@ -79,10 +81,10 @@ fun CoroutineScope.launchFlowGo(
     var job: Job? = null
     job = launch {
         block()
+            .flowOn(Dispatchers.IO)
             .onStart {
                 mProgressDialog?.show()
             }
-            .flowOn(Dispatchers.IO)
             .onCompletion {
                 if (isInterrupt(job, tag)) return@onCompletion
                 mProgressDialog?.dismiss()
@@ -91,7 +93,9 @@ fun CoroutineScope.launchFlowGo(
             .catch {
                 if (isInterrupt(job, tag)) return@catch
                 error(IException.handleException(it))
-            }.collect {
+            }
+            .flowOn(Dispatchers.Main)
+            .collect {
                 success()
             }
     }
@@ -115,7 +119,7 @@ fun CoroutineScope.launchFlowGo(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchFlowOnlyResult(
+fun <T> CoroutineScope.launchGoIResponse(
     block: suspend CoroutineScope.() -> IResponse<T>,
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
@@ -126,10 +130,10 @@ fun <T> CoroutineScope.launchFlowOnlyResult(
     var job: Job? = null
     job = launch {
         flow { emit(block()) }
+            .flowOn(Dispatchers.IO)
             .onStart {
                 mProgressDialog?.show()
             }
-            .flowOn(Dispatchers.IO)
             .onCompletion {
                 if (!isInterrupt(job, tag)) {
                     mProgressDialog?.dismiss()
@@ -140,7 +144,9 @@ fun <T> CoroutineScope.launchFlowOnlyResult(
                 if (!isInterrupt(job, tag)) {
                     error(IException.handleException(it))
                 }
-            }.collect {
+            }
+            .flowOn(Dispatchers.Main)
+            .collect {
                 if (!isInterrupt(job, tag)) {
                     if (it.isSuccess()) {
                         success(it)
@@ -170,7 +176,7 @@ fun <T> CoroutineScope.launchFlowOnlyResult(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchFlowOnlyResult(
+fun <T> CoroutineScope.launchGoFlowIResponse(
     block: CoroutineScope.() -> Flow<IResponse<T>>,
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
@@ -181,10 +187,10 @@ fun <T> CoroutineScope.launchFlowOnlyResult(
     var job: Job? = null
     job = launch {
         block()
+            .flowOn(Dispatchers.IO)
             .onStart {
                 mProgressDialog?.show()
             }
-            .flowOn(Dispatchers.IO)
             .onCompletion {
                 if (!isInterrupt(job, tag)) {
                     mProgressDialog?.dismiss()
@@ -195,7 +201,9 @@ fun <T> CoroutineScope.launchFlowOnlyResult(
                 if (!isInterrupt(job, tag)) {
                     error(IException.handleException(it))
                 }
-            }.collect {
+            }
+            .flowOn(Dispatchers.Main)
+            .collect {
                 if (!isInterrupt(job, tag)) {
                     if (it.isSuccess()) {
                         success(it)

@@ -386,7 +386,7 @@ class SingleHttpUtils private constructor() {
             cls.classLoader, arrayOf<Class<*>>(cls),
             RetrofitServiceProxyHandler(singleRetrofitBuilder.build(), cls)
         ) as K
-    }//获取全局的对象重新设置//获取全局的对象重新设置
+    }
 
     /**
      * description 单个RetrofitBuilder

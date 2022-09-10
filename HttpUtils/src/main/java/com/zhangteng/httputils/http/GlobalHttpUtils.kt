@@ -438,7 +438,7 @@ class GlobalHttpUtils private constructor() {
      *
      * @param cls 网络接口
      */
-    fun <K> createService(cls: Class<K>): K? {
+    fun <K> createService(cls: Class<K>): K {
         if (mRetrofitServiceCache == null) {
             try {
                 val activityManager =
@@ -455,7 +455,7 @@ class GlobalHttpUtils private constructor() {
             }
             mRetrofitServiceCache = LruCache(cache_size)
         }
-        var retrofitService = mRetrofitServiceCache!![cls.canonicalName] as K?
+        var retrofitService = mRetrofitServiceCache!![cls.canonicalName] as K
         if (retrofitService == null) {
             retrofitService = Proxy.newProxyInstance(
                 cls.classLoader, arrayOf<Class<*>>(cls),
