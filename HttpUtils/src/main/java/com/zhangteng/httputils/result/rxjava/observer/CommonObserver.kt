@@ -7,7 +7,7 @@ import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver.Companion.isLifecycleDestroy
 import com.zhangteng.httputils.result.rxjava.observer.base.BaseObserver
 import com.zhangteng.utils.IException
-import com.zhangteng.utils.e
+import com.zhangteng.utils.i
 import com.zhangteng.utils.showShortToast
 import io.reactivex.disposables.Disposable
 
@@ -81,7 +81,7 @@ abstract class CommonObserver<T : Any>(
             try {
                 HttpUtils.instance.cancelSingleRequest(disposable!!)
             } catch (e: IllegalStateException) {
-                e.message.e("cancelSingleRequest")
+                e.message.i("cancelSingleRequest")
             } finally {
                 disposable = null
             }

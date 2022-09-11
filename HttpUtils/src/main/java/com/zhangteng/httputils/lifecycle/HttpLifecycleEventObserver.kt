@@ -4,7 +4,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.utils.e
+import com.zhangteng.utils.i
 
 /**
  * @description: Http请求取消生命周期观察者
@@ -23,13 +23,13 @@ class HttpLifecycleEventObserver : LifecycleEventObserver {
         try {
             HttpUtils.instance.cancelSingleRequest(source)
         } catch (e: IllegalStateException) {
-            e.message.e("cancelSingleRequest")
+            e.message.i("cancelSingleRequest")
         }
     }
 
     companion object {
         /**
-         * 绑定组件的生命周期
+         * 绑定组件的生命周期(必须在UI线程bind)
          *
          * @param lifecycleOwner 请传入 AppCompatActivity 或者 AndroidX.Fragment 子类
          * 如需传入其他对象可继承[androidx.lifecycle.LifecycleOwner]

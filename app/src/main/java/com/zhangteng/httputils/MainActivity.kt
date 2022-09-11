@@ -13,10 +13,10 @@ import com.google.gson.Gson
 import com.zhangteng.httputils.http.Api
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.result.coroutine.deferredGoIResponse
+import com.zhangteng.httputils.result.coroutine.launchGo
 import com.zhangteng.httputils.result.coroutine.launchGoDeferredIResponse
 import com.zhangteng.httputils.result.coroutine.launchGoIResponse
 import com.zhangteng.httputils.result.flow.flowGoIResponse
-import com.zhangteng.httputils.result.flow.launchGo
 import com.zhangteng.httputils.result.flow.launchGoFlowIResponse
 import com.zhangteng.utils.StateViewHelper
 import com.zhangteng.utils.e
@@ -62,20 +62,20 @@ class MainActivity : AppCompatActivity() {
 //            this@MainActivity
 //        )
 
-        GlobalScope.launchGoIResponse({
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeList(0)
-        }, {
-            Gson().toJson(it).e()
-        }, {
-            Gson().toJson(it).e()
-        }, {
-
-        },
-            mProgressDialog,
-            this@MainActivity
-        )
+//        GlobalScope.launchGoIResponse({
+//            HttpUtils.instance.ConfigGlobalHttpUtils()
+//                .createService(Api::class.java)
+//                .getHomeList(0)
+//        }, {
+//            Gson().toJson(it).e()
+//        }, {
+//            Gson().toJson(it).e()
+//        }, {
+//
+//        },
+//            mProgressDialog,
+//            this@MainActivity
+//        )
 
 //        GlobalScope.launch {
 //            coroutineContext.launchGo({
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
 //                this@MainActivity
 //            )
 //        }
-//
+
 //        GlobalScope.launch {
 //            coroutineContext.launchGoIResponse({
 //                HttpUtils.instance.ConfigGlobalHttpUtils()
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 //                this@MainActivity
 //            )
 //        }
-//
+
 //        GlobalScope.launchGoFlowIResponse({
 //            HttpUtils.instance.ConfigGlobalHttpUtils()
 //                .createService(Api::class.java)
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
 //            mProgressDialog,
 //            this@MainActivity
 //        )
-//
+
 //        GlobalScope.launch {
 //            HttpUtils.instance.ConfigGlobalHttpUtils()
 //                .createService(Api::class.java)
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 //                    this@MainActivity
 //                )
 //        }
-//
+
 //        GlobalScope.launchGoDeferredIResponse({
 //            HttpUtils.instance.ConfigGlobalHttpUtils()
 //                .createService(Api::class.java)
@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity() {
 //            mProgressDialog,
 //            this@MainActivity
 //        )
-//
+
 //        GlobalScope.launch {
 //            HttpUtils.instance.ConfigGlobalHttpUtils()
 //                .createService(Api::class.java)

@@ -27,7 +27,11 @@ suspend fun <T> CoroutineContext.launchGo(
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
+    withContext(Dispatchers.Main) {
+        mProgressDialog?.show()
+    }
+
+    addHttpUtilsDisposable(tag)
 
     try {
         withContext(Dispatchers.IO) {
@@ -46,11 +50,6 @@ suspend fun <T> CoroutineContext.launchGo(
             mProgressDialog?.dismiss()
             complete()
         }
-    }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
     }
 }
 
@@ -72,7 +71,11 @@ suspend fun <T> CoroutineContext.launchGoIResponse(
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
+    withContext(Dispatchers.Main) {
+        mProgressDialog?.show()
+    }
+
+    addHttpUtilsDisposable(tag)
 
     try {
         withContext(Dispatchers.IO) {
@@ -96,11 +99,6 @@ suspend fun <T> CoroutineContext.launchGoIResponse(
             complete()
         }
     }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
-    }
 }
 
 /**
@@ -114,16 +112,23 @@ suspend fun <T> CoroutineContext.launchGoIResponse(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 fun <T> CoroutineScope.launchGo(
-    block: suspend () -> T,
+    block: suspend CoroutineScope.() -> T,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
-
     launch {
+        withContext(Dispatchers.Main) {
+            mProgressDialog?.show()
+        }
+
+        //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
+        if (this !is Closeable) {
+            addHttpUtilsDisposable(tag)
+        }
+
         try {
             withContext(Dispatchers.IO) {
                 block()
@@ -143,11 +148,6 @@ fun <T> CoroutineScope.launchGo(
             }
         }
     }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
-    }
 }
 
 /**
@@ -161,16 +161,23 @@ fun <T> CoroutineScope.launchGo(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 fun <T> CoroutineScope.launchGoIResponse(
-    block: suspend () -> IResponse<T>,
+    block: suspend CoroutineScope.() -> IResponse<T>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
-
     launch {
+        withContext(Dispatchers.Main) {
+            mProgressDialog?.show()
+        }
+
+        //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
+        if (this !is Closeable) {
+            addHttpUtilsDisposable(tag)
+        }
+
         try {
             withContext(Dispatchers.IO) {
                 block().let {
@@ -194,11 +201,6 @@ fun <T> CoroutineScope.launchGoIResponse(
             }
         }
     }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
-    }
 }
 
 /**
@@ -212,16 +214,23 @@ fun <T> CoroutineScope.launchGoIResponse(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 fun <T> CoroutineScope.launchGoDeferred(
-    block: () -> Deferred<T>,
+    block: CoroutineScope.() -> Deferred<T>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
-
     launch {
+        withContext(Dispatchers.Main) {
+            mProgressDialog?.show()
+        }
+
+        //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
+        if (this !is Closeable) {
+            addHttpUtilsDisposable(tag)
+        }
+
         try {
             withContext(Dispatchers.IO) {
                 block().await()
@@ -241,11 +250,6 @@ fun <T> CoroutineScope.launchGoDeferred(
             }
         }
     }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
-    }
 }
 
 /**
@@ -259,16 +263,23 @@ fun <T> CoroutineScope.launchGoDeferred(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 fun <T> CoroutineScope.launchGoDeferredIResponse(
-    block: () -> Deferred<IResponse<T>>,
+    block: CoroutineScope.() -> Deferred<IResponse<T>>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
-
     launch {
+        withContext(Dispatchers.Main) {
+            mProgressDialog?.show()
+        }
+
+        //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
+        if (this !is Closeable) {
+            addHttpUtilsDisposable(tag)
+        }
+
         try {
             withContext(Dispatchers.IO) {
                 block().await().let {
@@ -292,11 +303,6 @@ fun <T> CoroutineScope.launchGoDeferredIResponse(
             }
         }
     }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
-    }
 }
 
 /**
@@ -315,7 +321,11 @@ suspend fun <T> Deferred<T>.deferredGo(
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
+    withContext(Dispatchers.Main) {
+        mProgressDialog?.show()
+    }
+
+    addHttpUtilsDisposable(tag)
 
     try {
         withContext(Dispatchers.IO) {
@@ -335,11 +345,6 @@ suspend fun <T> Deferred<T>.deferredGo(
             complete()
         }
     }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
-    }
 }
 
 /**
@@ -358,7 +363,11 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    mProgressDialog?.show()
+    withContext(Dispatchers.Main) {
+        mProgressDialog?.show()
+    }
+
+    addHttpUtilsDisposable(tag)
 
     try {
         withContext(Dispatchers.IO) {
@@ -381,10 +390,5 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
             mProgressDialog?.dismiss()
             complete()
         }
-    }
-
-    //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-    if (this !is Closeable) {
-        addHttpUtilsDisposable(tag)
     }
 }

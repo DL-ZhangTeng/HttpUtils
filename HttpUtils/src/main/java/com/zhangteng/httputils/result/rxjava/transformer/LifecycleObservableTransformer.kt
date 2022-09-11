@@ -3,7 +3,7 @@ package com.zhangteng.httputils.result.rxjava.transformer
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
-import com.zhangteng.utils.e
+import com.zhangteng.utils.i
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
 import io.reactivex.ObservableTransformer
@@ -51,7 +51,7 @@ open class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
                     try {
                         HttpUtils.instance.cancelSingleRequest(disposable!!)
                     } catch (e: IllegalStateException) {
-                        e.message.e("cancelSingleRequest")
+                        e.message.i("cancelSingleRequest")
                     } finally {
                         disposable = null
                     }
