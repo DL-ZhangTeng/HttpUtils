@@ -7,7 +7,8 @@ import com.zhangteng.httputils.fileload.download.DownloadRetrofit
 import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.utils.getFromSPToSet
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by swing on 2018/4/24.
@@ -74,32 +75,64 @@ class HttpUtils private constructor() {
      * @param any 1、可取消的对象 Disposable或者Job
      *            2、单个请求的标识（推荐使用Activity/Fragment.this）,多个请求可以使用同一个tag，取消请求时会同时取消。通过tag取消请求，tag可以通过CommonObserver/LifecycleObservableTransformer创建时传入
      */
+    @Throws(IllegalStateException::class)
     fun cancelSingleRequest(any: Any) {
-        if (any is Job) {//如果是Job直接取消
-            if (!any.isCancelled && disposables.containsKey(any)) {
-                any.cancel()
-                disposables.remove(any)
+        when (any) {
+            is Job -> {//如果是Job直接取消
+                if (!any.isCancelled && disposables.containsKey(any)) {
+                    disposables.remove(any)
+                    any.cancel(CancellationException(cancelMsg))
+                }
             }
-        } else if (any is Disposable) {//如果是Disposable直接取消
-            if (!any.isDisposed && disposables.containsKey(any)) {
-                any.dispose()
-                disposables.remove(any)
+            is CoroutineContext -> {//如果是CoroutineContext直接取消
+                if (any.isActive && disposables.containsKey(any)) {
+                    disposables.remove(any)
+                    any.cancel(CancellationException(cancelMsg))
+                }
             }
-        } else {//其它情况按照tag处理
-            val set: MutableSet<MutableMap.MutableEntry<Any, Any?>> = disposables.entries
-            val iterator = set.iterator()
-            while (iterator.hasNext()) {
-                val (disposable, value) = iterator.next()
-                if (disposable is Job) {//如果tag对应的可取消类型是Job
-                    if (any == value && !disposable.isCancelled) {
-                        disposable.cancel()
+            is CoroutineScope -> {//如果是CoroutineScope直接取消
+                if (any.isActive && disposables.containsKey(any)) {
+                    disposables.remove(any)
+                    any.cancel(CancellationException(cancelMsg))
+                }
+            }
+            is Disposable -> {//如果是Disposable直接取消
+                if (!any.isDisposed && disposables.containsKey(any)) {
+                    disposables.remove(any)
+                    any.dispose()
+                }
+            }
+            else -> {//其它情况按照tag处理
+                val set: MutableSet<MutableMap.MutableEntry<Any, Any?>> = disposables.entries
+                val iterator = set.iterator()
+                while (iterator.hasNext()) {
+                    val (disposable, value) = iterator.next()
+                    when (disposable) {
+                        is Job -> {//如果tag对应的可取消类型是Job
+                            iterator.remove()
+                            if (any == value && !disposable.isCancelled) {
+                                disposable.cancel(CancellationException(cancelMsg))
+                            }
+                        }
+                        is CoroutineContext -> {//如果tag对应的可取消类型是CoroutineContext
+                            iterator.remove()
+                            if (any == value && disposable.isActive) {
+                                disposable.cancel(CancellationException(cancelMsg))
+                            }
+                        }
+                        is CoroutineScope -> {//如果tag对应的可取消类型是CoroutineScope
+                            iterator.remove()
+                            if (any == value && disposable.isActive) {
+                                disposable.cancel(CancellationException(cancelMsg))
+                            }
+                        }
+                        is Disposable -> {//如果tag对应的可取消类型是Disposable
+                            iterator.remove()
+                            if (any == value && !disposable.isDisposed) {
+                                disposable.dispose()
+                            }
+                        }
                     }
-                    iterator.remove()
-                } else if (disposable is Disposable) {//如果tag对应的可取消类型是Disposable
-                    if (any == value && !disposable.isDisposed) {
-                        disposable.dispose()
-                    }
-                    iterator.remove()
                 }
             }
         }
@@ -108,10 +141,15 @@ class HttpUtils private constructor() {
     /**
      * description 清除所有请求
      */
+    @Throws(IllegalStateException::class)
     fun cancelAllRequest() {
         for (disposable in disposables.keys) {
             if (disposable is Job && !disposable.isCancelled) {//如果是Job直接取消
-                disposable.cancel()
+                disposable.cancel(CancellationException(cancelMsg))
+            } else if (disposable is CoroutineContext && disposable.isActive) {//如果是CoroutineContext直接取消
+                disposable.cancel(CancellationException(cancelMsg))
+            } else if (disposable is CoroutineScope && disposable.isActive) {//如果是CoroutineScope直接取消
+                disposable.cancel(CancellationException(cancelMsg))
             } else if (disposable is Disposable && !disposable.isDisposed) {//如果是Disposable直接取消
                 disposable.dispose()
             }
@@ -120,6 +158,8 @@ class HttpUtils private constructor() {
     }
 
     companion object {
+        private const val cancelMsg: String = "请求完成或组件生命周期结束后主动取消请求"
+
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             HttpUtils()
         }

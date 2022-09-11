@@ -4,6 +4,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
+import com.zhangteng.utils.e
 
 /**
  * @description: Http请求取消生命周期观察者
@@ -19,7 +20,11 @@ class HttpLifecycleEventObserver : LifecycleEventObserver {
         // 移除监听
         source.lifecycle.removeObserver(this)
         // 取消请求
-        HttpUtils.instance.cancelSingleRequest(source)
+        try {
+            HttpUtils.instance.cancelSingleRequest(source)
+        } catch (e: IllegalStateException) {
+            e.message.e("cancelSingleRequest")
+        }
     }
 
     companion object {

@@ -9,6 +9,7 @@ import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver.Companion.is
 import com.zhangteng.httputils.result.rxjava.observer.base.BaseObserver
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.e
 import com.zhangteng.utils.showShortToast
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -130,8 +131,13 @@ abstract class DownloadObserver(
         }
         if (disposable != null) {
             //主动取消并清理请求集合
-            HttpUtils.instance.cancelSingleRequest(disposable!!)
-            disposable = null
+            try {
+                HttpUtils.instance.cancelSingleRequest(disposable!!)
+            } catch (e: IllegalStateException) {
+                e.message.e("cancelSingleRequest")
+            } finally {
+                disposable = null
+            }
         }
         return false
     }
