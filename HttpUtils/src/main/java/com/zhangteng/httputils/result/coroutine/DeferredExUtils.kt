@@ -2,6 +2,7 @@ package com.zhangteng.httputils.result.coroutine
 
 import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.addHttpUtilsDisposable
+import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
@@ -51,6 +52,7 @@ suspend fun <T> launchGo(
         if (!isInterruptByLifecycle(tag)) {
             mProgressDialog?.dismiss()
             complete()
+            coroutineContext.cancelSingleRequest()
         }
     }
 }
@@ -99,6 +101,7 @@ suspend fun <T> launchGoIResponse(
         if (!isInterruptByLifecycle(tag)) {
             mProgressDialog?.dismiss()
             complete()
+            coroutineContext.cancelSingleRequest()
         }
     }
 }
@@ -143,6 +146,7 @@ suspend fun <T> launchGoDeferred(
         if (!isInterruptByLifecycle(tag)) {
             mProgressDialog?.dismiss()
             complete()
+            coroutineContext.cancelSingleRequest()
         }
     }
 }
@@ -191,6 +195,7 @@ suspend fun <T> launchGoDeferredIResponse(
         if (!isInterruptByLifecycle(tag)) {
             mProgressDialog?.dismiss()
             complete()
+            coroutineContext.cancelSingleRequest()
         }
     }
 }
@@ -233,6 +238,7 @@ suspend fun <T> Deferred<T>.deferredGo(
         if (!isInterruptByLifecycle(tag)) {
             mProgressDialog?.dismiss()
             complete()
+            coroutineContext.cancelSingleRequest()
         }
     }
 }
@@ -279,6 +285,7 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
         if (!isInterruptByLifecycle(tag)) {
             mProgressDialog?.dismiss()
             complete()
+            coroutineContext.cancelSingleRequest()
         }
     }
 }

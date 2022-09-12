@@ -65,7 +65,6 @@ abstract class DeferredObserver<T>(
             HttpUtils.instance.context.showShortToast(iException.message)
         }
         onFailure(iException)
-        disposable.cancelSingleRequest()
     }
 
     override fun doOnCompleted() {
@@ -79,6 +78,5 @@ abstract class DeferredObserver<T>(
     override fun doOnNext(t: T) {
         if (isInterruptByLifecycle(tag)) return
         onSuccess(t)
-        disposable.cancelSingleRequest()
     }
 }

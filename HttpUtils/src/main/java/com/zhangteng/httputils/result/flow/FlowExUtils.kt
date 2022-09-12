@@ -2,6 +2,7 @@ package com.zhangteng.httputils.result.flow
 
 import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.addHttpUtilsDisposable
+import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
@@ -38,11 +39,14 @@ suspend fun <T> launchGo(
             if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
             if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
                 error(IException.handleException(it))
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
@@ -80,11 +84,14 @@ suspend fun <T> launchGoIResponse(
             if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
             if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
                 error(IException.handleException(it))
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
@@ -130,11 +137,14 @@ suspend fun <T> launchGoFlow(
             if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
             if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
                 error(IException.handleException(it))
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
@@ -177,11 +187,14 @@ suspend fun <T> launchGoFlowIResponse(
             if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
             if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
                 error(IException.handleException(it))
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
@@ -221,11 +234,14 @@ suspend fun <T> Flow<T>.flowGo(
             if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
             if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
                 error(IException.handleException(it))
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
@@ -262,11 +278,14 @@ suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
             if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
             if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
                 error(IException.handleException(it))
+                currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)

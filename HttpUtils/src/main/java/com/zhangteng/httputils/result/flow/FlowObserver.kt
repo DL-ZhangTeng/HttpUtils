@@ -78,6 +78,5 @@ abstract class FlowObserver<T>(
     override fun doOnNext(t: T) {
         if (isInterruptByLifecycle(tag)) return
         onSuccess(t)
-        disposable.cancelSingleRequest()
     }
 }
