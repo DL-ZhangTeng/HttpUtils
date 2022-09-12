@@ -23,9 +23,6 @@ open class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
     constructor()
     constructor(tag: Any?) {
         this.tag = tag
-        if (tag is LifecycleOwner) {
-            HttpLifecycleEventObserver.bind(tag)
-        }
     }
 
     override fun apply(upstream: Observable<T>): ObservableSource<T> {
@@ -37,6 +34,9 @@ open class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
                     HttpUtils.instance.addDisposable(d)
                 } else {
                     HttpUtils.instance.addDisposable(d, tag)
+                }
+                if (tag is LifecycleOwner) {
+                    HttpLifecycleEventObserver.bind(tag as LifecycleOwner)
                 }
             }
             .subscribeOn(AndroidSchedulers.mainThread())

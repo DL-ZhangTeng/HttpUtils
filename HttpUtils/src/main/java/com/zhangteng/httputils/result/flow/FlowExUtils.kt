@@ -63,7 +63,7 @@ suspend fun <T> launchGo(
  */
 suspend fun <T> launchGoIResponse(
     block: suspend () -> IResponse<T>,
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -91,7 +91,7 @@ suspend fun <T> launchGoIResponse(
         .collect {
             if (!isInterruptByLifecycle(tag)) {
                 if (it.isSuccess()) {
-                    success(it.getResult())
+                    success(it)
                 } else {
                     error(IException.handleException(IException(it.getMsg(), it.getCode())))
                 }
@@ -157,7 +157,7 @@ suspend fun <T> launchGoFlow(
  */
 suspend fun <T> launchGoFlowIResponse(
     block: () -> Flow<IResponse<T>>,
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -188,7 +188,7 @@ suspend fun <T> launchGoFlowIResponse(
         .collect {
             if (!isInterruptByLifecycle(tag)) {
                 if (it.isSuccess()) {
-                    success(it.getResult())
+                    success(it)
                 } else {
                     error(IException.handleException(IException(it.getMsg(), it.getCode())))
                 }
@@ -246,7 +246,7 @@ suspend fun <T> Flow<T>.flowGo(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -273,10 +273,65 @@ suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
         .collect {
             if (!isInterruptByLifecycle(tag)) {
                 if (it.isSuccess()) {
-                    success(it.getResult())
+                    success(it)
                 } else {
                     error(IException.handleException(IException(it.getMsg(), it.getCode())))
                 }
+            }
+        }
+}
+
+/**
+ * 无请求结果
+ * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
+ * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
+ */
+suspend fun <T> Flow<T>.flowGo(observer: FlowObserver<T>) {
+    flowOn(Dispatchers.IO)
+        .onStart {
+            observer.doOnSubscribe(currentCoroutineContext())
+        }
+        .onCompletion {
+            observer.doOnCompleted()
+        }
+        .catch {
+            observer.doOnError(IException.handleException(it))
+        }
+        .flowOn(Dispatchers.Main)
+        .collect {
+            observer.doOnNext(it)
+        }
+}
+
+/**
+ * 过滤IResponse.isSuccess()结果，其他全抛异常
+ * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
+ * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
+ */
+suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(observer: FlowObserver<IResponse<T>>) {
+    flowOn(Dispatchers.IO)
+        .onStart {
+            observer.doOnSubscribe(currentCoroutineContext())
+        }
+        .onCompletion {
+            observer.doOnCompleted()
+        }
+        .catch {
+            observer.doOnError(IException.handleException(it))
+        }
+        .flowOn(Dispatchers.Main)
+        .collect {
+            if (it.isSuccess()) {
+                observer.doOnNext(it)
+            } else {
+                observer.doOnError(
+                    IException.handleException(
+                        IException(
+                            it.getMsg(),
+                            it.getCode()
+                        )
+                    )
+                )
             }
         }
 }

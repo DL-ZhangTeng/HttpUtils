@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.result.rxjava.observer
+package com.zhangteng.httputils.result.flow
 
 import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
@@ -6,19 +6,25 @@ import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
-import com.zhangteng.httputils.result.rxjava.observer.base.BaseObserver
+import com.zhangteng.httputils.result.flow.interfaces.IFlowObserver
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.showShortToast
-import io.reactivex.disposables.Disposable
+import kotlin.coroutines.CoroutineContext
 
 /**
- * Created by swing on 2018/4/24.
+ * description: Flow回调接口
+ * author: Swing
+ * date: 2022/9/12
  */
-abstract class CommonObserver<T : Any>(
+abstract class FlowObserver<T>(
     private var mProgressDialog: Dialog? = null,
     private var tag: Any? = null
-) : BaseObserver<T>() {
-    private var disposable: Disposable? = null
+) : IFlowObserver<T> {
+    private var disposable: CoroutineContext? = null
+
+    protected open fun isHideToast(): Boolean {
+        return false
+    }
 
     /**
      * 失败回调
@@ -34,7 +40,7 @@ abstract class CommonObserver<T : Any>(
      */
     protected abstract fun onSuccess(t: T)
 
-    override fun doOnSubscribe(d: Disposable) {
+    override fun doOnSubscribe(d: CoroutineContext) {
         disposable = d
         if (tag == null) {
             HttpUtils.instance.addDisposable(d)

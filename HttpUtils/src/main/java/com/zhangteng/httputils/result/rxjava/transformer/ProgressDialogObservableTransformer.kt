@@ -24,7 +24,7 @@ class ProgressDialogObservableTransformer<T> : ObservableTransformer<T, T> {
         return upstream
             .subscribeOn(Schedulers.io())
             .doOnSubscribe {
-                if (mProgressDialog != null) {
+                if (mProgressDialog != null && !mProgressDialog!!.isShowing) {
                     mProgressDialog!!.show()
                 }
             }

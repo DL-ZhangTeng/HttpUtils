@@ -67,7 +67,7 @@ suspend fun <T> launchGo(
  */
 suspend fun <T> launchGoIResponse(
     block: suspend () -> IResponse<T>,
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -82,7 +82,7 @@ suspend fun <T> launchGoIResponse(
     try {
         withContext(Dispatchers.IO) {
             block().let {
-                if (it.isSuccess()) it.getResult()
+                if (it.isSuccess()) it
                 else
                     throw IException(it.getMsg(), it.getCode())
             }
@@ -159,7 +159,7 @@ suspend fun <T> launchGoDeferred(
  */
 suspend fun <T> launchGoDeferredIResponse(
     block: CoroutineScope.() -> Deferred<IResponse<T>>,
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -174,7 +174,7 @@ suspend fun <T> launchGoDeferredIResponse(
     try {
         withContext(Dispatchers.IO) {
             block().await().let {
-                if (it.isSuccess()) it.getResult()
+                if (it.isSuccess()) it
                 else
                     throw IException(it.getMsg(), it.getCode())
             }
@@ -247,7 +247,7 @@ suspend fun <T> Deferred<T>.deferredGo(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
-    success: (T) -> Unit,
+    success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -262,7 +262,7 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
     try {
         withContext(Dispatchers.IO) {
             await().let {
-                if (it.isSuccess()) it.getResult()
+                if (it.isSuccess()) it
                 else
                     throw IException(it.getMsg(), it.getCode())
             }
@@ -280,5 +280,55 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
             mProgressDialog?.dismiss()
             complete()
         }
+    }
+}
+
+/**
+ * 不过滤请求结果
+ * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
+ * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
+ */
+suspend fun <T> Deferred<T>.deferredGo(observer: DeferredObserver<T>) {
+    withContext(Dispatchers.Main) {
+        observer.doOnSubscribe(this@deferredGo)
+    }
+
+    try {
+        withContext(Dispatchers.IO) {
+            await()
+        }.also {
+            observer.doOnNext(it)
+        }
+    } catch (e: Throwable) {
+        observer.doOnError(IException.handleException(e))
+    } finally {
+        observer.doOnCompleted()
+    }
+}
+
+/**
+ * 过滤请求结果，其他全抛异常
+ * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
+ * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
+ */
+suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(observer: DeferredObserver<IResponse<T>>) {
+    withContext(Dispatchers.Main) {
+        observer.doOnSubscribe(this@deferredGoIResponse)
+    }
+
+    try {
+        withContext(Dispatchers.IO) {
+            await().let {
+                if (it.isSuccess()) it
+                else
+                    throw IException(it.getMsg(), it.getCode())
+            }
+        }.also {
+            observer.doOnNext(it)
+        }
+    } catch (e: Throwable) {
+        observer.doOnError(IException.handleException(e))
+    } finally {
+        observer.doOnCompleted()
     }
 }

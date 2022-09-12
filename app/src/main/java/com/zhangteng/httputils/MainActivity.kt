@@ -12,12 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.zhangteng.httputils.http.Api
 import com.zhangteng.httputils.http.HttpUtils
+import com.zhangteng.httputils.http.entity.HomeListBean
+import com.zhangteng.httputils.result.coroutine.DeferredObserver
 import com.zhangteng.httputils.result.coroutine.deferredGoIResponse
-import com.zhangteng.httputils.result.coroutine.launchGo
-import com.zhangteng.httputils.result.coroutine.launchGoDeferredIResponse
-import com.zhangteng.httputils.result.coroutine.launchGoIResponse
-import com.zhangteng.httputils.result.flow.flowGoIResponse
-import com.zhangteng.httputils.result.flow.launchGoFlowIResponse
+import com.zhangteng.utils.IException
+import com.zhangteng.utils.IResponse
 import com.zhangteng.utils.StateViewHelper
 import com.zhangteng.utils.e
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -47,139 +46,145 @@ class MainActivity : AppCompatActivity() {
         mProgressDialog?.setCancelable(true)
         mProgressDialog?.setCanceledOnTouchOutside(false)
 
-        GlobalScope.launch {
-            launchGo({
-                HttpUtils.instance.ConfigGlobalHttpUtils()
-                    .createService(Api::class.java)
-                    .getHomeList(0)
-            }, {
-                Gson().toJson(it).e("launchGo")
-            }, {
-                Gson().toJson(it).e("launchGo")
-            }, {
-
-            },
-                mProgressDialog,
-                this@MainActivity
-            )
-        }
-
-        GlobalScope.launch {
-            launchGoIResponse({
-                HttpUtils.instance.ConfigGlobalHttpUtils()
-                    .createService(Api::class.java)
-                    .getHomeList(0)
-            }, {
-                Gson().toJson(it).e("launchGoIResponse")
-            }, {
-                Gson().toJson(it).e("launchGoIResponse")
-            }, {
-
-            },
-                mProgressDialog,
-                this@MainActivity
-            )
-        }
-
-        GlobalScope.launch {
-            launchGo({
-                HttpUtils.instance.ConfigGlobalHttpUtils()
-                    .createService(Api::class.java)
-                    .getHomeList(0)
-            }, {
-                Gson().toJson(it).e("launchGo")
-            }, {
-                Gson().toJson(it).e("launchGo")
-            }, {
-
-            },
-                mProgressDialog,
-                this@MainActivity
-            )
-        }
-
-        GlobalScope.launch {
-            launchGoIResponse({
-                HttpUtils.instance.ConfigGlobalHttpUtils()
-                    .createService(Api::class.java)
-                    .getHomeList(0)
-            }, {
-                Gson().toJson(it).e("launchGoIResponse")
-            }, {
-                Gson().toJson(it).e("launchGoIResponse")
-            }, {
-
-            },
-                mProgressDialog,
-                this@MainActivity
-            )
-        }
-
-        GlobalScope.launch {
-            launchGoFlowIResponse({
-                HttpUtils.instance.ConfigGlobalHttpUtils()
-                    .createService(Api::class.java)
-                    .getHomeListByFlow(0)
-            }, {
-                Gson().toJson(it).e("launchGoFlowIResponse")
-            }, {
-                Gson().toJson(it).e("launchGoFlowIResponse")
-            }, {
-
-            },
-                mProgressDialog,
-                this@MainActivity
-            )
-        }
-
-        GlobalScope.launch {
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeListByFlow(0)
-                .flowGoIResponse({
-                    Gson().toJson(it).e("flowGoIResponse")
-                }, {
-                    Gson().toJson(it).e("flowGoIResponse")
-                }, {
-
-                },
-                    mProgressDialog,
-                    this@MainActivity
-                )
-        }
-
-        GlobalScope.launch {
-            launchGoDeferredIResponse({
-                HttpUtils.instance.ConfigGlobalHttpUtils()
-                    .createService(Api::class.java)
-                    .getHomeListByDeferred(0)
-            }, {
-                Gson().toJson(it).e("launchGoDeferredIResponse")
-            }, {
-                Gson().toJson(it).e("launchGoDeferredIResponse")
-            }, {
-
-            },
-                mProgressDialog,
-                this@MainActivity
-            )
-        }
-
-        GlobalScope.launch {
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeListByDeferred(0)
-                .deferredGoIResponse({
-                    Gson().toJson(it).e("deferredGoIResponse")
-                }, {
-                    Gson().toJson(it).e("deferredGoIResponse")
-                }, {
-
-                },
-                    mProgressDialog,
-                    this@MainActivity
-                )
-        }
+//        GlobalScope.launch {
+//            launchGo({
+//                HttpUtils.instance.ConfigGlobalHttpUtils()
+//                    .createService(Api::class.java)
+//                    .getHomeList(0)
+//            }, {
+//                Gson().toJson(it).e("launchGo")
+//            }, {
+//                Gson().toJson(it).e("launchGo")
+//            }, {
+//
+//            },
+//                mProgressDialog,
+//                this@MainActivity
+//            )
+//        }
+//
+//        GlobalScope.launch {
+//            launchGoIResponse({
+//                HttpUtils.instance.ConfigGlobalHttpUtils()
+//                    .createService(Api::class.java)
+//                    .getHomeList(0)
+//            }, {
+//                Gson().toJson(it).e("launchGoIResponse")
+//            }, {
+//                Gson().toJson(it).e("launchGoIResponse")
+//            }, {
+//
+//            },
+//                mProgressDialog,
+//                this@MainActivity
+//            )
+//        }
+//
+//        GlobalScope.launch {
+//            launchGoFlowIResponse({
+//                HttpUtils.instance.ConfigGlobalHttpUtils()
+//                    .createService(Api::class.java)
+//                    .getHomeListByFlow(0)
+//            }, {
+//                Gson().toJson(it).e("launchGoFlowIResponse")
+//            }, {
+//                Gson().toJson(it).e("launchGoFlowIResponse")
+//            }, {
+//
+//            },
+//                mProgressDialog,
+//                this@MainActivity
+//            )
+//        }
+//
+//        GlobalScope.launch {
+//            HttpUtils.instance.ConfigGlobalHttpUtils()
+//                .createService(Api::class.java)
+//                .getHomeListByFlow(0)
+//                .flowGoIResponse({
+//                    Gson().toJson(it).e("flowGoIResponse")
+//                }, {
+//                    Gson().toJson(it).e("flowGoIResponse")
+//                }, {
+//
+//                },
+//                    mProgressDialog,
+//                    this@MainActivity
+//                )
+//        }
+//
+//        GlobalScope.launch {
+//            HttpUtils.instance.ConfigGlobalHttpUtils()
+//                .createService(Api::class.java)
+//                .getHomeListByFlow(0)
+//                .flowGoIResponse(object :
+//                    FlowObserver<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
+//                    override fun isHideToast(): Boolean {
+//                        return true
+//                    }
+//
+//                    override fun onFailure(iException: IException?) {
+//                        Gson().toJson(iException).e("flowGoIResponse")
+//                    }
+//
+//                    override fun onSuccess(t: IResponse<HomeListBean>) {
+//                        Gson().toJson(t).e("flowGoIResponse")
+//                    }
+//                })
+//        }
+//
+//        GlobalScope.launch {
+//            launchGoDeferredIResponse({
+//                HttpUtils.instance.ConfigGlobalHttpUtils()
+//                    .createService(Api::class.java)
+//                    .getHomeListByDeferred(0)
+//            }, {
+//                Gson().toJson(it).e("launchGoDeferredIResponse")
+//            }, {
+//                Gson().toJson(it).e("launchGoDeferredIResponse")
+//            }, {
+//
+//            },
+//                mProgressDialog,
+//                this@MainActivity
+//            )
+//        }
+//
+//        GlobalScope.launch {
+//            HttpUtils.instance.ConfigGlobalHttpUtils()
+//                .createService(Api::class.java)
+//                .getHomeListByDeferred(0)
+//                .deferredGoIResponse({
+//                    Gson().toJson(it).e("deferredGoIResponse")
+//                }, {
+//                    Gson().toJson(it).e("deferredGoIResponse")
+//                }, {
+//
+//                },
+//                    mProgressDialog,
+//                    this@MainActivity
+//                )
+//        }
+//
+//        GlobalScope.launch {
+//            HttpUtils.instance.ConfigGlobalHttpUtils()
+//                .createService(Api::class.java)
+//                .getHomeListByDeferred(0)
+//                .deferredGoIResponse(object :
+//                    DeferredObserver<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
+//                    override fun isHideToast(): Boolean {
+//                        return true
+//                    }
+//
+//                    override fun onFailure(iException: IException?) {
+//                        Gson().toJson(iException).e("flowGoIResponse")
+//                    }
+//
+//                    override fun onSuccess(t: IResponse<HomeListBean>) {
+//                        Gson().toJson(t).e("flowGoIResponse")
+//                    }
+//                })
+//        }
     }
 
     override fun onDestroy() {
