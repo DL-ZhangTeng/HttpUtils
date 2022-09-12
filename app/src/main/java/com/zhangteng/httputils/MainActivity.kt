@@ -47,130 +47,143 @@ class MainActivity : AppCompatActivity() {
         mProgressDialog?.setCancelable(true)
         mProgressDialog?.setCanceledOnTouchOutside(false)
 
-//        GlobalScope.launchGo({
-//            HttpUtils.instance.ConfigGlobalHttpUtils()
-//                .createService(Api::class.java)
-//                .getHomeList(0)
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//
-//        },
-//            mProgressDialog,
-//            this@MainActivity
-//        )
+        GlobalScope.launch {
+            launchGo({
+                HttpUtils.instance.ConfigGlobalHttpUtils()
+                    .createService(Api::class.java)
+                    .getHomeList(0)
+            }, {
+                Gson().toJson(it).e("launchGo")
+            }, {
+                Gson().toJson(it).e("launchGo")
+            }, {
 
-//        GlobalScope.launchGoIResponse({
-//            HttpUtils.instance.ConfigGlobalHttpUtils()
-//                .createService(Api::class.java)
-//                .getHomeList(0)
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//
-//        },
-//            mProgressDialog,
-//            this@MainActivity
-//        )
+            },
+                mProgressDialog,
+                this@MainActivity
+            )
+        }
 
-//        GlobalScope.launch {
-//            coroutineContext.launchGo({
-//                HttpUtils.instance.ConfigGlobalHttpUtils()
-//                    .createService(Api::class.java)
-//                    .getHomeList(0)
-//            }, {
-//                Gson().toJson(it).e()
-//            }, {
-//                Gson().toJson(it).e()
-//            }, {
-//
-//            },
-//                mProgressDialog,
-//                this@MainActivity
-//            )
-//        }
+        GlobalScope.launch {
+            launchGoIResponse({
+                HttpUtils.instance.ConfigGlobalHttpUtils()
+                    .createService(Api::class.java)
+                    .getHomeList(0)
+            }, {
+                Gson().toJson(it).e("launchGoIResponse")
+            }, {
+                Gson().toJson(it).e("launchGoIResponse")
+            }, {
 
-//        GlobalScope.launch {
-//            coroutineContext.launchGoIResponse({
-//                HttpUtils.instance.ConfigGlobalHttpUtils()
-//                    .createService(Api::class.java)
-//                    .getHomeList(0)
-//            }, {
-//                Gson().toJson(it).e()
-//            }, {
-//                Gson().toJson(it).e()
-//            }, {
-//
-//            },
-//                mProgressDialog,
-//                this@MainActivity
-//            )
-//        }
+            },
+                mProgressDialog,
+                this@MainActivity
+            )
+        }
 
-//        GlobalScope.launchGoFlowIResponse({
-//            HttpUtils.instance.ConfigGlobalHttpUtils()
-//                .createService(Api::class.java)
-//                .getHomeListByFlow(0)
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//
-//        },
-//            mProgressDialog,
-//            this@MainActivity
-//        )
+        GlobalScope.launch {
+            launchGo({
+                HttpUtils.instance.ConfigGlobalHttpUtils()
+                    .createService(Api::class.java)
+                    .getHomeList(0)
+            }, {
+                Gson().toJson(it).e("launchGo")
+            }, {
+                Gson().toJson(it).e("launchGo")
+            }, {
 
-//        GlobalScope.launch {
-//            HttpUtils.instance.ConfigGlobalHttpUtils()
-//                .createService(Api::class.java)
-//                .getHomeListByFlow(0)
-//                .flowGoIResponse({
-//                    Gson().toJson(it).e()
-//                }, {
-//                    Gson().toJson(it).e()
-//                }, {
-//
-//                },
-//                    mProgressDialog,
-//                    this@MainActivity
-//                )
-//        }
+            },
+                mProgressDialog,
+                this@MainActivity
+            )
+        }
 
-//        GlobalScope.launchGoDeferredIResponse({
-//            HttpUtils.instance.ConfigGlobalHttpUtils()
-//                .createService(Api::class.java)
-//                .getHomeListByDeferred(0)
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//            Gson().toJson(it).e()
-//        }, {
-//
-//        },
-//            mProgressDialog,
-//            this@MainActivity
-//        )
+        GlobalScope.launch {
+            launchGoIResponse({
+                HttpUtils.instance.ConfigGlobalHttpUtils()
+                    .createService(Api::class.java)
+                    .getHomeList(0)
+            }, {
+                Gson().toJson(it).e("launchGoIResponse")
+            }, {
+                Gson().toJson(it).e("launchGoIResponse")
+            }, {
 
-//        GlobalScope.launch {
-//            HttpUtils.instance.ConfigGlobalHttpUtils()
-//                .createService(Api::class.java)
-//                .getHomeListByDeferred(0)
-//                .deferredGoIResponse({
-//                    Gson().toJson(it).e()
-//                }, {
-//                    Gson().toJson(it).e()
-//                }, {
-//
-//                },
-//                    mProgressDialog,
-//                    this@MainActivity
-//                )
-//        }
+            },
+                mProgressDialog,
+                this@MainActivity
+            )
+        }
+
+        GlobalScope.launch {
+            launchGoFlowIResponse({
+                HttpUtils.instance.ConfigGlobalHttpUtils()
+                    .createService(Api::class.java)
+                    .getHomeListByFlow(0)
+            }, {
+                Gson().toJson(it).e("launchGoFlowIResponse")
+            }, {
+                Gson().toJson(it).e("launchGoFlowIResponse")
+            }, {
+
+            },
+                mProgressDialog,
+                this@MainActivity
+            )
+        }
+
+        GlobalScope.launch {
+            HttpUtils.instance.ConfigGlobalHttpUtils()
+                .createService(Api::class.java)
+                .getHomeListByFlow(0)
+                .flowGoIResponse({
+                    Gson().toJson(it).e("flowGoIResponse")
+                }, {
+                    Gson().toJson(it).e("flowGoIResponse")
+                }, {
+
+                },
+                    mProgressDialog,
+                    this@MainActivity
+                )
+        }
+
+        GlobalScope.launch {
+            launchGoDeferredIResponse({
+                HttpUtils.instance.ConfigGlobalHttpUtils()
+                    .createService(Api::class.java)
+                    .getHomeListByDeferred(0)
+            }, {
+                Gson().toJson(it).e("launchGoDeferredIResponse")
+            }, {
+                Gson().toJson(it).e("launchGoDeferredIResponse")
+            }, {
+
+            },
+                mProgressDialog,
+                this@MainActivity
+            )
+        }
+
+        GlobalScope.launch {
+            HttpUtils.instance.ConfigGlobalHttpUtils()
+                .createService(Api::class.java)
+                .getHomeListByDeferred(0)
+                .deferredGoIResponse({
+                    Gson().toJson(it).e("deferredGoIResponse")
+                }, {
+                    Gson().toJson(it).e("deferredGoIResponse")
+                }, {
+
+                },
+                    mProgressDialog,
+                    this@MainActivity
+                )
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        HttpUtils.instance.cancelAllRequest()
     }
 }

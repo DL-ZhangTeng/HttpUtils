@@ -5,13 +5,10 @@ import com.zhangteng.httputils.lifecycle.addHttpUtilsDisposable
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import java.io.Closeable
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 
 /**
  * 无请求结果
@@ -22,7 +19,7 @@ import kotlin.coroutines.coroutineContext
  * @param mProgressDialog 显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-suspend fun <T> CoroutineContext.launchGo(
+suspend fun <T> launchGo(
     block: suspend () -> T,
     success: (T) -> Unit,
     error: (IException) -> Unit,
@@ -35,16 +32,16 @@ suspend fun <T> CoroutineContext.launchGo(
         .onStart {
             mProgressDialog?.show()
 
-            this@launchGo.addHttpUtilsDisposable(tag)
+            currentCoroutineContext().addHttpUtilsDisposable(tag)
         }
         .onCompletion {
-            if (!this@launchGo.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
             }
         }
         .catch {
-            if (!this@launchGo.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 error(IException.handleException(it))
             }
         }
@@ -64,9 +61,9 @@ suspend fun <T> CoroutineContext.launchGo(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-suspend fun <T> CoroutineContext.launchGoIResponse(
+suspend fun <T> launchGoIResponse(
     block: suspend () -> IResponse<T>,
-    success: (IResponse<T>) -> Unit,
+    success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -77,24 +74,24 @@ suspend fun <T> CoroutineContext.launchGoIResponse(
         .onStart {
             mProgressDialog?.show()
 
-            this@launchGoIResponse.addHttpUtilsDisposable(tag)
+            currentCoroutineContext().addHttpUtilsDisposable(tag)
         }
         .onCompletion {
-            if (!this@launchGoIResponse.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
             }
         }
         .catch {
-            if (!this@launchGoIResponse.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 error(IException.handleException(it))
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!this@launchGoIResponse.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 if (it.isSuccess()) {
-                    success(it)
+                    success(it.getResult())
                 } else {
                     error(IException.handleException(IException(it.getMsg(), it.getCode())))
                 }
@@ -111,42 +108,41 @@ suspend fun <T> CoroutineContext.launchGoIResponse(
  * @param mProgressDialog 显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchGo(
-    block: suspend CoroutineScope.() -> T,
+suspend fun <T> launchGoFlow(
+    block: () -> Flow<T>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    launch {
-        flow { emit(block()) }
-            .flowOn(Dispatchers.IO)
-            .onStart {
-                mProgressDialog?.show()
+    block()
+        .flowOn(Dispatchers.IO)
+        .onStart {
+            mProgressDialog?.show()
 
-                //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-                if (this !is Closeable) {
-                    this@launchGo.addHttpUtilsDisposable(tag)
-                }
+            //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
+            if (this !is Closeable) {
+                currentCoroutineContext().addHttpUtilsDisposable(tag)
             }
-            .onCompletion {
-                if (!this@launchGo.isInterruptByLifecycle(tag)) {
-                    mProgressDialog?.dismiss()
-                    complete()
-                }
+        }
+        .onCompletion {
+            if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
+                complete()
             }
-            .catch {
-                if (!this@launchGo.isInterruptByLifecycle(tag)) {
-                    error(IException.handleException(it))
-                }
+        }
+        .catch {
+            if (!isInterruptByLifecycle(tag)) {
+                error(IException.handleException(it))
             }
-            .flowOn(Dispatchers.Main)
-            .collect {
+        }
+        .flowOn(Dispatchers.Main)
+        .collect {
+            if (!isInterruptByLifecycle(tag)) {
                 success(it)
             }
-
-    }
+        }
 }
 
 /**
@@ -159,148 +155,45 @@ fun <T> CoroutineScope.launchGo(
  * @param mProgressDialog 是否显示加载框
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
-fun <T> CoroutineScope.launchGoIResponse(
-    block: suspend CoroutineScope.() -> IResponse<T>,
-    success: (IResponse<T>) -> Unit,
-    error: (IException) -> Unit,
-    complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) {
-    launch {
-        flow { emit(block()) }
-            .flowOn(Dispatchers.IO)
-            .onStart {
-                mProgressDialog?.show()
-
-                //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-                if (this !is Closeable) {
-                    this@launchGoIResponse.addHttpUtilsDisposable(tag)
-                }
-            }
-            .onCompletion {
-                if (!this@launchGoIResponse.isInterruptByLifecycle(tag)) {
-                    mProgressDialog?.dismiss()
-                    complete()
-                }
-            }
-            .catch {
-                if (!this@launchGoIResponse.isInterruptByLifecycle(tag)) {
-                    error(IException.handleException(it))
-                }
-            }
-            .flowOn(Dispatchers.Main)
-            .collect {
-                if (!this@launchGoIResponse.isInterruptByLifecycle(tag)) {
-                    if (it.isSuccess()) {
-                        success(it)
-                    } else {
-                        error(IException.handleException(IException(it.getMsg(), it.getCode())))
-                    }
-                }
-            }
-    }
-}
-
-/**
- * 无请求结果
- * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
- * @param block 请求体
- * @param error 失败回调
- * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
- */
-fun <T> CoroutineScope.launchGoFlow(
-    block: CoroutineScope.() -> Flow<T>,
+suspend fun <T> launchGoFlowIResponse(
+    block: () -> Flow<IResponse<T>>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
     tag: Any? = null
 ) {
-    launch {
-        block()
-            .flowOn(Dispatchers.IO)
-            .onStart {
-                mProgressDialog?.show()
+    block()
+        .flowOn(Dispatchers.IO)
+        .onStart {
+            mProgressDialog?.show()
 
-                //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-                if (this !is Closeable) {
-                    this@launchGoFlow.addHttpUtilsDisposable(tag)
+            //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
+            if (this !is Closeable) {
+                currentCoroutineContext().addHttpUtilsDisposable(tag)
+            }
+        }
+        .onCompletion {
+            if (!isInterruptByLifecycle(tag)) {
+                mProgressDialog?.dismiss()
+                complete()
+            }
+        }
+        .catch {
+            if (!isInterruptByLifecycle(tag)) {
+                error(IException.handleException(it))
+            }
+        }
+        .flowOn(Dispatchers.Main)
+        .collect {
+            if (!isInterruptByLifecycle(tag)) {
+                if (it.isSuccess()) {
+                    success(it.getResult())
+                } else {
+                    error(IException.handleException(IException(it.getMsg(), it.getCode())))
                 }
             }
-            .onCompletion {
-                if (!this@launchGoFlow.isInterruptByLifecycle(tag)) {
-                    mProgressDialog?.dismiss()
-                    complete()
-                }
-            }
-            .catch {
-                if (!this@launchGoFlow.isInterruptByLifecycle(tag)) {
-                    error(IException.handleException(it))
-                }
-            }
-            .flowOn(Dispatchers.Main)
-            .collect {
-                if (!this@launchGoFlow.isInterruptByLifecycle(tag)) {
-                    success(it)
-                }
-            }
-    }
-}
-
-/**
- * 过滤IResponse.isSuccess()结果，其他全抛异常
- * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
- * @param block 请求体
- * @param success 成功回调
- * @param error 失败回调
- * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 是否显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
- */
-fun <T> CoroutineScope.launchGoFlowIResponse(
-    block: CoroutineScope.() -> Flow<IResponse<T>>,
-    success: (IResponse<T>) -> Unit,
-    error: (IException) -> Unit,
-    complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) {
-    launch {
-        block()
-            .flowOn(Dispatchers.IO)
-            .onStart {
-                mProgressDialog?.show()
-
-                //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
-                if (this !is Closeable) {
-                    this@launchGoFlowIResponse.addHttpUtilsDisposable(tag)
-                }
-            }
-            .onCompletion {
-                if (!this@launchGoFlowIResponse.isInterruptByLifecycle(tag)) {
-                    mProgressDialog?.dismiss()
-                    complete()
-                }
-            }
-            .catch {
-                if (!this@launchGoFlowIResponse.isInterruptByLifecycle(tag)) {
-                    error(IException.handleException(it))
-                }
-            }
-            .flowOn(Dispatchers.Main)
-            .collect {
-                if (!this@launchGoFlowIResponse.isInterruptByLifecycle(tag)) {
-                    if (it.isSuccess()) {
-                        success(it)
-                    } else {
-                        error(IException.handleException(IException(it.getMsg(), it.getCode())))
-                    }
-                }
-            }
-    }
+        }
 }
 
 /**
@@ -322,22 +215,22 @@ suspend fun <T> Flow<T>.flowGo(
         .onStart {
             mProgressDialog?.show()
 
-            kotlin.coroutines.coroutineContext.addHttpUtilsDisposable(tag)
+            currentCoroutineContext().addHttpUtilsDisposable(tag)
         }
         .onCompletion {
-            if (!kotlin.coroutines.coroutineContext.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
             }
         }
         .catch {
-            if (!kotlin.coroutines.coroutineContext.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 error(IException.handleException(it))
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!coroutineContext.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 success(it)
             }
         }
@@ -353,7 +246,7 @@ suspend fun <T> Flow<T>.flowGo(
  * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
-    success: (IResponse<T>) -> Unit,
+    success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
     mProgressDialog: Dialog? = null,
@@ -363,24 +256,24 @@ suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
         .onStart {
             mProgressDialog?.show()
 
-            kotlin.coroutines.coroutineContext.addHttpUtilsDisposable(tag)
+            currentCoroutineContext().addHttpUtilsDisposable(tag)
         }
         .onCompletion {
-            if (!kotlin.coroutines.coroutineContext.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 mProgressDialog?.dismiss()
                 complete()
             }
         }
         .catch {
-            if (!kotlin.coroutines.coroutineContext.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 error(IException.handleException(it))
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!coroutineContext.isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(tag)) {
                 if (it.isSuccess()) {
-                    success(it)
+                    success(it.getResult())
                 } else {
                     error(IException.handleException(IException(it.getMsg(), it.getCode())))
                 }
