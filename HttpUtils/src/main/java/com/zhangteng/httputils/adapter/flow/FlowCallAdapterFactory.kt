@@ -11,7 +11,7 @@ import java.lang.reflect.Type
  * @GET("/user")
  * fun getUser(): Flow<User>
  */
-class FlowCallAdapterFactory private constructor(private val async: Boolean) :
+class FlowCallAdapterFactory private constructor(private val isAsync: Boolean) :
     CallAdapter.Factory() {
     override fun get(
         returnType: Type,
@@ -32,26 +32,14 @@ class FlowCallAdapterFactory private constructor(private val async: Boolean) :
                 throw IllegalStateException("the response type must be parameterized as Response<Foo>!")
             }
             val responseBodyType = getParameterUpperBound(0, flowableType)
-            createResponseFlowCallAdapter(async, responseBodyType)
+            ResponseFlowCallAdapter(isAsync, responseBodyType)
         } else {
-            createBodyFlowCallAdapter(async, flowableType)
+            BodyFlowCallAdapter(isAsync, returnType)
         }
     }
 
     companion object {
         @JvmStatic
-        fun create(async: Boolean = false) = FlowCallAdapterFactory(async)
+        fun create(isAsync: Boolean = false) = FlowCallAdapterFactory(isAsync)
     }
 }
-
-private fun createResponseFlowCallAdapter(async: Boolean, responseBodyType: Type) =
-    if (async)
-        AsyncResponseFlowCallAdapter(responseBodyType)
-    else
-        ResponseFlowCallAdapter(responseBodyType)
-
-private fun createBodyFlowCallAdapter(async: Boolean, responseBodyType: Type) =
-    if (async)
-        AsyncBodyFlowCallAdapter(responseBodyType)
-    else
-        BodyFlowCallAdapter(responseBodyType)

@@ -44,7 +44,7 @@ class GlobalHttpUtils private constructor() {
     /**
      * description: 全局retrofitBuilder，保证使用一个网络实例
      */
-    val retrofitBuilder: Retrofit.Builder = Retrofit.Builder()
+    private val retrofitBuilder: Retrofit.Builder = Retrofit.Builder()
 
     /**
      * description: 全局okHttpClient，保证使用一个网络实例

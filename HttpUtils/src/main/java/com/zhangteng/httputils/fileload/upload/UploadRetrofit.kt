@@ -6,6 +6,7 @@ import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -23,17 +24,16 @@ class UploadRetrofit private constructor() {
     private var mRetrofit: Retrofit? = null
     private val builder: Retrofit.Builder = Retrofit.Builder().apply {
         //默认使用全局配置
-        HttpUtils.instance.ConfigGlobalHttpUtils().retrofitBuilder.callAdapterFactories().forEach {
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.callAdapterFactories()?.forEach {
             addCallAdapterFactory(it)
         }
         //默认使用全局配置
-        HttpUtils.instance.ConfigGlobalHttpUtils().retrofitBuilder.converterFactories().forEach {
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.converterFactories()?.forEach {
             addConverterFactory(it)
         }
         //默认使用全局baseUrl
         baseUrl(
-            HttpUtils.instance.ConfigGlobalHttpUtils().retrofitBuilder
-                .build().baseUrl()
+            HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.baseUrl() ?: "".toHttpUrl()
         )
         //默认使用全局配置
         client(HttpUtils.instance.ConfigGlobalHttpUtils().getOkHttpClient())

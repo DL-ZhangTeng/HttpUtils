@@ -11,7 +11,7 @@ import java.lang.reflect.Type
  * @GET("/user")
  * fun getUser(): Deferred<User>
  */
-class CoroutineCallAdapterFactory private constructor(private val async: Boolean) :
+class CoroutineCallAdapterFactory private constructor(private val isAsync: Boolean) :
     CallAdapter.Factory() {
 
     override fun get(
@@ -37,26 +37,14 @@ class CoroutineCallAdapterFactory private constructor(private val async: Boolean
                 )
             }
             val responseBodyType = getParameterUpperBound(0, responseType)
-            createResponseCallAdapter(async, responseBodyType)
+            ResponseCallAdapter(isAsync, responseBodyType)
         } else {
-            createBodyCallAdapter(async, responseType)
+            BodyCallAdapter(isAsync, responseType)
         }
     }
 
     companion object {
         @JvmStatic
-        fun create(async: Boolean = false) = CoroutineCallAdapterFactory(async)
+        fun create(isAsync: Boolean = false) = CoroutineCallAdapterFactory(isAsync)
     }
 }
-
-private fun createResponseCallAdapter(async: Boolean, responseBodyType: Type) =
-    if (async)
-        AsyncResponseCallAdapter(responseBodyType)
-    else
-        ResponseCallAdapter(responseBodyType)
-
-private fun createBodyCallAdapter(async: Boolean, responseBodyType: Type) =
-    if (async)
-        AsyncBodyCallAdapter(responseBodyType)
-    else
-        BodyCallAdapter(responseBodyType)

@@ -9,20 +9,9 @@ import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.gson.Gson
-import com.zhangteng.httputils.fileload.download.DownloadRetrofit
-import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.httputils.result.coroutine.callback.DeferredCallBack
-import com.zhangteng.httputils.result.coroutine.callback.DeferredDownloadCallBack
-import com.zhangteng.httputils.result.coroutine.deferredGo
-import com.zhangteng.utils.IException
 import com.zhangteng.utils.StateViewHelper
-import com.zhangteng.utils.e
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
 
 class MainActivity : AppCompatActivity() {
     private var mProgressDialog: Dialog? = null
@@ -231,6 +220,31 @@ class MainActivity : AppCompatActivity() {
 //
 //                })
 //        }
+//        DownloadRetrofit
+//            .downloadFileByObservable("")
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(object :
+//                DownloadObserver(
+//                    "name",
+//                    mProgressDialog,
+//                    this@MainActivity
+//                ) {
+//                override fun onSuccess(
+//                    bytesRead: Long,
+//                    contentLength: Long,
+//                    progress: Float,
+//                    done: Boolean,
+//                    filePath: String?
+//                ) {
+//                    progress.toString().e("deferredGo")
+//                }
+//
+//                override fun onFailure(iException: IException?) {
+//                    Gson().toJson(iException).e("deferredGo")
+//                }
+//
+//            })
     }
 
     override fun onDestroy() {
