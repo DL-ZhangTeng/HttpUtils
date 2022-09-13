@@ -238,31 +238,31 @@ class MainActivity : AppCompatActivity() {
 
                 })
         }
-        HttpUtils.instance.DownloadRetrofit()
-            .downloadFileByObservable("")
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object :
-                DownloadObserver(
-                    "name",
-                    mProgressDialog,
-                    this@MainActivity
-                ) {
-                override fun onSuccess(
-                    bytesRead: Long,
-                    contentLength: Long,
-                    progress: Float,
-                    done: Boolean,
-                    filePath: String?
-                ) {
-                    progress.toString().e("deferredGo")
-                }
-
-                override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("deferredGo")
-                }
-
-            })
+//        HttpUtils.instance.DownloadRetrofit()
+//            .downloadFileByObservable("")
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(object :
+//                DownloadObserver(
+//                    "name",
+//                    mProgressDialog,
+//                    this@MainActivity
+//                ) {
+//                override fun onSuccess(
+//                    bytesRead: Long,
+//                    contentLength: Long,
+//                    progress: Float,
+//                    done: Boolean,
+//                    filePath: String?
+//                ) {
+//                    progress.toString().e("deferredGo")
+//                }
+//
+//                override fun onFailure(iException: IException?) {
+//                    Gson().toJson(iException).e("deferredGo")
+//                }
+//
+//            })
     }
 
     override fun onDestroy() {
