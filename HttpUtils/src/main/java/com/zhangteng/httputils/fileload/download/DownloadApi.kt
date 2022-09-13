@@ -31,7 +31,12 @@ interface DownloadApi {
     @Streaming
     @GET
     fun downloadFileByFlow(@Url fileUrl: String?): Flow<ResponseBody>
+}
 
+/**
+ * Created by swing on 2018/4/24.
+ */
+interface DownloadObservableApi {
     /**
      * 大文件官方建议用 @Streaming 来进行注解，不然会出现IO异常，小文件可以忽略不注入
      *

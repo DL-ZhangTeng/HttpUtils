@@ -143,7 +143,7 @@ class DownloadRetrofit private constructor() {
     fun downloadFileByObservable(fileUrl: String?): Observable<ResponseBody> {
         return instance
             .retrofit!!
-            .create(DownloadApi::class.java)
+            .create(DownloadObservableApi::class.java)
             .downloadFileByObservable(fileUrl)
     }
 

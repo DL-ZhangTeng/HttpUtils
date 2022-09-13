@@ -1,5 +1,6 @@
 package com.zhangteng.httputils.utils
 
+import com.zhangteng.httputils.http.HttpUtils
 import io.reactivex.Observable
 import io.reactivex.Single
 import retrofit2.Retrofit
@@ -20,21 +21,23 @@ class RetrofitServiceProxyHandler(
 
     @Throws(Throwable::class)
     override fun invoke(proxy: Any, method: Method, args: Array<Any>?): Any {
-        if (method.returnType == Observable::class.java) {
-            // 如果方法返回值是 Observable 的话，则包一层再返回，
-            // 只包一层 defer 由外部去控制耗时方法以及网络请求所处线程，
-            // 如此对原项目的影响为 0，且更可控。
-            return Observable.defer {
-                method.invoke(
-                    retrofitService, *args.orEmpty()
-                ) as Observable<*>
-            }
-        } else if (method.returnType == Single::class.java) {
-            // 如果方法返回值是 Single 的话，则包一层再返回。
-            return Single.defer {
-                method.invoke(
-                    retrofitService, *args.orEmpty()
-                ) as Single<*>
+        if (HttpUtils.instance.isRxjava2) {
+            if (method.returnType == Observable::class.java) {
+                // 如果方法返回值是 Observable 的话，则包一层再返回，
+                // 只包一层 defer 由外部去控制耗时方法以及网络请求所处线程，
+                // 如此对原项目的影响为 0，且更可控。
+                return Observable.defer {
+                    method.invoke(
+                        retrofitService, *args.orEmpty()
+                    ) as Observable<*>
+                }
+            } else if (method.returnType == Single::class.java) {
+                // 如果方法返回值是 Single 的话，则包一层再返回。
+                return Single.defer {
+                    method.invoke(
+                        retrofitService, *args.orEmpty()
+                    ) as Single<*>
+                }
             }
         }
 

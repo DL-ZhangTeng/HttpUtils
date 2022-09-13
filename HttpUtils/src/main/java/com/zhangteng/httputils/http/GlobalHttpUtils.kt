@@ -16,7 +16,6 @@ import com.zhangteng.utils.SSLUtils
 import com.zhangteng.utils.SSLUtils.getSslSocketFactory
 import com.zhangteng.utils.SSLUtils.sslSocketFactory
 import com.zhangteng.utils.getDiskCacheDir
-import com.zhangteng.utils.i
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.CallAdapter
@@ -71,11 +70,8 @@ class GlobalHttpUtils private constructor() {
                     retrofitBuilder.addCallAdapterFactory(CoroutineCallAdapterFactory.create())
                     retrofitBuilder.addCallAdapterFactory(FlowCallAdapterFactory.create())
 
-                    try {
-                        Class.forName("retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory")
+                    if (HttpUtils.instance.isRxjava2) {
                         retrofitBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    } catch (e: ClassNotFoundException) {
-                        "未找到retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory".i(GlobalHttpUtils::class.java.name)
                     }
                 }
                 if (retrofitBuilder.converterFactories().isEmpty()) {

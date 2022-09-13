@@ -43,20 +43,6 @@ interface UploadFileApi {
     ): Flow<ResponseBody>
 
     /**
-     * 上传
-     *
-     * @param uploadUrl 地址
-     * @param file      文件
-     * @return ResponseBody
-     */
-    @Multipart
-    @POST
-    fun uploadFileByObservable(
-        @Url uploadUrl: String,
-        @Part file: MultipartBody.Part
-    ): Observable<ResponseBody>
-
-    /**
      * 上传多个文件
      *
      * @param uploadUrl 地址
@@ -83,6 +69,26 @@ interface UploadFileApi {
         @Url uploadUrl: String,
         @Part files: List<MultipartBody.Part>
     ): Flow<ResponseBody>
+}
+
+/**
+ * Created by swing on 2018/4/24.
+ */
+interface UploadFileObservableApi {
+
+    /**
+     * 上传
+     *
+     * @param uploadUrl 地址
+     * @param file      文件
+     * @return ResponseBody
+     */
+    @Multipart
+    @POST
+    fun uploadFileByObservable(
+        @Url uploadUrl: String,
+        @Part file: MultipartBody.Part
+    ): Observable<ResponseBody>
 
     /**
      * 上传多个文件

@@ -6,6 +6,7 @@ import com.zhangteng.httputils.config.SPConfig
 import com.zhangteng.httputils.fileload.download.DownloadRetrofit
 import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.utils.getFromSPToSet
+import com.zhangteng.utils.i
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -14,6 +15,7 @@ import kotlin.coroutines.CoroutineContext
  * Created by swing on 2018/4/24.
  */
 class HttpUtils private constructor() {
+
     /**
      * description 获取全局context
      */
@@ -21,6 +23,14 @@ class HttpUtils private constructor() {
         get() {
             checkInitialize()
             return Companion.context
+        }
+
+    /**
+     * description rxjava2是否可用，导入rxjava相关类自动变为true
+     */
+    val isRxjava2: Boolean
+        get() {
+            return Companion.isRxjava2
         }
 
     /**
@@ -163,7 +173,9 @@ class HttpUtils private constructor() {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             HttpUtils()
         }
+
         private var context: Application? = null
+        private var isRxjava2: Boolean = true
         private var disposables: HashMap<Any, Any?> = HashMap()
 
         /**
@@ -172,6 +184,14 @@ class HttpUtils private constructor() {
         @kotlin.jvm.JvmStatic
         fun init(app: Application?) {
             context = app
+            try {
+                Class.forName("io.reactivex.Single")
+                Class.forName("io.reactivex.Observable")
+                Class.forName("retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory")
+            } catch (e: ClassNotFoundException) {
+                isRxjava2 = false
+                "未导入rxjava2".i(GlobalHttpUtils::class.java.name)
+            }
         }
 
         private fun checkInitialize() {

@@ -177,7 +177,7 @@ class UploadRetrofit private constructor() {
             MultipartBody.Part.createFormData(fieldName, file.name, requestFile)
         return instance
             .retrofit!!
-            .create(UploadFileApi::class.java)
+            .create(UploadFileObservableApi::class.java)
             .uploadFileByObservable(uploadUrl, body)
     }
 
@@ -312,7 +312,7 @@ class UploadRetrofit private constructor() {
         val parts: List<MultipartBody.Part> = builder.build().parts
         return instance
             .retrofit!!
-            .create(UploadFileApi::class.java)
+            .create(UploadFileObservableApi::class.java)
             .uploadFilesByObservable(uploadUrl, parts)
     }
 
