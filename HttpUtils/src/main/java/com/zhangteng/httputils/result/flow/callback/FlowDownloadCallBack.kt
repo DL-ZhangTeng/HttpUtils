@@ -32,12 +32,6 @@ abstract class FlowDownloadCallBack(
         disposable.cancelSingleRequest()
     }
 
-    @SuppressLint("CheckResult")
-    override fun doOnNext(t: ResponseBody) {
-        super.doOnNext(t)
-        disposable.cancelSingleRequest()
-    }
-
     override fun onSuccess(t: ResponseBody) {
         ThreadPoolUtils.instance.addExecuteTask {
             try {

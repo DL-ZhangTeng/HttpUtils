@@ -40,9 +40,4 @@ abstract class CommonObserver<T : Any>(
         super.doOnCompleted()
         disposable.cancelSingleRequest()
     }
-
-    override fun doOnNext(t: T) {
-        super.doOnNext(t)
-        disposable.cancelSingleRequest()
-    }
 }

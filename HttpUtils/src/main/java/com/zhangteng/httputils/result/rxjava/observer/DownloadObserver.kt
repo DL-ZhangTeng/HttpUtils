@@ -51,12 +51,6 @@ abstract class DownloadObserver(
     }
 
     @SuppressLint("CheckResult")
-    override fun doOnNext(t: ResponseBody) {
-        super.doOnNext(t)
-        disposable.cancelSingleRequest()
-    }
-
-    @SuppressLint("CheckResult")
     override fun onSuccess(t: ResponseBody) {
         Observable
             .just(t)
