@@ -107,49 +107,49 @@ class DownloadRetrofit private constructor() {
         return this
     }
 
+    /**
+     * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
+     *
+     * @param fileUrl 文件网络路径
+     * @return Deferred<ResponseBody>
+     */
+    fun downloadFileByDeferred(fileUrl: String?): Deferred<ResponseBody> {
+        return instance
+            .retrofit!!
+            .create(DownloadApi::class.java)
+            .downloadFileByDeferred(fileUrl)
+    }
+
+    /**
+     * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
+     *
+     * @param fileUrl 文件网络路径
+     * @return Flow<ResponseBody>
+     */
+    fun downloadFileByFlow(fileUrl: String?): Flow<ResponseBody> {
+        return instance
+            .retrofit!!
+            .create(DownloadApi::class.java)
+            .downloadFileByFlow(fileUrl)
+
+    }
+
+    /**
+     * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
+     *
+     * @param fileUrl 文件网络路径
+     * @return Observable<ResponseBody>
+     */
+    fun downloadFileByObservable(fileUrl: String?): Observable<ResponseBody> {
+        return instance
+            .retrofit!!
+            .create(DownloadApi::class.java)
+            .downloadFileByObservable(fileUrl)
+    }
+
     companion object {
         val instance by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             DownloadRetrofit()
-        }
-
-        /**
-         * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
-         *
-         * @param fileUrl 文件网络路径
-         * @return Observable<ResponseBody>
-         */
-        fun downloadFileByDeferred(fileUrl: String?): Deferred<ResponseBody> {
-            return instance
-                .retrofit!!
-                .create(DownloadApi::class.java)
-                .downloadFileByDeferred(fileUrl)
-        }
-
-        /**
-         * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
-         *
-         * @param fileUrl 文件网络路径
-         * @return Observable<ResponseBody>
-         */
-        fun downloadFileByFlow(fileUrl: String?): Flow<ResponseBody> {
-            return instance
-                .retrofit!!
-                .create(DownloadApi::class.java)
-                .downloadFileByFlow(fileUrl)
-
-        }
-
-        /**
-         * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
-         *
-         * @param fileUrl 文件网络路径
-         * @return Observable<ResponseBody>
-         */
-        fun downloadFileByObservable(fileUrl: String?): Observable<ResponseBody> {
-            return instance
-                .retrofit!!
-                .create(DownloadApi::class.java)
-                .downloadFileByObservable(fileUrl)
         }
     }
 }
