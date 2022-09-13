@@ -1,4 +1,4 @@
-package com.zhangteng.httputils
+package com.zhangteng.app
 
 import android.app.Dialog
 import android.os.Bundle
@@ -9,9 +9,20 @@ import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
+import com.zhangteng.httputils.fileload.download.DownloadRetrofit
+import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.httputils.http.HttpUtils
+import com.zhangteng.httputils.result.coroutine.callback.DeferredCallBack
+import com.zhangteng.httputils.result.coroutine.callback.DeferredDownloadCallBack
+import com.zhangteng.httputils.result.coroutine.deferredGo
+import com.zhangteng.utils.IException
 import com.zhangteng.utils.StateViewHelper
+import com.zhangteng.utils.e
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
 
 class MainActivity : AppCompatActivity() {
     private var mProgressDialog: Dialog? = null
@@ -108,7 +119,7 @@ class MainActivity : AppCompatActivity() {
 //                .createService(Api::class.java)
 //                .getHomeListByFlow(0)
 //                .flowGoIResponse(object :
-//                    FlowObserver<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
+//                    FlowCallBack<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
 //                    override fun isHideToast(): Boolean {
 //                        return true
 //                    }
@@ -161,7 +172,7 @@ class MainActivity : AppCompatActivity() {
 //                .createService(Api::class.java)
 //                .getHomeListByDeferred(0)
 //                .deferredGoIResponse(object :
-//                    DeferredObserver<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
+//                    DeferredCallBack<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
 //                    override fun isHideToast(): Boolean {
 //                        return true
 //                    }
@@ -173,6 +184,51 @@ class MainActivity : AppCompatActivity() {
 //                    override fun onSuccess(t: IResponse<HomeListBean>) {
 //                        Gson().toJson(t).e("flowGoIResponse")
 //                    }
+//                })
+//        }
+//
+//        GlobalScope.launch {
+//            UploadRetrofit
+//                .uploadFileByDeferred("", "", "")
+//                .deferredGo(object :
+//                    DeferredCallBack<ResponseBody>(mProgressDialog, this@MainActivity) {
+//                    override fun isHideToast(): Boolean {
+//                        return true
+//                    }
+//
+//                    override fun onFailure(iException: IException?) {
+//                        Gson().toJson(iException).e("deferredGo")
+//                    }
+//
+//                    override fun onSuccess(t: ResponseBody) {
+//                        Gson().toJson(t).e("deferredGo")
+//                    }
+//                })
+//        }
+//
+//        GlobalScope.launch {
+//            DownloadRetrofit
+//                .downloadFileByDeferred("")
+//                .deferredGo(object :
+//                    DeferredDownloadCallBack(
+//                        "name",
+//                        mProgressDialog,
+//                        this@MainActivity
+//                    ) {
+//                    override fun onSuccess(
+//                        bytesRead: Long,
+//                        contentLength: Long,
+//                        progress: Float,
+//                        done: Boolean,
+//                        filePath: String?
+//                    ) {
+//                        progress.toString().e("deferredGo")
+//                    }
+//
+//                    override fun onFailure(iException: IException?) {
+//                        Gson().toJson(iException).e("deferredGo")
+//                    }
+//
 //                })
 //        }
     }

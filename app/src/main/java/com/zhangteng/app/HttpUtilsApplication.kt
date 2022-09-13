@@ -1,4 +1,4 @@
-package com.zhangteng.httputils
+package com.zhangteng.app
 
 import android.app.Application
 import com.zhangteng.httputils.http.HttpUtils

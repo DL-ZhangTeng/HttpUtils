@@ -4,7 +4,7 @@ import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.addHttpUtilsDisposable
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
-import com.zhangteng.httputils.result.coroutine.callback.DeferredCallBack
+import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
 import kotlinx.coroutines.CoroutineScope
@@ -296,7 +296,7 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
  */
-suspend fun <T> Deferred<T>.deferredGo(observer: DeferredCallBack<T>) {
+suspend fun <T> Deferred<T>.deferredGo(observer: ICallBack<T, Deferred<T>>) {
     withContext(Dispatchers.Main) {
         observer.doOnSubscribe(this@deferredGo)
     }
@@ -319,7 +319,7 @@ suspend fun <T> Deferred<T>.deferredGo(observer: DeferredCallBack<T>) {
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
  */
-suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(observer: DeferredCallBack<IResponse<T>>) {
+suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(observer: ICallBack<IResponse<T>, Deferred<IResponse<T>>>) {
     withContext(Dispatchers.Main) {
         observer.doOnSubscribe(this@deferredGoIResponse)
     }

@@ -1,6 +1,6 @@
-package com.zhangteng.httputils.http
+package com.zhangteng.app.http
 
-import com.zhangteng.httputils.http.entity.HomeListBean
+import com.zhangteng.app.http.entity.HomeListBean
 import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow

@@ -2,8 +2,9 @@ package com.zhangteng.httputils.fileload.upload
 
 import android.text.TextUtils
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
 import io.reactivex.Observable
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.Flow
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -124,11 +125,11 @@ class UploadRetrofit private constructor() {
          * @param filePath  文件路径
          * @return Observable<ResponseBody>
          */
-        fun uploadFile(
+        fun uploadFileByDeferred(
             uploadUrl: String,
             filePath: String,
             fieldName: String = "uploaded_file"
-        ): Observable<ResponseBody?> {
+        ): Deferred<ResponseBody> {
             val file = File(filePath)
             val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
             val body: MultipartBody.Part =
@@ -136,7 +137,53 @@ class UploadRetrofit private constructor() {
             return instance
                 .retrofit!!
                 .create(UploadFileApi::class.java)
-                .uploadFile(uploadUrl, body)
+                .uploadFileByDeferred(uploadUrl, body)
+        }
+
+        /**
+         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
+         *
+         * @param uploadUrl 后台url
+         * @param fieldName 后台接收图片流的参数名
+         * @param filePath  文件路径
+         * @return Observable<ResponseBody>
+         */
+        fun uploadFileByFlow(
+            uploadUrl: String,
+            filePath: String,
+            fieldName: String = "uploaded_file"
+        ): Flow<ResponseBody> {
+            val file = File(filePath)
+            val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+            val body: MultipartBody.Part =
+                MultipartBody.Part.createFormData(fieldName ?: "", file.name, requestFile)
+            return instance
+                .retrofit!!
+                .create(UploadFileApi::class.java)
+                .uploadFileByFlow(uploadUrl, body)
+        }
+
+        /**
+         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
+         *
+         * @param uploadUrl 后台url
+         * @param fieldName 后台接收图片流的参数名
+         * @param filePath  文件路径
+         * @return Observable<ResponseBody>
+         */
+        fun uploadFileByObservable(
+            uploadUrl: String,
+            filePath: String,
+            fieldName: String = "uploaded_file"
+        ): Observable<ResponseBody> {
+            val file = File(filePath)
+            val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+            val body: MultipartBody.Part =
+                MultipartBody.Part.createFormData(fieldName ?: "", file.name, requestFile)
+            return instance
+                .retrofit!!
+                .create(UploadFileApi::class.java)
+                .uploadFileByObservable(uploadUrl, body)
         }
 
         /**
@@ -146,12 +193,48 @@ class UploadRetrofit private constructor() {
          * @param filePaths 文件路径
          * @return Observable<ResponseBody>
          */
-        fun uploadFiles(uploadUrl: String, filePaths: List<String>): Observable<ResponseBody> {
+        fun uploadFilesByDeferred(
+            uploadUrl: String,
+            filePaths: List<String>
+        ): Deferred<ResponseBody> {
             val fieldNames: MutableList<String> = ArrayList()
             for (i in filePaths.indices) {
                 fieldNames.add("uploaded_file$i")
             }
-            return uploadFiles(uploadUrl, fieldNames, filePaths)
+            return uploadFilesByDeferred(uploadUrl, fieldNames, filePaths)
+        }
+
+        /**
+         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
+         *
+         * @param uploadUrl 后台url
+         * @param filePaths 文件路径
+         * @return Observable<ResponseBody>
+         */
+        fun uploadFilesByFlow(uploadUrl: String, filePaths: List<String>): Flow<ResponseBody> {
+            val fieldNames: MutableList<String> = ArrayList()
+            for (i in filePaths.indices) {
+                fieldNames.add("uploaded_file$i")
+            }
+            return uploadFilesByFlow(uploadUrl, fieldNames, filePaths)
+        }
+
+        /**
+         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
+         *
+         * @param uploadUrl 后台url
+         * @param filePaths 文件路径
+         * @return Observable<ResponseBody>
+         */
+        fun uploadFilesByObservable(
+            uploadUrl: String,
+            filePaths: List<String>
+        ): Observable<ResponseBody> {
+            val fieldNames: MutableList<String> = ArrayList()
+            for (i in filePaths.indices) {
+                fieldNames.add("uploaded_file$i")
+            }
+            return uploadFilesByObservable(uploadUrl, fieldNames, filePaths)
         }
 
         /**
@@ -162,7 +245,63 @@ class UploadRetrofit private constructor() {
          * @param filePaths  文件路径
          * @return Observable<ResponseBody>
          */
-        fun uploadFiles(
+        fun uploadFilesByDeferred(
+            uploadUrl: String,
+            fieldNames: List<String>,
+            filePaths: List<String>
+        ): Deferred<ResponseBody> {
+            val builder: MultipartBody.Builder = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+            for (i in filePaths.indices) {
+                val file = File(filePaths[i])
+                val imageBody = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                //"uploaded_file"+i 后台接收图片流的参数名
+                builder.addFormDataPart(fieldNames[i], file.name, imageBody)
+            }
+            val parts: List<MultipartBody.Part> = builder.build().parts
+            return instance
+                .retrofit!!
+                .create(UploadFileApi::class.java)
+                .uploadFilesByDeferred(uploadUrl, parts)
+        }
+
+        /**
+         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
+         *
+         * @param uploadUrl  后台url
+         * @param fieldNames 后台接收图片流的参数名
+         * @param filePaths  文件路径
+         * @return Observable<ResponseBody>
+         */
+        fun uploadFilesByFlow(
+            uploadUrl: String,
+            fieldNames: List<String>,
+            filePaths: List<String>
+        ): Flow<ResponseBody> {
+            val builder: MultipartBody.Builder = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+            for (i in filePaths.indices) {
+                val file = File(filePaths[i])
+                val imageBody = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                //"uploaded_file"+i 后台接收图片流的参数名
+                builder.addFormDataPart(fieldNames[i], file.name, imageBody)
+            }
+            val parts: List<MultipartBody.Part> = builder.build().parts
+            return instance
+                .retrofit!!
+                .create(UploadFileApi::class.java)
+                .uploadFilesByFlow(uploadUrl, parts)
+        }
+
+        /**
+         * description 上传文件 默认使用全据配置，如需自定义可用UploadRetrofit初始化
+         *
+         * @param uploadUrl  后台url
+         * @param fieldNames 后台接收图片流的参数名
+         * @param filePaths  文件路径
+         * @return Observable<ResponseBody>
+         */
+        fun uploadFilesByObservable(
             uploadUrl: String,
             fieldNames: List<String>,
             filePaths: List<String>
@@ -179,8 +318,7 @@ class UploadRetrofit private constructor() {
             return instance
                 .retrofit!!
                 .create(UploadFileApi::class.java)
-                .uploadFiles(uploadUrl, parts)
-                .compose(ProgressDialogObservableTransformer())
+                .uploadFilesByObservable(uploadUrl, parts)
         }
     }
 }

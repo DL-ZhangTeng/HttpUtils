@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.http.entity
+package com.zhangteng.app.http.entity
 
 /**
  * desc : 区块链养狗领取 百度莱茨狗

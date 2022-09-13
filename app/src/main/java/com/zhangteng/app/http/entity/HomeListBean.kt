@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.http.entity
+package com.zhangteng.app.http.entity
 
 /**
  * curPage : 2
