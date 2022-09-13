@@ -39,11 +39,11 @@ class RetrofitServiceProxyHandler(
         }
 
         // 返回值不是 Observable 或 Single 的话不处理。
-        return method.invoke(retrofitService, *args.orEmpty())
+        return method.invoke(retrofitService, *args.orEmpty()) as Any
     }
 
     private val retrofitService: Any?
-        private get() {
+        get() {
             if (mRetrofitService == null) {
                 mRetrofitService = mRetrofit!!.create(mServiceClass)
             }
