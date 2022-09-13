@@ -2,8 +2,9 @@ package com.zhangteng.httputils.fileload.download
 
 import android.text.TextUtils
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
 import io.reactivex.Observable
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.Flow
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -117,12 +118,38 @@ class DownloadRetrofit private constructor() {
          * @param fileUrl 文件网络路径
          * @return Observable<ResponseBody>
          */
-        fun downloadFile(fileUrl: String?): Observable<ResponseBody> {
+        fun downloadFileByDeferred(fileUrl: String?): Deferred<ResponseBody> {
             return instance
                 .retrofit!!
                 .create(DownloadApi::class.java)
-                .downloadFile(fileUrl)
-                .compose(ProgressDialogObservableTransformer())
+                .downloadFileByDeferred(fileUrl)
+        }
+
+        /**
+         * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
+         *
+         * @param fileUrl 文件网络路径
+         * @return Observable<ResponseBody>
+         */
+        fun downloadFileByFlow(fileUrl: String?): Flow<ResponseBody> {
+            return instance
+                .retrofit!!
+                .create(DownloadApi::class.java)
+                .downloadFileByFlow(fileUrl)
+
+        }
+
+        /**
+         * description 下载文件 默认使用全据配置，如需自定义可用DownloadRetrofit初始化
+         *
+         * @param fileUrl 文件网络路径
+         * @return Observable<ResponseBody>
+         */
+        fun downloadFileByObservable(fileUrl: String?): Observable<ResponseBody> {
+            return instance
+                .retrofit!!
+                .create(DownloadApi::class.java)
+                .downloadFileByObservable(fileUrl)
         }
     }
 }

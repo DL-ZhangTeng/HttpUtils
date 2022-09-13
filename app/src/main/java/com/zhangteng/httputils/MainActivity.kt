@@ -9,19 +9,9 @@ import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.gson.Gson
-import com.zhangteng.httputils.http.Api
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.httputils.http.entity.HomeListBean
-import com.zhangteng.httputils.result.coroutine.DeferredObserver
-import com.zhangteng.httputils.result.coroutine.deferredGoIResponse
-import com.zhangteng.utils.IException
-import com.zhangteng.utils.IResponse
 import com.zhangteng.utils.StateViewHelper
-import com.zhangteng.utils.e
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private var mProgressDialog: Dialog? = null

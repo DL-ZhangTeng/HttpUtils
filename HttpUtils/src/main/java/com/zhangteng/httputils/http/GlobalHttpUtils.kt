@@ -21,6 +21,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import java.io.InputStream
@@ -68,6 +69,7 @@ class GlobalHttpUtils private constructor() {
                 if (retrofitBuilder.callAdapterFactories().isEmpty()) {
                     retrofitBuilder.addCallAdapterFactory(CoroutineCallAdapterFactory.create())
                     retrofitBuilder.addCallAdapterFactory(FlowCallAdapterFactory.create())
+                    retrofitBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 }
                 if (retrofitBuilder.converterFactories().isEmpty()) {
                     retrofitBuilder.addConverterFactory(GsonConverterFactory.create())
@@ -118,7 +120,7 @@ class GlobalHttpUtils private constructor() {
     }
 
     /**
-     * description 设置CallAdapter.Factory,默认FlowCallAdapterFactory.create()、CoroutineCallAdapterFactory.create()
+     * description 设置CallAdapter.Factory,默认FlowCallAdapterFactory.create()、CoroutineCallAdapterFactory.create()、RxJava2CallAdapterFactory.create()
      */
     fun addCallAdapterFactory(factory: CallAdapter.Factory): GlobalHttpUtils {
         retrofitBuilder.addCallAdapterFactory(factory)

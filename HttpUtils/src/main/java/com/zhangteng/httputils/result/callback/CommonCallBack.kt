@@ -1,26 +1,25 @@
-package com.zhangteng.httputils.result.flow
+package com.zhangteng.httputils.result.callback
 
 import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
-import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
-import com.zhangteng.httputils.result.flow.interfaces.IFlowObserver
+import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.showShortToast
-import kotlin.coroutines.CoroutineContext
 
 /**
- * description: Flow回调接口
+ * description: 下载回调
  * author: Swing
- * date: 2022/9/12
+ * date: 2022/9/13
  */
-abstract class FlowObserver<T>(
-    private var mProgressDialog: Dialog? = null,
-    private var tag: Any? = null
-) : IFlowObserver<T> {
-    private var disposable: CoroutineContext? = null
+abstract class CommonCallBack<T, D>(
+    protected var mProgressDialog: Dialog? = null,
+    protected var tag: Any? = null
+) : ICallBack<T, D> {
+
+    protected var disposable: D? = null
 
     protected open fun isHideToast(): Boolean {
         return false
@@ -40,12 +39,12 @@ abstract class FlowObserver<T>(
      */
     protected abstract fun onSuccess(t: T)
 
-    override fun doOnSubscribe(d: CoroutineContext) {
+    override fun doOnSubscribe(d: D) {
         disposable = d
         if (tag == null) {
-            HttpUtils.instance.addDisposable(d)
+            HttpUtils.instance.addDisposable(d as Any)
         } else {
-            HttpUtils.instance.addDisposable(d, tag)
+            HttpUtils.instance.addDisposable(d as Any, tag)
         }
         if (tag is LifecycleOwner) {
             HttpLifecycleEventObserver.bind(tag as LifecycleOwner)
@@ -64,7 +63,6 @@ abstract class FlowObserver<T>(
             HttpUtils.instance.context.showShortToast(iException.message)
         }
         onFailure(iException)
-        disposable.cancelSingleRequest()
     }
 
     override fun doOnCompleted() {
@@ -72,7 +70,6 @@ abstract class FlowObserver<T>(
         if (mProgressDialog != null && mProgressDialog!!.isShowing) {
             mProgressDialog!!.dismiss()
         }
-        disposable.cancelSingleRequest()
     }
 
     override fun doOnNext(t: T) {

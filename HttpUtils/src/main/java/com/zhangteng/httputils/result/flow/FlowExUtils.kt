@@ -4,6 +4,7 @@ import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.addHttpUtilsDisposable
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
+import com.zhangteng.httputils.result.flow.callback.FlowCallBack
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
 import kotlinx.coroutines.Dispatchers
@@ -305,7 +306,7 @@ suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
  */
-suspend fun <T> Flow<T>.flowGo(observer: FlowObserver<T>) {
+suspend fun <T> Flow<T>.flowGo(observer: FlowCallBack<T>) {
     flowOn(Dispatchers.IO)
         .onStart {
             observer.doOnSubscribe(currentCoroutineContext())
@@ -327,7 +328,7 @@ suspend fun <T> Flow<T>.flowGo(observer: FlowObserver<T>) {
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param observer 网络回调类，处理了弹窗与生命周期销毁自动取消请求
  */
-suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(observer: FlowObserver<IResponse<T>>) {
+suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(observer: FlowCallBack<IResponse<T>>) {
     flowOn(Dispatchers.IO)
         .onStart {
             observer.doOnSubscribe(currentCoroutineContext())
