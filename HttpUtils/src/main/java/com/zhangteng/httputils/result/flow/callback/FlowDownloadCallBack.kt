@@ -1,11 +1,10 @@
 package com.zhangteng.httputils.result.flow.callback
 
-import android.annotation.SuppressLint
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.DownloadCallBack
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.IStateView
 import com.zhangteng.utils.ThreadPoolUtils
 import okhttp3.ResponseBody
 import java.io.IOException
@@ -18,9 +17,8 @@ import kotlin.coroutines.CoroutineContext
  */
 abstract class FlowDownloadCallBack(
     fileName: String? = null,
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : DownloadCallBack<CoroutineContext>(fileName, mProgressDialog, tag) {
+    iStateView: IStateView? = null
+) : DownloadCallBack<CoroutineContext>(fileName, iStateView) {
 
     override fun doOnError(iException: IException) {
         super.doOnError(iException)

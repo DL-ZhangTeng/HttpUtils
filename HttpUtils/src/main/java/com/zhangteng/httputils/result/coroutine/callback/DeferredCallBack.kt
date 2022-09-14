@@ -1,8 +1,8 @@
 package com.zhangteng.httputils.result.coroutine.callback
 
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.CommonCallBack
+import com.zhangteng.utils.IStateView
 import kotlinx.coroutines.Deferred
 
 /**
@@ -11,9 +11,8 @@ import kotlinx.coroutines.Deferred
  * date: 2022/9/12
  */
 abstract class DeferredCallBack<T>(
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : CommonCallBack<T, Deferred<T>>(mProgressDialog, tag) {
+    iStateView: IStateView? = null
+) : CommonCallBack<T, Deferred<T>>(iStateView) {
 
     override fun doOnCompleted() {
         super.doOnCompleted()

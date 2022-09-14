@@ -1,9 +1,9 @@
 package com.zhangteng.httputils.result.flow.callback
 
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.CommonCallBack
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.IStateView
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -12,9 +12,8 @@ import kotlin.coroutines.CoroutineContext
  * date: 2022/9/12
  */
 abstract class FlowCallBack<T>(
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : CommonCallBack<T, CoroutineContext>(mProgressDialog, tag) {
+    iStateView: IStateView? = null
+) : CommonCallBack<T, CoroutineContext>(iStateView) {
 
     override fun doOnError(iException: IException) {
         super.doOnError(iException)

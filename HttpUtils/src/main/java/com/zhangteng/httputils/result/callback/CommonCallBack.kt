@@ -1,12 +1,12 @@
 package com.zhangteng.httputils.result.callback
 
-import android.app.Dialog
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.IStateView
 import com.zhangteng.utils.showShortToast
 
 /**
@@ -15,8 +15,7 @@ import com.zhangteng.utils.showShortToast
  * date: 2022/9/13
  */
 abstract class CommonCallBack<T, D>(
-    protected var mProgressDialog: Dialog? = null,
-    protected var tag: Any? = null
+    protected var iStateView: IStateView? = null
 ) : ICallBack<T, D> {
 
     protected var disposable: D? = null
@@ -41,24 +40,20 @@ abstract class CommonCallBack<T, D>(
 
     override fun doOnSubscribe(d: D) {
         disposable = d
-        if (tag == null) {
+        if (iStateView == null) {
             HttpUtils.instance.addDisposable(d as Any)
         } else {
-            HttpUtils.instance.addDisposable(d as Any, tag)
+            HttpUtils.instance.addDisposable(d as Any, iStateView)
         }
-        if (tag is LifecycleOwner) {
-            HttpLifecycleEventObserver.bind(tag as LifecycleOwner)
+        if (iStateView is LifecycleOwner) {
+            HttpLifecycleEventObserver.bind(iStateView as LifecycleOwner)
         }
-        if (mProgressDialog != null && !mProgressDialog!!.isShowing) {
-            mProgressDialog!!.show()
-        }
+        iStateView?.showProgressDialog()
     }
 
     override fun doOnError(iException: IException) {
-        if (isInterruptByLifecycle(tag)) return
-        if (mProgressDialog != null && mProgressDialog!!.isShowing) {
-            mProgressDialog!!.dismiss()
-        }
+        if (isInterruptByLifecycle(iStateView)) return
+        iStateView?.dismissProgressDialog()
         if (!isHideToast()) {
             HttpUtils.instance.context.showShortToast(iException.message)
         }
@@ -66,14 +61,12 @@ abstract class CommonCallBack<T, D>(
     }
 
     override fun doOnCompleted() {
-        if (isInterruptByLifecycle(tag)) return
-        if (mProgressDialog != null && mProgressDialog!!.isShowing) {
-            mProgressDialog!!.dismiss()
-        }
+        if (isInterruptByLifecycle(iStateView)) return
+        iStateView?.dismissProgressDialog()
     }
 
     override fun doOnNext(t: T) {
-        if (isInterruptByLifecycle(tag)) return
+        if (isInterruptByLifecycle(iStateView)) return
         onSuccess(t)
     }
 }

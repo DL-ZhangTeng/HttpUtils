@@ -1,9 +1,9 @@
 package com.zhangteng.httputils.result.rxjava.observer
 
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.CommonCallBack
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.IStateView
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 
@@ -11,9 +11,8 @@ import io.reactivex.disposables.Disposable
  * Created by swing on 2018/4/24.
  */
 abstract class CommonObserver<T : Any>(
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : CommonCallBack<T, Disposable>(mProgressDialog, tag), Observer<T> {
+    iStateView: IStateView? = null
+) : CommonCallBack<T, Disposable>(iStateView), Observer<T> {
 
     override fun onSubscribe(d: Disposable) {
         doOnSubscribe(d)

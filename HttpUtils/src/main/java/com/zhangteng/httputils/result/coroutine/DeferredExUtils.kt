@@ -1,12 +1,12 @@
 package com.zhangteng.httputils.result.coroutine
 
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.addHttpUtilsDisposable
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
+import com.zhangteng.utils.IStateView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -20,38 +20,36 @@ import kotlin.coroutines.coroutineContext
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGo(
     block: suspend () -> T,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
+    iStateView: IStateView? = null
 ) {
     withContext(Dispatchers.Main) {
-        mProgressDialog?.show()
+        iStateView?.showProgressDialog()
     }
 
-    coroutineContext.addHttpUtilsDisposable(tag)
+    coroutineContext.addHttpUtilsDisposable(iStateView)
 
     try {
         withContext(Dispatchers.IO) {
             block()
         }.also {
-            if (!isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(iStateView)) {
                 success(it)
             }
         }
     } catch (e: Throwable) {
-        if (!isInterruptByLifecycle(tag)) {
+        if (!isInterruptByLifecycle(iStateView)) {
             error(IException.handleException(e))
         }
     } finally {
-        if (!isInterruptByLifecycle(tag)) {
-            mProgressDialog?.dismiss()
+        if (!isInterruptByLifecycle(iStateView)) {
+            iStateView?.dismissProgressDialog()
             complete()
             coroutineContext.cancelSingleRequest()
         }
@@ -65,22 +63,20 @@ suspend fun <T> launchGo(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 是否显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGoIResponse(
     block: suspend () -> IResponse<T>,
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
+    iStateView: IStateView? = null
 ) {
     withContext(Dispatchers.Main) {
-        mProgressDialog?.show()
+        iStateView?.showProgressDialog()
     }
 
-    coroutineContext.addHttpUtilsDisposable(tag)
+    coroutineContext.addHttpUtilsDisposable(iStateView)
 
     try {
         withContext(Dispatchers.IO) {
@@ -90,17 +86,17 @@ suspend fun <T> launchGoIResponse(
                     throw IException(it.getMsg(), it.getCode())
             }
         }.also {
-            if (!isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(iStateView)) {
                 success(it)
             }
         }
     } catch (e: Throwable) {
-        if (!isInterruptByLifecycle(tag)) {
+        if (!isInterruptByLifecycle(iStateView)) {
             error(IException.handleException(e))
         }
     } finally {
-        if (!isInterruptByLifecycle(tag)) {
-            mProgressDialog?.dismiss()
+        if (!isInterruptByLifecycle(iStateView)) {
+            iStateView?.dismissProgressDialog()
             complete()
             coroutineContext.cancelSingleRequest()
         }
@@ -114,38 +110,36 @@ suspend fun <T> launchGoIResponse(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGoDeferred(
     block: CoroutineScope.() -> Deferred<T>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
+    iStateView: IStateView? = null
 ) {
     withContext(Dispatchers.Main) {
-        mProgressDialog?.show()
+        iStateView?.showProgressDialog()
     }
 
-    coroutineContext.addHttpUtilsDisposable(tag)
+    coroutineContext.addHttpUtilsDisposable(iStateView)
 
     try {
         withContext(Dispatchers.IO) {
             block().await()
         }.also {
-            if (!isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(iStateView)) {
                 success(it)
             }
         }
     } catch (e: Throwable) {
-        if (!isInterruptByLifecycle(tag)) {
+        if (!isInterruptByLifecycle(iStateView)) {
             error(IException.handleException(e))
         }
     } finally {
-        if (!isInterruptByLifecycle(tag)) {
-            mProgressDialog?.dismiss()
+        if (!isInterruptByLifecycle(iStateView)) {
+            iStateView?.dismissProgressDialog()
             complete()
             coroutineContext.cancelSingleRequest()
         }
@@ -159,22 +153,20 @@ suspend fun <T> launchGoDeferred(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 是否显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGoDeferredIResponse(
     block: CoroutineScope.() -> Deferred<IResponse<T>>,
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
+    iStateView: IStateView? = null
 ) {
     withContext(Dispatchers.Main) {
-        mProgressDialog?.show()
+        iStateView?.showProgressDialog()
     }
 
-    coroutineContext.addHttpUtilsDisposable(tag)
+    coroutineContext.addHttpUtilsDisposable(iStateView)
 
     try {
         withContext(Dispatchers.IO) {
@@ -184,17 +176,17 @@ suspend fun <T> launchGoDeferredIResponse(
                     throw IException(it.getMsg(), it.getCode())
             }
         }.also {
-            if (!isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(iStateView)) {
                 success(it)
             }
         }
     } catch (e: Throwable) {
-        if (!isInterruptByLifecycle(tag)) {
+        if (!isInterruptByLifecycle(iStateView)) {
             error(IException.handleException(e))
         }
     } finally {
-        if (!isInterruptByLifecycle(tag)) {
-            mProgressDialog?.dismiss()
+        if (!isInterruptByLifecycle(iStateView)) {
+            iStateView?.dismissProgressDialog()
             complete()
             coroutineContext.cancelSingleRequest()
         }
@@ -207,37 +199,35 @@ suspend fun <T> launchGoDeferredIResponse(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Deferred<T>.deferredGo(
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
+    iStateView: IStateView? = null
 ) {
     withContext(Dispatchers.Main) {
-        mProgressDialog?.show()
+        iStateView?.showProgressDialog()
     }
 
-    addHttpUtilsDisposable(tag)
+    addHttpUtilsDisposable(iStateView)
 
     try {
         withContext(Dispatchers.IO) {
             await()
         }.also {
-            if (!isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(iStateView)) {
                 success(it)
             }
         }
     } catch (e: Throwable) {
-        if (!isInterruptByLifecycle(tag)) {
+        if (!isInterruptByLifecycle(iStateView)) {
             error(IException.handleException(e))
         }
     } finally {
-        if (!isInterruptByLifecycle(tag)) {
-            mProgressDialog?.dismiss()
+        if (!isInterruptByLifecycle(iStateView)) {
+            iStateView?.dismissProgressDialog()
             complete()
             coroutineContext.cancelSingleRequest()
         }
@@ -250,21 +240,19 @@ suspend fun <T> Deferred<T>.deferredGo(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param mProgressDialog 是否显示加载框
- * @param tag LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
+    iStateView: IStateView? = null
 ) {
     withContext(Dispatchers.Main) {
-        mProgressDialog?.show()
+        iStateView?.showProgressDialog()
     }
 
-    addHttpUtilsDisposable(tag)
+    addHttpUtilsDisposable(iStateView)
 
     try {
         withContext(Dispatchers.IO) {
@@ -274,17 +262,17 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
                     throw IException(it.getMsg(), it.getCode())
             }
         }.also {
-            if (!isInterruptByLifecycle(tag)) {
+            if (!isInterruptByLifecycle(iStateView)) {
                 success(it)
             }
         }
     } catch (e: Throwable) {
-        if (!isInterruptByLifecycle(tag)) {
+        if (!isInterruptByLifecycle(iStateView)) {
             error(IException.handleException(e))
         }
     } finally {
-        if (!isInterruptByLifecycle(tag)) {
-            mProgressDialog?.dismiss()
+        if (!isInterruptByLifecycle(iStateView)) {
+            iStateView?.dismissProgressDialog()
             complete()
             coroutineContext.cancelSingleRequest()
         }

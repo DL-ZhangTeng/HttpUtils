@@ -1,10 +1,10 @@
 package com.zhangteng.httputils.result.coroutine.callback
 
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.DownloadCallBack
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.IStateView
 import com.zhangteng.utils.ThreadPoolUtils
 import kotlinx.coroutines.Deferred
 import okhttp3.ResponseBody
@@ -17,9 +17,8 @@ import java.io.IOException
  */
 abstract class DeferredDownloadCallBack(
     fileName: String? = null,
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : DownloadCallBack<Deferred<ResponseBody>>(fileName, mProgressDialog, tag) {
+    iStateView: IStateView? = null
+) : DownloadCallBack<Deferred<ResponseBody>>(fileName, iStateView) {
 
     override fun doOnCompleted() {
         super.doOnCompleted()

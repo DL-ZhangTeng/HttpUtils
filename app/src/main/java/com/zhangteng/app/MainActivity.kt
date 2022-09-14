@@ -1,13 +1,8 @@
 package com.zhangteng.app
 
-import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.view.animation.LinearInterpolator
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.zhangteng.app.http.Api
@@ -24,10 +19,7 @@ import com.zhangteng.httputils.result.flow.flowGoIResponse
 import com.zhangteng.httputils.result.flow.launchGoFlowIResponse
 import com.zhangteng.httputils.result.rxjava.observer.CommonObserver
 import com.zhangteng.httputils.result.rxjava.observer.DownloadObserver
-import com.zhangteng.utils.IException
-import com.zhangteng.utils.IResponse
-import com.zhangteng.utils.StateViewHelper
-import com.zhangteng.utils.e
+import com.zhangteng.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -36,28 +28,12 @@ import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 
 @OptIn(DelicateCoroutinesApi::class)
-class MainActivity : AppCompatActivity() {
-    private var mProgressDialog: Dialog? = null
-    private var mLoadTextView: TextView? = null
-    private var mAnimation: Animation? = null
-    private var mLoadImageView: ImageView? = null
+class MainActivity : AppCompatActivity(), IStateView {
+    private val mStateViewHelper by lazy { createStateViewHelper() }
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mProgressDialog = Dialog(this, R.style.progress_dialog)
-        val view = View.inflate(this, StateViewHelper.loadingLayout, null)
-        mLoadTextView = view.findViewById(R.id.loadView)
-        mLoadImageView = view.findViewById(R.id.progress_bar)
-        mLoadImageView?.setImageResource(StateViewHelper.loadingImage)
-        mAnimation = AnimationUtils.loadAnimation(this, R.anim.loadings)
-            .apply { interpolator = LinearInterpolator() }
-        mLoadImageView?.startAnimation(mAnimation)
-        mLoadTextView?.text = StateViewHelper.loadingText
-        mProgressDialog?.setContentView(view)
-        mProgressDialog?.setCancelable(true)
-        mProgressDialog?.setCanceledOnTouchOutside(false)
 
         launchGo_DeferredExUtils()
     }
@@ -80,7 +56,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -99,7 +74,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -118,7 +92,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -137,7 +110,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -155,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                 }, {
 
                 },
-                    mProgressDialog,
                     this@MainActivity
                 )
         }
@@ -173,7 +144,6 @@ class MainActivity : AppCompatActivity() {
                 }, {
 
                 },
-                    mProgressDialog,
                     this@MainActivity
                 )
         }
@@ -185,7 +155,9 @@ class MainActivity : AppCompatActivity() {
                 .createService(Api::class.java)
                 .getHomeListByDeferred(0)
                 .deferredGo(object :
-                    DeferredCallBack<BaseResult<HomeListBean>>(mProgressDialog, this@MainActivity) {
+                    DeferredCallBack<BaseResult<HomeListBean>>(
+                        this@MainActivity
+                    ) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -207,7 +179,9 @@ class MainActivity : AppCompatActivity() {
                 .createService(Api::class.java)
                 .getHomeListByDeferred(0)
                 .deferredGoIResponse(object :
-                    DeferredCallBack<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
+                    DeferredCallBack<IResponse<HomeListBean>>(
+                        this@MainActivity
+                    ) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -236,7 +210,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -255,7 +228,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -274,7 +246,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -293,7 +264,6 @@ class MainActivity : AppCompatActivity() {
             }, {
 
             },
-                mProgressDialog,
                 this@MainActivity
             )
         }
@@ -311,7 +281,6 @@ class MainActivity : AppCompatActivity() {
                 }, {
 
                 },
-                    mProgressDialog,
                     this@MainActivity
                 )
         }
@@ -329,7 +298,6 @@ class MainActivity : AppCompatActivity() {
                 }, {
 
                 },
-                    mProgressDialog,
                     this@MainActivity
                 )
         }
@@ -341,7 +309,7 @@ class MainActivity : AppCompatActivity() {
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
                 .flowGo(object :
-                    FlowCallBack<BaseResult<HomeListBean>>(mProgressDialog, this@MainActivity) {
+                    FlowCallBack<BaseResult<HomeListBean>>(this@MainActivity) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -363,7 +331,7 @@ class MainActivity : AppCompatActivity() {
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
                 .flowGoIResponse(object :
-                    FlowCallBack<IResponse<HomeListBean>>(mProgressDialog, this@MainActivity) {
+                    FlowCallBack<IResponse<HomeListBean>>(this@MainActivity) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -386,7 +354,6 @@ class MainActivity : AppCompatActivity() {
                 .deferredGo(object :
                     DeferredDownloadCallBack(
                         "name",
-                        mProgressDialog,
                         this@MainActivity
                     ) {
                     override fun onSuccess(
@@ -414,7 +381,6 @@ class MainActivity : AppCompatActivity() {
                 .flowGo(object :
                     FlowDownloadCallBack(
                         "name",
-                        mProgressDialog,
                         this@MainActivity
                     ) {
                     override fun onSuccess(
@@ -443,7 +409,6 @@ class MainActivity : AppCompatActivity() {
             .subscribe(object :
                 DownloadObserver(
                     "name",
-                    mProgressDialog,
                     this@MainActivity
                 ) {
                 override fun onSuccess(
@@ -468,7 +433,7 @@ class MainActivity : AppCompatActivity() {
             HttpUtils.instance.UploadRetrofit()
                 .uploadFileByDeferred("", "", "")
                 .deferredGo(object :
-                    DeferredCallBack<ResponseBody>(mProgressDialog, this@MainActivity) {
+                    DeferredCallBack<ResponseBody>(this@MainActivity) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -489,7 +454,7 @@ class MainActivity : AppCompatActivity() {
             HttpUtils.instance.UploadRetrofit()
                 .uploadFileByFlow("", "", "")
                 .flowGo(object :
-                    FlowCallBack<ResponseBody>(mProgressDialog, this@MainActivity) {
+                    FlowCallBack<ResponseBody>(this@MainActivity) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -510,7 +475,7 @@ class MainActivity : AppCompatActivity() {
             .uploadFileByObservable("", "")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : CommonObserver<ResponseBody>(mProgressDialog, this@MainActivity) {
+            .subscribe(object : CommonObserver<ResponseBody>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
                     Gson().toJson(iException).e("uploadFileByObservable")
                 }
@@ -526,7 +491,7 @@ class MainActivity : AppCompatActivity() {
             HttpUtils.instance.UploadRetrofit()
                 .uploadFilesByDeferred("", listOf(""), listOf(""))
                 .deferredGo(object :
-                    DeferredCallBack<ResponseBody>(mProgressDialog, this@MainActivity) {
+                    DeferredCallBack<ResponseBody>(this@MainActivity) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -547,7 +512,7 @@ class MainActivity : AppCompatActivity() {
             HttpUtils.instance.UploadRetrofit()
                 .uploadFilesByFlow("", listOf(""), listOf(""))
                 .flowGo(object :
-                    FlowCallBack<ResponseBody>(mProgressDialog, this@MainActivity) {
+                    FlowCallBack<ResponseBody>(this@MainActivity) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -568,7 +533,7 @@ class MainActivity : AppCompatActivity() {
             .uploadFilesByObservable("", listOf(""), listOf(""))
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : CommonObserver<ResponseBody>(mProgressDialog, this@MainActivity) {
+            .subscribe(object : CommonObserver<ResponseBody>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
                     Gson().toJson(iException).e("uploadFilesByObservable")
                 }
@@ -577,5 +542,102 @@ class MainActivity : AppCompatActivity() {
                     Gson().toJson(t).e("uploadFilesByObservable")
                 }
             })
+    }
+
+    /**
+     * description 创建 StateViewHelper类，并回调重试请求、取消请求监听
+     */
+    override fun createStateViewHelper(): StateViewHelper {
+        return StateViewHelper().apply {
+            againRequestListener = object : StateViewHelper.AgainRequestListener {
+                override fun request(view: View) {
+                    againRequestByStateViewHelper(view)
+                }
+            }
+            cancelRequestListener = object : StateViewHelper.CancelRequestListener {
+                override fun cancel(dialog: DialogInterface) {
+                    cancelRequestByStateViewHelper(dialog)
+                }
+            }
+        }
+    }
+
+    /**
+     * description 无网络视图
+     * @param contentView 被替换的View
+     */
+    override fun showNoNetView(contentView: View?) {
+        mStateViewHelper.showNoNetView(contentView)
+    }
+
+    /**
+     * description 超时视图
+     * @param contentView 被替换的View
+     */
+    override fun showTimeOutView(contentView: View?) {
+        mStateViewHelper.showTimeOutView(contentView)
+    }
+
+    /**
+     * description 无数据视图
+     * @param contentView 被替换的View
+     */
+    override fun showEmptyView(contentView: View?) {
+        mStateViewHelper.showEmptyView(contentView)
+    }
+
+    /**
+     * description 错误视图
+     * @param contentView 被替换的View
+     */
+    override fun showErrorView(contentView: View?) {
+        mStateViewHelper.showErrorView(contentView)
+    }
+
+    /**
+     * description 未登录视图
+     * @param contentView 被替换的View
+     */
+    override fun showNoLoginView(contentView: View?) {
+        mStateViewHelper.showNoLoginView(contentView)
+    }
+
+    /**
+     * description 业务视图
+     * @param contentView 要展示的View
+     */
+    override fun showContentView(contentView: View?) {
+        mStateViewHelper.showContentView(contentView)
+    }
+
+    /**
+     * description 加载中弹窗
+     * @param mLoadingText 加载中...
+     */
+    override fun showProgressDialog(mLoadingText: String?) {
+        mStateViewHelper.showProgressDialog(this, mLoadingText = mLoadingText)
+    }
+
+    /**
+     * description 关闭加载中弹窗
+     */
+    override fun dismissProgressDialog() {
+        mStateViewHelper.dismissProgressDialog()
+    }
+
+    /**
+     * description 状态View重新请求回调
+     * @param view 重试按钮
+     */
+    override fun againRequestByStateViewHelper(view: View) {
+
+    }
+
+    /**
+     * description 加载中取消回调
+     * @param dialog 加载中弹窗
+     */
+    override fun cancelRequestByStateViewHelper(dialog: DialogInterface) {
+
     }
 }

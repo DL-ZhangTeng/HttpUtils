@@ -1,11 +1,11 @@
 package com.zhangteng.httputils.result.rxjava.observer
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.DownloadCallBack
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
+import com.zhangteng.utils.IStateView
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -19,9 +19,8 @@ import java.io.IOException
  */
 abstract class DownloadObserver(
     fileName: String? = null,
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : DownloadCallBack<Disposable>(fileName, mProgressDialog, tag),
+    iStateView: IStateView? = null
+) : DownloadCallBack<Disposable>(fileName, iStateView),
     Observer<ResponseBody> {
 
     override fun onSubscribe(d: Disposable) {

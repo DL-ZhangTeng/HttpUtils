@@ -1,6 +1,6 @@
 package com.zhangteng.httputils.result.callback
 
-import android.app.Dialog
+import com.zhangteng.utils.IStateView
 import okhttp3.ResponseBody
 
 /**
@@ -10,9 +10,8 @@ import okhttp3.ResponseBody
  */
 abstract class DownloadCallBack<D>(
     protected var fileName: String? = null,
-    mProgressDialog: Dialog? = null,
-    tag: Any? = null
-) : CommonCallBack<ResponseBody, D>(mProgressDialog, tag) {
+    iStateView: IStateView? = null
+) : CommonCallBack<ResponseBody, D>(iStateView) {
 
     /**
      * 成功回调，有可能在子线程回调
