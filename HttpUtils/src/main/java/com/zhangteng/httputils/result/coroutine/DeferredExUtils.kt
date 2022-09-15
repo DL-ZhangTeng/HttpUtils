@@ -40,17 +40,23 @@ suspend fun <T> launchGo(
             block()
         }.also {
             if (!isInterruptByLifecycle(iStateView)) {
-                success(it)
+                withContext(Dispatchers.Main) {
+                    success(it)
+                }
             }
         }
     } catch (e: Throwable) {
         if (!isInterruptByLifecycle(iStateView)) {
-            error(IException.handleException(e))
+            withContext(Dispatchers.Main) {
+                error(IException.handleException(e))
+            }
         }
     } finally {
         if (!isInterruptByLifecycle(iStateView)) {
-            iStateView?.dismissProgressDialog()
-            complete()
+            withContext(Dispatchers.Main) {
+                iStateView?.dismissProgressDialog()
+                complete()
+            }
             coroutineContext.cancelSingleRequest()
         }
     }
@@ -87,17 +93,23 @@ suspend fun <T> launchGoIResponse(
             }
         }.also {
             if (!isInterruptByLifecycle(iStateView)) {
-                success(it)
+                withContext(Dispatchers.Main) {
+                    success(it)
+                }
             }
         }
     } catch (e: Throwable) {
         if (!isInterruptByLifecycle(iStateView)) {
-            error(IException.handleException(e))
+            withContext(Dispatchers.Main) {
+                error(IException.handleException(e))
+            }
         }
     } finally {
         if (!isInterruptByLifecycle(iStateView)) {
-            iStateView?.dismissProgressDialog()
-            complete()
+            withContext(Dispatchers.Main) {
+                iStateView?.dismissProgressDialog()
+                complete()
+            }
             coroutineContext.cancelSingleRequest()
         }
     }
@@ -130,17 +142,23 @@ suspend fun <T> launchGoDeferred(
             block().await()
         }.also {
             if (!isInterruptByLifecycle(iStateView)) {
-                success(it)
+                withContext(Dispatchers.Main) {
+                    success(it)
+                }
             }
         }
     } catch (e: Throwable) {
         if (!isInterruptByLifecycle(iStateView)) {
-            error(IException.handleException(e))
+            withContext(Dispatchers.Main) {
+                error(IException.handleException(e))
+            }
         }
     } finally {
         if (!isInterruptByLifecycle(iStateView)) {
-            iStateView?.dismissProgressDialog()
-            complete()
+            withContext(Dispatchers.Main) {
+                iStateView?.dismissProgressDialog()
+                complete()
+            }
             coroutineContext.cancelSingleRequest()
         }
     }
@@ -177,17 +195,23 @@ suspend fun <T> launchGoDeferredIResponse(
             }
         }.also {
             if (!isInterruptByLifecycle(iStateView)) {
-                success(it)
+                withContext(Dispatchers.Main) {
+                    success(it)
+                }
             }
         }
     } catch (e: Throwable) {
         if (!isInterruptByLifecycle(iStateView)) {
-            error(IException.handleException(e))
+            withContext(Dispatchers.Main) {
+                error(IException.handleException(e))
+            }
         }
     } finally {
         if (!isInterruptByLifecycle(iStateView)) {
-            iStateView?.dismissProgressDialog()
-            complete()
+            withContext(Dispatchers.Main) {
+                iStateView?.dismissProgressDialog()
+                complete()
+            }
             coroutineContext.cancelSingleRequest()
         }
     }
@@ -218,17 +242,23 @@ suspend fun <T> Deferred<T>.deferredGo(
             await()
         }.also {
             if (!isInterruptByLifecycle(iStateView)) {
-                success(it)
+                withContext(Dispatchers.Main) {
+                    success(it)
+                }
             }
         }
     } catch (e: Throwable) {
         if (!isInterruptByLifecycle(iStateView)) {
-            error(IException.handleException(e))
+            withContext(Dispatchers.Main) {
+                error(IException.handleException(e))
+            }
         }
     } finally {
         if (!isInterruptByLifecycle(iStateView)) {
-            iStateView?.dismissProgressDialog()
-            complete()
+            withContext(Dispatchers.Main) {
+                iStateView?.dismissProgressDialog()
+                complete()
+            }
             coroutineContext.cancelSingleRequest()
         }
     }
@@ -263,17 +293,23 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(
             }
         }.also {
             if (!isInterruptByLifecycle(iStateView)) {
-                success(it)
+                withContext(Dispatchers.Main) {
+                    success(it)
+                }
             }
         }
     } catch (e: Throwable) {
         if (!isInterruptByLifecycle(iStateView)) {
-            error(IException.handleException(e))
+            withContext(Dispatchers.Main) {
+                error(IException.handleException(e))
+            }
         }
     } finally {
         if (!isInterruptByLifecycle(iStateView)) {
-            iStateView?.dismissProgressDialog()
-            complete()
+            withContext(Dispatchers.Main) {
+                iStateView?.dismissProgressDialog()
+                complete()
+            }
             coroutineContext.cancelSingleRequest()
         }
     }
@@ -293,12 +329,18 @@ suspend fun <T> Deferred<T>.deferredGo(observer: ICallBack<T, Deferred<T>>) {
         withContext(Dispatchers.IO) {
             await()
         }.also {
-            observer.doOnNext(it)
+            withContext(Dispatchers.Main) {
+                observer.doOnNext(it)
+            }
         }
     } catch (e: Throwable) {
-        observer.doOnError(IException.handleException(e))
+        withContext(Dispatchers.Main) {
+            observer.doOnError(IException.handleException(e))
+        }
     } finally {
-        observer.doOnCompleted()
+        withContext(Dispatchers.Main) {
+            observer.doOnCompleted()
+        }
     }
 }
 
@@ -320,11 +362,17 @@ suspend fun <T> Deferred<IResponse<T>>.deferredGoIResponse(observer: ICallBack<I
                     throw IException(it.getMsg(), it.getCode())
             }
         }.also {
-            observer.doOnNext(it)
+            withContext(Dispatchers.Main) {
+                observer.doOnNext(it)
+            }
         }
     } catch (e: Throwable) {
-        observer.doOnError(IException.handleException(e))
+        withContext(Dispatchers.Main) {
+            observer.doOnError(IException.handleException(e))
+        }
     } finally {
-        observer.doOnCompleted()
+        withContext(Dispatchers.Main) {
+            observer.doOnCompleted()
+        }
     }
 }
