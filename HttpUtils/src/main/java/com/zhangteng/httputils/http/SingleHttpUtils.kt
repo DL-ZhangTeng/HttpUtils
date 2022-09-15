@@ -1,8 +1,6 @@
 package com.zhangteng.httputils.http
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.zhangteng.httputils.config.EncryptConfig
 import com.zhangteng.httputils.interceptor.*
 import com.zhangteng.httputils.interceptor.CallBackInterceptor.CallBack
@@ -21,7 +19,6 @@ import java.io.InputStream
 import java.lang.reflect.Proxy
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Function
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
 
@@ -128,26 +125,24 @@ class SingleHttpUtils private constructor() {
     }
 
     /**
-     * description 动态设置请求头，如token等需要根据登录状态实时变化的请求头参数，最小支持api 24
+     * description 动态设置请求头，如token等需要根据登录状态实时变化的请求头参数
      *
      * @param headersFunction 请求头设置的函数式参数，如token等需要根据登录状态实时变化的请求头参数
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    fun setHeaders(headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>?): SingleHttpUtils {
+    fun setHeaders(headersFunction: (MutableMap<String?, Any?>) -> MutableMap<String?, Any?>): SingleHttpUtils {
         priorityInterceptors.add(HeaderInterceptor(headersFunction))
         return this
     }
 
     /**
-     * description 设置请求头公共参数，最小支持api 24
+     * description 设置请求头公共参数
      *
      * @param headerMaps      请求头设置的静态参数
      * @param headersFunction 请求头设置的函数式参数，如token等需要根据登录状态实时变化的请求头参数
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     fun setHeaders(
         headerMaps: MutableMap<String?, Any?>?,
-        headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>?
+        headersFunction: (MutableMap<String?, Any?>) -> MutableMap<String?, Any?>
     ): SingleHttpUtils {
         priorityInterceptors.add(HeaderInterceptor(headerMaps, headersFunction))
         return this
