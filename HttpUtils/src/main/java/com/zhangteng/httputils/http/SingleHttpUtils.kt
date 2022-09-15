@@ -133,7 +133,7 @@ class SingleHttpUtils private constructor() {
      * @param headersFunction 请求头设置的函数式参数，如token等需要根据登录状态实时变化的请求头参数
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    fun setHeaders(headersFunction: Function<Map<String?, Any?>?, MutableMap<String?, Any?>>?): SingleHttpUtils {
+    fun setHeaders(headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>?): SingleHttpUtils {
         priorityInterceptors.add(HeaderInterceptor(headersFunction))
         return this
     }
@@ -147,7 +147,7 @@ class SingleHttpUtils private constructor() {
     @RequiresApi(api = Build.VERSION_CODES.N)
     fun setHeaders(
         headerMaps: MutableMap<String?, Any?>?,
-        headersFunction: Function<Map<String?, Any?>?, MutableMap<String?, Any?>>?
+        headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>?
     ): SingleHttpUtils {
         priorityInterceptors.add(HeaderInterceptor(headerMaps, headersFunction))
         return this

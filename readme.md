@@ -57,179 +57,247 @@ setConnectionTimeOut| 全局超时配置
 setLog| 全局是否打开请求log日志
 
 ## 使用
+
+### 初始化
 ```java
- public class MainApplication extends Application {
-     private static MainApplication mainApplication;
-     private final Map<String, Object> headersMap = new HashMap<>();
+ class HttpUtilsApplication : Application() {
+     @SuppressLint("NewApi")
+     override fun onCreate() {
+         super.onCreate()
+         HttpUtils.init(this)
+         HttpUtils.instance
+             .ConfigGlobalHttpUtils()
+             //全局的BaseUrl
+             .setBaseUrl("https://www.wanandroid.com/")
+             //设置CallAdapter.Factory,默认RxJavaCallAdapterFactory.create()
+             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+             //设置Converter.Factory,默认GsonConverterFactory.create()
+             .addConverterFactory(GsonConverterFactory.create())
+             //设置自定义域名解析
+             //.setDns(HttpDns.getInstance())
+             //开启缓存策略
+             .setCache(true)
+             //全局的单个请求头信息
+             .addHeader("Authorization", "Bearer ")
+             //全局的静态请求头信息
+             //.setHeaders(headersMap)
+             //全局的请求头信息
+             //.setHeaders(headersMap) { headers ->
+             //    (headers ?: HashMap()).apply {
+             //        this["version"] = BuildConfig.VERSION_CODE
+             //        this["os"] = "android"
+             //        val isLogin = BuildConfig.DEBUG
+             //        if (isLogin) {
+             //            this["Authorization"] = "Bearer " + "token"
+             //        } else {
+             //            this.remove("Authorization")
+             //        }
+             //    }
+             //}
+             //全局的动态请求头信息
+             .setHeaders { headers ->
+                 (headers ?: HashMap()).apply {
+                     this["version"] = BuildConfig.VERSION_CODE
+                     this["os"] = "android"
+                     val isLogin = BuildConfig.DEBUG
+                     if (isLogin) {
+                         this["Authorization"] = "Bearer " + "token"
+                     } else {
+                         this.remove("Authorization")
+                     }
+                 }
+             }
+             .setHttpCallBack(object : CallBack {
+                 override fun onHttpResponse(
+                     chain: Interceptor.Chain,
+                     response: Response
+                 ): Response {
+                     //这里可以先客户端一步拿到每一次 Http 请求的结果
+                     val body: ResponseBody? = response.newBuilder().build().body
+                     val source = body?.source()
+                     try {
+                         source?.request(Long.MAX_VALUE) // Buffer the entire body.
+                     } catch (e: IOException) {
+                         e.printStackTrace()
+                     }
+                     val buffer: Buffer? = source?.buffer
+                     var charset: Charset = StandardCharsets.UTF_8
+                     val contentType: MediaType? = body?.contentType()
+                     if (contentType != null) {
+                         charset = contentType.charset(charset)!!
+                     }
+                     buffer?.readString(charset).e()
+                     return response
+                 }
 
-     public static MainApplication getInstance() {
-         return mainApplication;
+                 override fun onHttpRequest(chain: Interceptor.Chain, request: Request): Request {
+                     //这里可以在请求服务器之前拿到
+                     Gson().toJson(request.headers).e()
+                     val body: RequestBody? = request.body
+                     try {
+                         body?.contentLength().toString().e()
+                     } catch (e: IOException) {
+                         e.printStackTrace()
+                     }
+                     return request
+                 }
+             })
+             //全局持久话cookie,保存本地每次都会携带在header中
+             .setCookie(false)
+             //全局ssl证书认证
+             //信任所有证书,不安全有风险
+             .setSslSocketFactory()
+             //使用预埋证书，校验服务端证书（自签名证书）
+             //.setSslSocketFactory(getAssets().open("your.cer"))
+             //使用bks证书和密码管理客户端证书（双向认证），使用预埋证书，校验服务端证书（自签名证书）
+             //.setSslSocketFactory(getAssets().open("your.bks"), "123456", getAssets().open("your.cer"))
+             //全局超时配置
+             .setReadTimeOut(10)
+             //全局超时配置
+             .setWriteTimeOut(10)
+             //全局超时配置
+             .setConnectionTimeOut(10)
+             //全局是否打开请求log日志
+             .setLog(true)
      }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        HttpUtils.init(this);
-        HttpUtils.getInstance()
-                .ConfigGlobalHttpUtils()
-                //全局的BaseUrl
-                .setBaseUrl("http://**/")
-                //设置CallAdapter.Factory,默认RxJavaCallAdapterFactory.create()
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                //设置Converter.Factory,默认GsonConverterFactory.create()
-                .addConverterFactory(GsonConverterFactory.create())
-                //设置自定义域名解析
-                .setDns(HttpDns.getInstance())
-                //开启缓存策略
-                .setCache(true)
-                //全局的单个请求头信息
-                .addHeader("Authorization", "Bearer ")
-                //全局的静态请求头信息
-                //.setHeaders(headersMap)
-                //全局的请求头信息
-                //.setHeaders(headersMap, headers -> {
-                //  if (headers == null) {
-                //      headers = new HashMap<>();
-                //  }
-                //  boolean isLogin = BuildConfig.DEBUG;
-                //  if (isLogin) {
-                //      headers.put("Authorization", "Bearer " + "token");
-                //  } else {
-                //      headers.remove("Authorization");
-                //  }
-                //  return headers;
-                //})
-                //全局的动态请求头信息
-                .setHeaders(headers -> {
-                    if (headers == null) {
-                        headers = new HashMap<>();
-                    }
-                    headers.put("version", BuildConfig.VERSION_CODE);
-                    headers.put("os", "android");
-
-                    boolean isLogin = BuildConfig.DEBUG;
-                    if (isLogin) {
-                        headers.put("Authorization", "Bearer " + "token");
-                    } else {
-                        headers.remove("Authorization");
-                    }
-                    return headers;
-                })
-                .setHttpCallBack(new CallBackInterceptor.CallBack() {
-                    @NonNull
-                    @Override
-                    public Response onHttpResponse(@NonNull Interceptor.Chain chain, @NonNull Response response) {
-                        //这里可以先客户端一步拿到每一次 Http 请求的结果
-                        ResponseBody body = response.newBuilder().build().body();
-                        BufferedSource source = body.source();
-                        try {
-                            source.request(Long.MAX_VALUE); // Buffer the entire body.
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Buffer buffer = source.getBuffer();
-                        Charset charset = StandardCharsets.UTF_8;
-                        MediaType contentType = body.contentType();
-                        if (contentType != null) {
-                            charset = contentType.charset(charset);
-                        }
-                        LogUtilsKt.e(buffer.readString(charset));
-                        return response;
-                    }
-
-                    @NonNull
-                    @Override
-                    public Request onHttpRequest(@NonNull Interceptor.Chain chain, @NonNull Request request) {
-                        //这里可以在请求服务器之前拿到
-                        LogUtilsKt.e(new Gson().toJson(request.headers()));
-                        RequestBody body = request.body();
-                        if (body != null) {
-                            try {
-                                LogUtilsKt.e(String.valueOf(body.contentLength()));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        return request;
-                    }
-                })
-                //全局持久话cookie,保存本地每次都会携带在header中
-                .setCookie(false)
-                //全局ssl证书认证
-                //信任所有证书,不安全有风险
-                .setSslSocketFactory()
-                //使用预埋证书，校验服务端证书（自签名证书）
-                //.setSslSocketFactory(getAssets().open("your.cer"))
-                //使用bks证书和密码管理客户端证书（双向认证），使用预埋证书，校验服务端证书（自签名证书）
-                //.setSslSocketFactory(getAssets().open("your.bks"), "123456", getAssets().open("your.cer"))
-                //全局超时配置
-                .setReadTimeOut(10)
-                //全局超时配置
-                .setWriteTimeOut(10)
-                //全局超时配置
-                .setConnectionTimeOut(10)
-                //全局是否打开请求log日志
-                .setLog(true);
-    }
-}
+ }
 ```
 
+### ICallBack回调（更多请求方式请参考MainActivity）
 ```java
-//使用生命周期监听自动取消请求、加载中动画自动处理（LifecycleObservableTransformer、ProgressDialogObservableTransformer）
- HttpUtils.getInstance()
-                .ConfigGlobalHttpUtils()
-                .createService(ApiService.class)
-                .loginPwd("admin", "admin")
-                .compose(new LifecycleObservableTransformer<>(MainActivity.this))
-                .compose(new ProgressDialogObservableTransformer<>(mProgressDialog))
-                .subscribe(new BaseObserver<BaseResponse<LoginBean>>() {
-                    @Override
-                    public void doOnSubscribe(Disposable d) {
-
+    fun deferredGo_ICallBack() {
+        GlobalScope.launch {
+            HttpUtils.instance.ConfigGlobalHttpUtils()
+                .createService(Api::class.java)
+                .getHomeListByDeferred(0)
+                .deferredGo(object :
+                    DeferredCallBack<BaseResult<HomeListBean>>(
+                        this@MainActivity
+                    ) {
+                    override fun isHideToast(): Boolean {
+                        return true
                     }
 
-                    @Override
-                    public void doOnError(IException iException) {
-
+                    override fun onFailure(iException: IException?) {
+                        Gson().toJson(iException).e("deferredGo_ICallBack")
                     }
 
-                    @Override
-                    public void doOnNext(BaseResponse<LoginBean> loginBeanBaseResponse) {
+                    override fun onSuccess(t: BaseResult<HomeListBean>) {
+                        Gson().toJson(t).e("deferredGo_ICallBack")
+                    }
+                })
+        }
+    }
 
+    fun deferredGoIResponse_ICallBack() {
+        GlobalScope.launch {
+            HttpUtils.instance.ConfigGlobalHttpUtils()
+                .createService(Api::class.java)
+                .getHomeListByDeferred(0)
+                .deferredGoIResponse(object :
+                    DeferredCallBack<IResponse<HomeListBean>>(
+                        this@MainActivity
+                    ) {
+                    override fun isHideToast(): Boolean {
+                        return true
                     }
 
-                    @Override
-                    public void doOnCompleted() {
-
+                    override fun onFailure(iException: IException?) {
+                        Gson().toJson(iException).e("deferredGoIResponse_ICallBack")
                     }
-                });
-                
-//使用生命周期监听自动取消请求、加载中动画自动处理（CommonObserver方案）
-//        HttpUtils.getInstance()
-//                .ConfigSingleInstance()
-//                .setBaseUrl("https://**/")
-//                .createService(ApiService.class)
-//                .loginPwd("admin", "admin")
-//                .subscribeOn(Schedulers.io())
-//                .doOnSubscribe(disposable -> mProgressDialog.show())
-//                .subscribeOn(AndroidSchedulers.mainThread())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new CommonObserver<BaseResponse<LoginBean>>(mProgressDialog) {
-//                    @Override
-//                    protected void onFailure(IException iException) {
-//
-//                    }
-//
-//                    @Override
-//                    protected void onSuccess(BaseResponse<LoginBean> loginBeanBaseResponse) {
-//                        ToastUtilsKt.showShortToast(MainActivity.this, loginBeanBaseResponse.getMsg());
-//                    }
-//                });
+
+                    override fun onSuccess(t: IResponse<HomeListBean>) {
+                        Gson().toJson(t).e("deferredGoIResponse_ICallBack")
+                    }
+                })
+        }
+    }
+
+    fun flowGo_ICallBack() {
+        GlobalScope.launch {
+            HttpUtils.instance.ConfigGlobalHttpUtils()
+                .createService(Api::class.java)
+                .getHomeListByFlow(0)
+                .flowGo(object :
+                    FlowCallBack<BaseResult<HomeListBean>>(this@MainActivity) {
+                    override fun isHideToast(): Boolean {
+                        return true
+                    }
+
+                    override fun onFailure(iException: IException?) {
+                        Gson().toJson(iException).e("flowGo_ICallBack")
+                    }
+
+                    override fun onSuccess(t: BaseResult<HomeListBean>) {
+                        Gson().toJson(t).e("flowGo_ICallBack")
+                    }
+                })
+        }
+    }
+
+    fun flowGoIResponse_ICallBack() {
+        GlobalScope.launch {
+            HttpUtils.instance.ConfigGlobalHttpUtils()
+                .createService(Api::class.java)
+                .getHomeListByFlow(0)
+                .flowGoIResponse(object :
+                    FlowCallBack<IResponse<HomeListBean>>(this@MainActivity) {
+                    override fun isHideToast(): Boolean {
+                        return true
+                    }
+
+                    override fun onFailure(iException: IException?) {
+                        Gson().toJson(iException).e("flowGoIResponse_ICallBack")
+                    }
+
+                    override fun onSuccess(t: IResponse<HomeListBean>) {
+                        Gson().toJson(t).e("flowGoIResponse_ICallBack")
+                    }
+                })
+        }
+    }
+
+    fun observableGoCompose() {
+        HttpUtils.instance
+            .ConfigGlobalHttpUtils()
+            .createService(Api::class.java)
+            .getHomeListByObservable(0)
+            //页面销毁自动取消请求
+            .compose(LifecycleObservableTransformer(this@MainActivity))
+            //自动处理网络加载中动画
+            .compose(ProgressDialogObservableTransformer(this@MainActivity))
+            .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
+                override fun onFailure(iException: IException?) {
+                    Gson().toJson(iException).e("rxjavaGo")
+                }
+
+                override fun onSuccess(t: IResponse<HomeListBean>) {
+                    Gson().toJson(t).e("rxjavaGo")
+                }
+            })
+    }
+
+    fun observableGoObserver() {
+        HttpUtils.instance
+            .ConfigGlobalHttpUtils()
+            .createService(Api::class.java)
+            .getHomeListByObservable(0)
+            //页面销毁自动取消请求
+            //自动处理网络加载中动画
+            .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
+                override fun onFailure(iException: IException?) {
+                    Gson().toJson(iException).e("rxjavaGo")
+                }
+
+                override fun onSuccess(t: IResponse<HomeListBean>) {
+                    Gson().toJson(t).e("rxjavaGo")
+                }
+            })
+    }
 
 //手动取消网络请求
-//        HttpUtils.getInstance().cancelSingleRequest(this);
-//        HttpUtils.getInstance().cancelSingleRequest(Disposable);
-//        HttpUtils.getInstance().cancelAllRequest();
+//        HttpUtils.instance.cancelSingleRequest(any);
+//        HttpUtils.instance.cancelAllRequest();
 ```
 
 ## 混淆

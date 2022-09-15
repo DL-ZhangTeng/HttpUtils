@@ -13,12 +13,9 @@ import java.util.function.Function
  */
 class HeaderInterceptor : PriorityInterceptor {
     var headerMaps: MutableMap<String?, Any?>? = null
-    private var headersFunction: Function<Map<String?, Any?>?, MutableMap<String?, Any?>>? = null
-
-    /**
-     * description 设置请求头公共参数
-     */
-    constructor() {}
+        private set
+    private var headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>? =
+        null
 
     /**
      * description 设置请求头公共参数
@@ -35,7 +32,7 @@ class HeaderInterceptor : PriorityInterceptor {
      * @param headersFunction 请求头设置的函数式参数，如token等需要根据登录状态实时变化的请求头参数
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    constructor(headersFunction: Function<Map<String?, Any?>?, MutableMap<String?, Any?>>?) {
+    constructor(headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>?) {
         this.headersFunction = headersFunction
     }
 
@@ -48,7 +45,7 @@ class HeaderInterceptor : PriorityInterceptor {
     @RequiresApi(api = Build.VERSION_CODES.N)
     constructor(
         headerMaps: MutableMap<String?, Any?>?,
-        headersFunction: Function<Map<String?, Any?>?, MutableMap<String?, Any?>>?
+        headersFunction: Function<MutableMap<String?, Any?>?, MutableMap<String?, Any?>>?
     ) {
         this.headerMaps = headerMaps
         this.headersFunction = headersFunction
@@ -64,8 +61,8 @@ class HeaderInterceptor : PriorityInterceptor {
             headerMaps = headersFunction!!.apply(headerMaps)
         }
         if (headerMaps != null && headerMaps!!.isNotEmpty()) {
-            for ((key1, value) in headerMaps!!) {
-                request.addHeader(key1 ?: "", value.toString())
+            for ((key, value) in headerMaps!!) {
+                request.addHeader(key ?: "", value.toString())
             }
         }
         return chain.proceed(request.build())

@@ -3,6 +3,7 @@ package com.zhangteng.httputils.result.rxjava.transformer
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
+import com.zhangteng.utils.IStateView
 import com.zhangteng.utils.i
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
@@ -16,34 +17,32 @@ import io.reactivex.schedulers.Schedulers
  * author: Swing
  * date: 2021/10/9
  */
-open class LifecycleObservableTransformer<T> : ObservableTransformer<T, T> {
-    private var tag: Any? = null
+open class LifecycleObservableTransformer<T>(private var iStateView: IStateView?) :
+    ObservableTransformer<T, T> {
     private var disposable: Disposable? = null
-
-    constructor()
-    constructor(tag: Any?) {
-        this.tag = tag
-    }
 
     override fun apply(upstream: Observable<T>): ObservableSource<T> {
         return upstream
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { d: Disposable ->
                 disposable = d
-                if (tag == null) {
+                if (iStateView == null) {
                     HttpUtils.instance.addDisposable(d)
                 } else {
-                    HttpUtils.instance.addDisposable(d, tag)
+                    HttpUtils.instance.addDisposable(d, iStateView)
                 }
-                if (tag is LifecycleOwner) {
-                    HttpLifecycleEventObserver.bind(tag as LifecycleOwner)
+                if (iStateView is LifecycleOwner) {
+                    HttpLifecycleEventObserver.bind(iStateView as LifecycleOwner)
                 }
             }
             .subscribeOn(AndroidSchedulers.mainThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {
                 //页面销毁状态自动取消网络请求
-                if (tag is LifecycleOwner && HttpLifecycleEventObserver.isLifecycleDestroy(tag as LifecycleOwner?)) {
+                if (iStateView is LifecycleOwner && HttpLifecycleEventObserver.isLifecycleDestroy(
+                        iStateView as LifecycleOwner?
+                    )
+                ) {
                     //观察者会清理全部请求
                     disposable = null
                 } else if (disposable != null) {

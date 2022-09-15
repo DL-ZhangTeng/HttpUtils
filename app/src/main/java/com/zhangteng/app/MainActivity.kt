@@ -19,6 +19,8 @@ import com.zhangteng.httputils.result.flow.flowGoIResponse
 import com.zhangteng.httputils.result.flow.launchGoFlowIResponse
 import com.zhangteng.httputils.result.rxjava.observer.CommonObserver
 import com.zhangteng.httputils.result.rxjava.observer.DownloadObserver
+import com.zhangteng.httputils.result.rxjava.transformer.LifecycleObservableTransformer
+import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
 import com.zhangteng.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -345,6 +347,44 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
                 })
         }
+    }
+
+    fun observableGoCompose() {
+        HttpUtils.instance
+            .ConfigGlobalHttpUtils()
+            .createService(Api::class.java)
+            .getHomeListByObservable(0)
+            //页面销毁自动取消请求
+            .compose(LifecycleObservableTransformer(this@MainActivity))
+            //自动处理网络加载中动画
+            .compose(ProgressDialogObservableTransformer(this@MainActivity))
+            .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
+                override fun onFailure(iException: IException?) {
+                    Gson().toJson(iException).e("rxjavaGo")
+                }
+
+                override fun onSuccess(t: IResponse<HomeListBean>) {
+                    Gson().toJson(t).e("rxjavaGo")
+                }
+            })
+    }
+
+    fun observableGoObserver() {
+        HttpUtils.instance
+            .ConfigGlobalHttpUtils()
+            .createService(Api::class.java)
+            .getHomeListByObservable(0)
+            //页面销毁自动取消请求
+            //自动处理网络加载中动画
+            .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
+                override fun onFailure(iException: IException?) {
+                    Gson().toJson(iException).e("rxjavaGo")
+                }
+
+                override fun onSuccess(t: IResponse<HomeListBean>) {
+                    Gson().toJson(t).e("rxjavaGo")
+                }
+            })
     }
 
     fun downloadFileByDeferred() {
