@@ -2,7 +2,7 @@ package com.zhangteng.httputils.result.coroutine.callback
 
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.CommonCallBack
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import kotlinx.coroutines.Deferred
 
 /**
@@ -11,8 +11,8 @@ import kotlinx.coroutines.Deferred
  * date: 2022/9/12
  */
 abstract class DeferredCallBack<T>(
-    iStateView: IStateView? = null
-) : CommonCallBack<T, Deferred<T>>(iStateView) {
+    iLoadingView: ILoadingView? = null
+) : CommonCallBack<T, Deferred<T>>(iLoadingView) {
 
     override fun doOnCompleted() {
         super.doOnCompleted()

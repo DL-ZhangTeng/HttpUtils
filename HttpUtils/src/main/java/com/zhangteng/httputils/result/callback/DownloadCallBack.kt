@@ -1,6 +1,6 @@
 package com.zhangteng.httputils.result.callback
 
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import okhttp3.ResponseBody
 
 /**
@@ -10,8 +10,8 @@ import okhttp3.ResponseBody
  */
 abstract class DownloadCallBack<D>(
     protected var fileName: String? = null,
-    iStateView: IStateView? = null
-) : CommonCallBack<ResponseBody, D>(iStateView) {
+    iLoadingView: ILoadingView? = null
+) : CommonCallBack<ResponseBody, D>(iLoadingView) {
 
     /**
      * 成功回调，有可能在子线程回调

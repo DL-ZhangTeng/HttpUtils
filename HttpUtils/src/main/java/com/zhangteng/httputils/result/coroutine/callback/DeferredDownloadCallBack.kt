@@ -4,7 +4,7 @@ import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.DownloadCallBack
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import com.zhangteng.utils.ThreadPoolUtils
 import kotlinx.coroutines.Deferred
 import okhttp3.ResponseBody
@@ -17,8 +17,8 @@ import java.io.IOException
  */
 abstract class DeferredDownloadCallBack(
     fileName: String? = null,
-    iStateView: IStateView? = null
-) : DownloadCallBack<Deferred<ResponseBody>>(fileName, iStateView) {
+    iLoadingView: ILoadingView? = null
+) : DownloadCallBack<Deferred<ResponseBody>>(fileName, iLoadingView) {
 
     override fun doOnCompleted() {
         super.doOnCompleted()

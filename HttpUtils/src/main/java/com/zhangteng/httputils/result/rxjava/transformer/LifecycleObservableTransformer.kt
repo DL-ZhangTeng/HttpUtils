@@ -3,7 +3,7 @@ package com.zhangteng.httputils.result.rxjava.transformer
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import com.zhangteng.utils.i
 import io.reactivex.Observable
 import io.reactivex.ObservableSource
@@ -17,7 +17,7 @@ import io.reactivex.schedulers.Schedulers
  * author: Swing
  * date: 2021/10/9
  */
-open class LifecycleObservableTransformer<T>(private var iStateView: IStateView?) :
+open class LifecycleObservableTransformer<T>(private var iLoadingView: ILoadingView?) :
     ObservableTransformer<T, T> {
     private var disposable: Disposable? = null
 
@@ -26,21 +26,21 @@ open class LifecycleObservableTransformer<T>(private var iStateView: IStateView?
             .subscribeOn(Schedulers.io())
             .doOnSubscribe { d: Disposable ->
                 disposable = d
-                if (iStateView == null) {
+                if (iLoadingView == null) {
                     HttpUtils.instance.addDisposable(d)
                 } else {
-                    HttpUtils.instance.addDisposable(d, iStateView)
+                    HttpUtils.instance.addDisposable(d, iLoadingView)
                 }
-                if (iStateView is LifecycleOwner) {
-                    HttpLifecycleEventObserver.bind(iStateView as LifecycleOwner)
+                if (iLoadingView is LifecycleOwner) {
+                    HttpLifecycleEventObserver.bind(iLoadingView as LifecycleOwner)
                 }
             }
             .subscribeOn(AndroidSchedulers.mainThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {
                 //页面销毁状态自动取消网络请求
-                if (iStateView is LifecycleOwner && HttpLifecycleEventObserver.isLifecycleDestroy(
-                        iStateView as LifecycleOwner?
+                if (iLoadingView is LifecycleOwner && HttpLifecycleEventObserver.isLifecycleDestroy(
+                        iLoadingView as LifecycleOwner?
                     )
                 ) {
                     //观察者会清理全部请求

@@ -5,7 +5,7 @@ import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.DownloadCallBack
 import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -19,8 +19,8 @@ import java.io.IOException
  */
 abstract class DownloadObserver(
     fileName: String? = null,
-    iStateView: IStateView? = null
-) : DownloadCallBack<Disposable>(fileName, iStateView),
+    iLoadingView: ILoadingView? = null
+) : DownloadCallBack<Disposable>(fileName, iLoadingView),
     Observer<ResponseBody> {
 
     override fun onSubscribe(d: Disposable) {

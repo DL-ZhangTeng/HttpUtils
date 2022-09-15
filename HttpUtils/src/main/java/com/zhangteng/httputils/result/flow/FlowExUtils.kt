@@ -6,7 +6,7 @@ import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.IResponse
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.*
@@ -19,32 +19,32 @@ import kotlin.coroutines.CoroutineContext
  * @param block 请求体
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iLoadingView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGo(
     block: suspend () -> T,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    iStateView: IStateView? = null
+    iLoadingView: ILoadingView? = null
 ) {
     flow { emit(block()) }
         .flowOn(Dispatchers.IO)
         .onStart {
-            iStateView?.showProgressDialog()
+            iLoadingView?.showProgressDialog()
 
-            currentCoroutineContext().addHttpUtilsDisposable(iStateView)
+            currentCoroutineContext().addHttpUtilsDisposable(iLoadingView)
         }
         .onCompletion {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 complete()
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 error(IException.handleException(it))
                 currentCoroutineContext().cancelSingleRequest()
             }
@@ -62,39 +62,39 @@ suspend fun <T> launchGo(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iLoadingView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGoIResponse(
     block: suspend () -> IResponse<T>,
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    iStateView: IStateView? = null
+    iLoadingView: ILoadingView? = null
 ) {
     flow { emit(block()) }
         .flowOn(Dispatchers.IO)
         .onStart {
-            iStateView?.showProgressDialog()
+            iLoadingView?.showProgressDialog()
 
-            currentCoroutineContext().addHttpUtilsDisposable(iStateView)
+            currentCoroutineContext().addHttpUtilsDisposable(iLoadingView)
         }
         .onCompletion {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 complete()
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 error(IException.handleException(it))
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!isInterruptByLifecycle(iStateView)) {
+            if (!isInterruptByLifecycle(iLoadingView)) {
                 if (it.isSuccess()) {
                     success(it)
                 } else {
@@ -110,42 +110,42 @@ suspend fun <T> launchGoIResponse(
  * @param block 请求体
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iLoadingView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGoFlow(
     block: () -> Flow<T>,
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    iStateView: IStateView? = null
+    iLoadingView: ILoadingView? = null
 ) {
     block()
         .flowOn(Dispatchers.IO)
         .onStart {
-            iStateView?.showProgressDialog()
+            iLoadingView?.showProgressDialog()
 
             //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
             if (this !is Closeable) {
-                currentCoroutineContext().addHttpUtilsDisposable(iStateView)
+                currentCoroutineContext().addHttpUtilsDisposable(iLoadingView)
             }
         }
         .onCompletion {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 complete()
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 error(IException.handleException(it))
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!isInterruptByLifecycle(iStateView)) {
+            if (!isInterruptByLifecycle(iLoadingView)) {
                 success(it)
             }
         }
@@ -158,42 +158,42 @@ suspend fun <T> launchGoFlow(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iLoadingView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> launchGoFlowIResponse(
     block: () -> Flow<IResponse<T>>,
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    iStateView: IStateView? = null
+    iLoadingView: ILoadingView? = null
 ) {
     block()
         .flowOn(Dispatchers.IO)
         .onStart {
-            iStateView?.showProgressDialog()
+            iLoadingView?.showProgressDialog()
 
             //如果不是可取消的域，可取消的域暂时只有viewModelScope，viewModelScope会自动取消协程
             if (this !is Closeable) {
-                currentCoroutineContext().addHttpUtilsDisposable(iStateView)
+                currentCoroutineContext().addHttpUtilsDisposable(iLoadingView)
             }
         }
         .onCompletion {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 complete()
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 error(IException.handleException(it))
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!isInterruptByLifecycle(iStateView)) {
+            if (!isInterruptByLifecycle(iLoadingView)) {
                 if (it.isSuccess()) {
                     success(it)
                 } else {
@@ -208,37 +208,37 @@ suspend fun <T> launchGoFlowIResponse(
  * 所有网络请求都在 viewModelScope 域中启动，当页面销毁时会自动调用ViewModel的  #onCleared 方法取消所有协程
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iLoadingView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Flow<T>.flowGo(
     success: (T) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    iStateView: IStateView? = null
+    iLoadingView: ILoadingView? = null
 ) {
     flowOn(Dispatchers.IO)
         .onStart {
-            iStateView?.showProgressDialog()
+            iLoadingView?.showProgressDialog()
 
-            currentCoroutineContext().addHttpUtilsDisposable(iStateView)
+            currentCoroutineContext().addHttpUtilsDisposable(iLoadingView)
         }
         .onCompletion {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 complete()
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 error(IException.handleException(it))
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!isInterruptByLifecycle(iStateView)) {
+            if (!isInterruptByLifecycle(iLoadingView)) {
                 success(it)
             }
         }
@@ -250,37 +250,37 @@ suspend fun <T> Flow<T>.flowGo(
  * @param success 成功回调
  * @param error 失败回调
  * @param complete  完成回调（无论成功失败都会调用）
- * @param iStateView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
+ * @param iLoadingView 显示加载框，如果是LifecycleOwner生命周期结束关闭请求的tag，添加非LifecycleOwner类型的tag无法绑定生命周期
  */
 suspend fun <T> Flow<IResponse<T>>.flowGoIResponse(
     success: (IResponse<T>) -> Unit,
     error: (IException) -> Unit,
     complete: () -> Unit = {},
-    iStateView: IStateView? = null
+    iLoadingView: ILoadingView? = null
 ) {
     flowOn(Dispatchers.IO)
         .onStart {
-            iStateView?.showProgressDialog()
+            iLoadingView?.showProgressDialog()
 
-            currentCoroutineContext().addHttpUtilsDisposable(iStateView)
+            currentCoroutineContext().addHttpUtilsDisposable(iLoadingView)
         }
         .onCompletion {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 complete()
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .catch {
-            if (!isInterruptByLifecycle(iStateView)) {
-                iStateView?.dismissProgressDialog()
+            if (!isInterruptByLifecycle(iLoadingView)) {
+                iLoadingView?.dismissProgressDialog()
                 error(IException.handleException(it))
                 currentCoroutineContext().cancelSingleRequest()
             }
         }
         .flowOn(Dispatchers.Main)
         .collect {
-            if (!isInterruptByLifecycle(iStateView)) {
+            if (!isInterruptByLifecycle(iLoadingView)) {
                 if (it.isSuccess()) {
                     success(it)
                 } else {

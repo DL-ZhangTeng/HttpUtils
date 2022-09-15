@@ -6,7 +6,7 @@ import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
 import com.zhangteng.httputils.lifecycle.isInterruptByLifecycle
 import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
-import com.zhangteng.utils.IStateView
+import com.zhangteng.utils.ILoadingView
 import com.zhangteng.utils.showShortToast
 
 /**
@@ -15,7 +15,7 @@ import com.zhangteng.utils.showShortToast
  * date: 2022/9/13
  */
 abstract class CommonCallBack<T, D>(
-    protected var iStateView: IStateView? = null
+    protected var iLoadingView: ILoadingView? = null
 ) : ICallBack<T, D> {
 
     protected var disposable: D? = null
@@ -40,20 +40,20 @@ abstract class CommonCallBack<T, D>(
 
     override fun doOnSubscribe(d: D) {
         disposable = d
-        if (iStateView == null) {
+        if (iLoadingView == null) {
             HttpUtils.instance.addDisposable(d as Any)
         } else {
-            HttpUtils.instance.addDisposable(d as Any, iStateView)
+            HttpUtils.instance.addDisposable(d as Any, iLoadingView)
         }
-        if (iStateView is LifecycleOwner) {
-            HttpLifecycleEventObserver.bind(iStateView as LifecycleOwner)
+        if (iLoadingView is LifecycleOwner) {
+            HttpLifecycleEventObserver.bind(iLoadingView as LifecycleOwner)
         }
-        iStateView?.showProgressDialog()
+        iLoadingView?.showProgressDialog()
     }
 
     override fun doOnError(iException: IException) {
-        if (isInterruptByLifecycle(iStateView)) return
-        iStateView?.dismissProgressDialog()
+        if (isInterruptByLifecycle(iLoadingView)) return
+        iLoadingView?.dismissProgressDialog()
         if (!isHideToast()) {
             HttpUtils.instance.context.showShortToast(iException.message)
         }
@@ -61,12 +61,12 @@ abstract class CommonCallBack<T, D>(
     }
 
     override fun doOnCompleted() {
-        if (isInterruptByLifecycle(iStateView)) return
-        iStateView?.dismissProgressDialog()
+        if (isInterruptByLifecycle(iLoadingView)) return
+        iLoadingView?.dismissProgressDialog()
     }
 
     override fun doOnNext(t: T) {
-        if (isInterruptByLifecycle(iStateView)) return
+        if (isInterruptByLifecycle(iLoadingView)) return
         onSuccess(t)
     }
 }
