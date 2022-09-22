@@ -17,7 +17,7 @@ import java.lang.reflect.InvocationTargetException
 object DiskLruCacheUtils {
     private var mDiskLruCache: DiskLruCache? = null
     private fun createDiskLruCache() {
-        val cache: Cache = GlobalHttpUtils.instance.getOkHttpClient().cache!!
+        val cache: Cache = GlobalHttpUtils.instance.okHttpClient.cache!!
         val clazz: Class<*> = Cache::class.java
         try {
             val cacheField = clazz.getDeclaredField("cache")

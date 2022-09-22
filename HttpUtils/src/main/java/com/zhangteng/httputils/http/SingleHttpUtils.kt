@@ -286,7 +286,7 @@ class SingleHttpUtils private constructor() {
      * @param path    缓存文件路径
      * @param maxSize 缓存文件大小
      */
-    fun setCache(isCache: Boolean, path: String?, maxSize: Long): SingleHttpUtils {
+    fun setCache(isCache: Boolean, path: String, maxSize: Long): SingleHttpUtils {
         if (isCache) {
             val cacheInterceptor = CacheInterceptor()
             val file = File(path)
@@ -459,6 +459,7 @@ class SingleHttpUtils private constructor() {
      *
      * @param cls 网络接口
      */
+    @Suppress("UNCHECKED_CAST")
     fun <K> createService(cls: Class<K>): K {
         return Proxy.newProxyInstance(
             cls.classLoader, arrayOf<Class<*>>(cls),

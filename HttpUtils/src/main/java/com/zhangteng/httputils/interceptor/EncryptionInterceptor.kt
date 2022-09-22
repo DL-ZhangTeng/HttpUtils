@@ -14,6 +14,7 @@ import com.zhangteng.utils.getFromSP
 import com.zhangteng.utils.putToSP
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import java.io.IOException
@@ -87,7 +88,7 @@ class EncryptionInterceptor : PriorityInterceptor {
                     .getFromSP(SPConfig.FILE_NAME, EncryptConfig.SECRET, "") as CharSequence
             )
         ) {
-            val secretResponse: Response = GlobalHttpUtils.instance.getOkHttpClient()
+            val secretResponse: Response = GlobalHttpUtils.instance.okHttpClient
                 .newCall(Request.Builder().url(EncryptConfig.publicKeyUrl!!).build()).execute()
             if (secretResponse.code == 200) {
                 try {
@@ -169,10 +170,8 @@ class EncryptionInterceptor : PriorityInterceptor {
                             val encryptParams =
                                 encrypt(paramsRaw, aesRequestKey, aesRequestKey.substring(0, 16))
                             requestBuilder.post(
-                                RequestBody.create(
-                                    requestBody.contentType(),
-                                    encryptParams
-                                )
+                                encryptParams
+                                    .toRequestBody(requestBody.contentType())
                             )
                         } catch (e: Exception) {
                             return null

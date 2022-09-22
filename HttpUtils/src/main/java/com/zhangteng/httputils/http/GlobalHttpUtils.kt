@@ -432,6 +432,7 @@ class GlobalHttpUtils private constructor() {
      *
      * @param cls 网络接口
      */
+    @Suppress("UNCHECKED_CAST")
     fun <K> createService(cls: Class<K>): K {
         if (mRetrofitServiceCache == null) {
             try {
@@ -465,6 +466,7 @@ class GlobalHttpUtils private constructor() {
      *
      * @param cls 网络接口
      */
+    @Suppress("UNCHECKED_CAST")
     fun <K> createServiceNoCache(cls: Class<K>): K {
         return Proxy.newProxyInstance(
             cls.classLoader, arrayOf<Class<*>>(cls),
