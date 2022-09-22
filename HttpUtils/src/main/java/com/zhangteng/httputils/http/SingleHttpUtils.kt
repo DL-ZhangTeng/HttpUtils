@@ -53,6 +53,89 @@ class SingleHttpUtils private constructor() {
         }
 
     /**
+     * description 获取单个 OkHttpClient.Builder
+     */
+    val singleOkHttpBuilder: OkHttpClient.Builder
+        get() {
+            val singleOkHttpBuilder = OkHttpClient.Builder()
+            singleOkHttpBuilder.retryOnConnectionFailure(true)
+            if (dns != null) {
+                singleOkHttpBuilder.dns(dns!!)
+            }
+            if (cache != null) {
+                singleOkHttpBuilder.cache(cache)
+            }
+            for (priorityInterceptor in priorityInterceptors) {
+                singleOkHttpBuilder.addInterceptor(priorityInterceptor)
+            }
+            for (priorityInterceptor in networkInterceptors) {
+                singleOkHttpBuilder.addNetworkInterceptor(priorityInterceptor)
+            }
+            singleOkHttpBuilder.readTimeout(
+                if (readTimeout > 0) readTimeout else 10,
+                TimeUnit.SECONDS
+            )
+            singleOkHttpBuilder.writeTimeout(
+                if (writeTimeout > 0) writeTimeout else 10,
+                TimeUnit.SECONDS
+            )
+            singleOkHttpBuilder.connectTimeout(
+                if (connectTimeout > 0) connectTimeout else 10,
+                TimeUnit.SECONDS
+            )
+            if (sslParams != null) {
+                singleOkHttpBuilder.sslSocketFactory(
+                    Objects.requireNonNull<SSLSocketFactory>(
+                        sslParams!!.sSLSocketFactory
+                    ), Objects.requireNonNull<X509TrustManager>(sslParams!!.trustManager)
+                )
+            }
+            return singleOkHttpBuilder
+        }
+
+    /**
+     * description 单个RetrofitBuilder
+     */
+    val singleRetrofitBuilder: Retrofit.Builder
+        get() {
+            val singleRetrofitBuilder = Retrofit.Builder()
+            if (converterFactories.isEmpty()) {
+                //获取全局的对象重新设置
+                val listConverterFactory: List<Converter.Factory> =
+                    GlobalHttpUtils.instance.retrofit.converterFactories()
+                for (factory in listConverterFactory) {
+                    singleRetrofitBuilder.addConverterFactory(factory)
+                }
+            } else {
+                for (converterFactory in converterFactories) {
+                    singleRetrofitBuilder.addConverterFactory(converterFactory)
+                }
+            }
+            if (adapterFactories.isEmpty()) {
+                //获取全局的对象重新设置
+                val listAdapterFactory: List<CallAdapter.Factory> =
+                    GlobalHttpUtils.instance.retrofit.callAdapterFactories()
+                for (factory in listAdapterFactory) {
+                    singleRetrofitBuilder.addCallAdapterFactory(factory)
+                }
+            } else {
+                for (adapterFactory in adapterFactories) {
+                    singleRetrofitBuilder.addCallAdapterFactory(adapterFactory)
+                }
+            }
+            if (baseUrl == null || baseUrl!!.isEmpty()) {
+                singleRetrofitBuilder.baseUrl(
+                    GlobalHttpUtils.instance.retrofit.baseUrl()
+                )
+            } else {
+                singleRetrofitBuilder.baseUrl(baseUrl!!)
+            }
+            singleRetrofitBuilder.client(singleOkHttpBuilder.build())
+            clearParams()
+            return singleRetrofitBuilder
+        }
+
+    /**
      * description 设置网络baseUrl
      *
      * @param baseUrl 接口前缀
@@ -382,89 +465,6 @@ class SingleHttpUtils private constructor() {
             RetrofitServiceProxyHandler(singleRetrofitBuilder.build(), cls)
         ) as K
     }
-
-    /**
-     * description 单个RetrofitBuilder
-     */
-    private val singleRetrofitBuilder: Retrofit.Builder
-        get() {
-            val singleRetrofitBuilder = Retrofit.Builder()
-            if (converterFactories.isEmpty()) {
-                //获取全局的对象重新设置
-                val listConverterFactory: List<Converter.Factory> =
-                    GlobalHttpUtils.instance.retrofit!!.converterFactories()
-                for (factory in listConverterFactory) {
-                    singleRetrofitBuilder.addConverterFactory(factory)
-                }
-            } else {
-                for (converterFactory in converterFactories) {
-                    singleRetrofitBuilder.addConverterFactory(converterFactory)
-                }
-            }
-            if (adapterFactories.isEmpty()) {
-                //获取全局的对象重新设置
-                val listAdapterFactory: List<CallAdapter.Factory> =
-                    GlobalHttpUtils.instance.retrofit!!.callAdapterFactories()
-                for (factory in listAdapterFactory) {
-                    singleRetrofitBuilder.addCallAdapterFactory(factory)
-                }
-            } else {
-                for (adapterFactory in adapterFactories) {
-                    singleRetrofitBuilder.addCallAdapterFactory(adapterFactory)
-                }
-            }
-            if (baseUrl == null || baseUrl!!.isEmpty()) {
-                singleRetrofitBuilder.baseUrl(
-                    GlobalHttpUtils.instance.retrofit!!.baseUrl()
-                )
-            } else {
-                singleRetrofitBuilder.baseUrl(baseUrl!!)
-            }
-            singleRetrofitBuilder.client(singleOkHttpBuilder.build())
-            clearParams()
-            return singleRetrofitBuilder
-        }
-
-    /**
-     * description 获取单个 OkHttpClient.Builder
-     */
-    private val singleOkHttpBuilder: OkHttpClient.Builder
-        get() {
-            val singleOkHttpBuilder = OkHttpClient.Builder()
-            singleOkHttpBuilder.retryOnConnectionFailure(true)
-            if (dns != null) {
-                singleOkHttpBuilder.dns(dns!!)
-            }
-            if (cache != null) {
-                singleOkHttpBuilder.cache(cache)
-            }
-            for (priorityInterceptor in priorityInterceptors) {
-                singleOkHttpBuilder.addInterceptor(priorityInterceptor)
-            }
-            for (priorityInterceptor in networkInterceptors) {
-                singleOkHttpBuilder.addNetworkInterceptor(priorityInterceptor)
-            }
-            singleOkHttpBuilder.readTimeout(
-                if (readTimeout > 0) readTimeout else 10,
-                TimeUnit.SECONDS
-            )
-            singleOkHttpBuilder.writeTimeout(
-                if (writeTimeout > 0) writeTimeout else 10,
-                TimeUnit.SECONDS
-            )
-            singleOkHttpBuilder.connectTimeout(
-                if (connectTimeout > 0) connectTimeout else 10,
-                TimeUnit.SECONDS
-            )
-            if (sslParams != null) {
-                singleOkHttpBuilder.sslSocketFactory(
-                    Objects.requireNonNull<SSLSocketFactory>(
-                        sslParams!!.sSLSocketFactory
-                    ), Objects.requireNonNull<X509TrustManager>(sslParams!!.trustManager)
-                )
-            }
-            return singleOkHttpBuilder
-        }
 
     private fun clearParams() {
         baseUrl = null

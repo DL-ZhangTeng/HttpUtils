@@ -34,53 +34,6 @@ import javax.net.ssl.X509TrustManager
  */
 class GlobalHttpUtils private constructor() {
     /**
-     * description: 全局okhttpBuilder，保证使用一个网络实例
-     */
-    private val okhttpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
-
-    /**
-     * description: 全局retrofitBuilder，保证使用一个网络实例
-     */
-    private val retrofitBuilder: Retrofit.Builder = Retrofit.Builder()
-
-    /**
-     * description: 全局okHttpClient，保证使用一个网络实例
-     */
-    private var okHttpClient: OkHttpClient? = null
-
-    /**
-     * description: 全局retrofit，保证使用一个网络实例，当retrofit构建完成后无法修改全局baseUrl
-     */
-    var retrofit: Retrofit? = null
-        get() {
-            if (okHttpClient == null) {
-                for (priorityInterceptor in priorityInterceptors) {
-                    okhttpBuilder.addInterceptor(priorityInterceptor)
-                }
-                for (priorityInterceptor in networkInterceptors) {
-                    okhttpBuilder.addNetworkInterceptor(priorityInterceptor)
-                }
-                okHttpClient = okhttpBuilder.build()
-            }
-            if (field == null) {
-                if (retrofitBuilder.callAdapterFactories().isEmpty()) {
-                    retrofitBuilder.addCallAdapterFactory(CoroutineCallAdapterFactory.create())
-                    retrofitBuilder.addCallAdapterFactory(FlowCallAdapterFactory.create())
-
-                    if (HttpUtils.instance.isRxjava2) {
-                        retrofitBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    }
-                }
-                if (retrofitBuilder.converterFactories().isEmpty()) {
-                    retrofitBuilder.addConverterFactory(GsonConverterFactory.create())
-                }
-                field = retrofitBuilder.client(okHttpClient!!).build()
-            }
-            return field
-        }
-        private set
-
-    /**
      * description: Lru缓存
      */
     private var mRetrofitServiceCache: LruCache<String, Any>? = null
@@ -100,6 +53,47 @@ class GlobalHttpUtils private constructor() {
         TreeSet { o: PriorityInterceptor, r: PriorityInterceptor ->
             o.priority.compareTo(r.priority)
         }
+
+    /**
+     * description: 全局okhttpBuilder，保证使用一个网络实例
+     */
+    val okhttpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
+
+    /**
+     * description: 全局okHttpClient，保证使用一个网络实例
+     */
+    val okHttpClient: OkHttpClient by lazy {
+        for (priorityInterceptor in priorityInterceptors) {
+            okhttpBuilder.addInterceptor(priorityInterceptor)
+        }
+        for (priorityInterceptor in networkInterceptors) {
+            okhttpBuilder.addNetworkInterceptor(priorityInterceptor)
+        }
+        okhttpBuilder.build()
+    }
+
+    /**
+     * description: 全局retrofitBuilder，保证使用一个网络实例
+     */
+    val retrofitBuilder: Retrofit.Builder = Retrofit.Builder()
+
+    /**
+     * description: 全局retrofit，保证使用一个网络实例，当retrofit构建完成后无法修改全局baseUrl
+     */
+    val retrofit: Retrofit by lazy {
+        if (retrofitBuilder.callAdapterFactories().isEmpty()) {
+            retrofitBuilder.addCallAdapterFactory(CoroutineCallAdapterFactory.create())
+            retrofitBuilder.addCallAdapterFactory(FlowCallAdapterFactory.create())
+
+            if (HttpUtils.instance.isRxjava2) {
+                retrofitBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            }
+        }
+        if (retrofitBuilder.converterFactories().isEmpty()) {
+            retrofitBuilder.addConverterFactory(GsonConverterFactory.create())
+        }
+        retrofitBuilder.client(okHttpClient).build()
+    }
 
     /**
      * description 设置网络baseUrl
@@ -476,29 +470,6 @@ class GlobalHttpUtils private constructor() {
             cls.classLoader, arrayOf<Class<*>>(cls),
             RetrofitServiceProxyHandler(retrofit, cls)
         ) as K
-    }
-
-    /**
-     * description 全局 okhttpBuilder
-     */
-    fun getOkHttpClientBuilder(): OkHttpClient.Builder {
-        return okhttpBuilder
-    }
-
-    /**
-     * description 全局 okHttpClient，当okHttpClient构建完成后无法新增全局参数
-     */
-    fun getOkHttpClient(): OkHttpClient {
-        if (okHttpClient == null) {
-            for (priorityInterceptor in priorityInterceptors) {
-                okhttpBuilder.addInterceptor(priorityInterceptor)
-            }
-            for (priorityInterceptor in networkInterceptors) {
-                okhttpBuilder.addNetworkInterceptor(priorityInterceptor)
-            }
-            okHttpClient = okhttpBuilder.build()
-        }
-        return okHttpClient!!
     }
 
     companion object {

@@ -21,31 +21,26 @@ import java.io.File
  * Created by swing on 2018/4/24.
  */
 class UploadRetrofit private constructor() {
-    private var mRetrofit: Retrofit? = null
     private val builder: Retrofit.Builder = Retrofit.Builder().apply {
         //默认使用全局配置
-        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.callAdapterFactories()?.forEach {
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit.callAdapterFactories().forEach {
             addCallAdapterFactory(it)
         }
         //默认使用全局配置
-        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.converterFactories()?.forEach {
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit.converterFactories().forEach {
             addConverterFactory(it)
         }
         //默认使用全局baseUrl
         baseUrl(
-            HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.baseUrl() ?: "".toHttpUrl()
+            HttpUtils.instance.ConfigGlobalHttpUtils().retrofit.baseUrl() ?: "".toHttpUrl()
         )
         //默认使用全局配置
-        client(HttpUtils.instance.ConfigGlobalHttpUtils().getOkHttpClient())
+        client(HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient)
     }
 
-    val retrofit: Retrofit?
-        get() {
-            if (mRetrofit == null) {
-                mRetrofit = builder.build()
-            }
-            return mRetrofit
-        }
+    val retrofit: Retrofit by lazy {
+        builder.build()
+    }
 
     /**
      * description 自定义baseUrl
@@ -130,7 +125,7 @@ class UploadRetrofit private constructor() {
         val body: MultipartBody.Part =
             MultipartBody.Part.createFormData(fieldName, file.name, requestFile)
         return instance
-            .retrofit!!
+            .retrofit
             .create(UploadFileApi::class.java)
             .uploadFileByDeferred(uploadUrl, body)
     }
@@ -153,7 +148,7 @@ class UploadRetrofit private constructor() {
         val body: MultipartBody.Part =
             MultipartBody.Part.createFormData(fieldName, file.name, requestFile)
         return instance
-            .retrofit!!
+            .retrofit
             .create(UploadFileApi::class.java)
             .uploadFileByFlow(uploadUrl, body)
     }
@@ -176,7 +171,7 @@ class UploadRetrofit private constructor() {
         val body: MultipartBody.Part =
             MultipartBody.Part.createFormData(fieldName, file.name, requestFile)
         return instance
-            .retrofit!!
+            .retrofit
             .create(UploadFileObservableApi::class.java)
             .uploadFileByObservable(uploadUrl, body)
     }
@@ -255,7 +250,7 @@ class UploadRetrofit private constructor() {
         }
         val parts: List<MultipartBody.Part> = builder.build().parts
         return instance
-            .retrofit!!
+            .retrofit
             .create(UploadFileApi::class.java)
             .uploadFilesByDeferred(uploadUrl, parts)
     }
@@ -283,7 +278,7 @@ class UploadRetrofit private constructor() {
         }
         val parts: List<MultipartBody.Part> = builder.build().parts
         return instance
-            .retrofit!!
+            .retrofit
             .create(UploadFileApi::class.java)
             .uploadFilesByFlow(uploadUrl, parts)
     }
@@ -311,7 +306,7 @@ class UploadRetrofit private constructor() {
         }
         val parts: List<MultipartBody.Part> = builder.build().parts
         return instance
-            .retrofit!!
+            .retrofit
             .create(UploadFileObservableApi::class.java)
             .uploadFilesByObservable(uploadUrl, parts)
     }

@@ -17,30 +17,26 @@ import retrofit2.Retrofit
  * Created by swing on 2018/4/24.
  */
 class DownloadRetrofit private constructor() {
-    private var mRetrofit: Retrofit? = null
     private val builder: Retrofit.Builder = Retrofit.Builder().apply {
         //默认使用全局配置
-        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.callAdapterFactories()?.forEach {
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit.callAdapterFactories().forEach {
             addCallAdapterFactory(it)
         }
         //默认使用全局配置
-        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.converterFactories()?.forEach {
+        HttpUtils.instance.ConfigGlobalHttpUtils().retrofit.converterFactories().forEach {
             addConverterFactory(it)
         }
         //默认使用全局baseUrl
         baseUrl(
-            HttpUtils.instance.ConfigGlobalHttpUtils().retrofit?.baseUrl() ?: "".toHttpUrl()
+            HttpUtils.instance.ConfigGlobalHttpUtils().retrofit.baseUrl() ?: "".toHttpUrl()
         )
         //默认使用全局配置
-        client(HttpUtils.instance.ConfigGlobalHttpUtils().getOkHttpClient())
+        client(HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient)
     }
-    val retrofit: Retrofit?
-        get() {
-            if (mRetrofit == null) {
-                mRetrofit = builder.build()
-            }
-            return mRetrofit
-        }
+
+    val retrofit: Retrofit by lazy {
+        builder.build()
+    }
 
     /**
      * description 自定义baseUrl
@@ -115,7 +111,7 @@ class DownloadRetrofit private constructor() {
      */
     fun downloadFileByDeferred(fileUrl: String?): Deferred<ResponseBody> {
         return instance
-            .retrofit!!
+            .retrofit
             .create(DownloadApi::class.java)
             .downloadFileByDeferred(fileUrl)
     }
@@ -128,7 +124,7 @@ class DownloadRetrofit private constructor() {
      */
     fun downloadFileByFlow(fileUrl: String?): Flow<ResponseBody> {
         return instance
-            .retrofit!!
+            .retrofit
             .create(DownloadApi::class.java)
             .downloadFileByFlow(fileUrl)
 
@@ -142,7 +138,7 @@ class DownloadRetrofit private constructor() {
      */
     fun downloadFileByObservable(fileUrl: String?): Observable<ResponseBody> {
         return instance
-            .retrofit!!
+            .retrofit
             .create(DownloadObservableApi::class.java)
             .downloadFileByObservable(fileUrl)
     }

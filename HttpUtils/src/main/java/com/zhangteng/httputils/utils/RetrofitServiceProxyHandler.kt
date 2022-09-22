@@ -14,7 +14,7 @@ import java.lang.reflect.Method
  * @date: 2021/5/10
  */
 class RetrofitServiceProxyHandler(
-    private val mRetrofit: Retrofit?,
+    private val mRetrofit: Retrofit,
     private val mServiceClass: Class<*>
 ) : InvocationHandler {
     private var mRetrofitService: Any? = null
@@ -48,7 +48,7 @@ class RetrofitServiceProxyHandler(
     private val retrofitService: Any?
         get() {
             if (mRetrofitService == null) {
-                mRetrofitService = mRetrofit!!.create(mServiceClass)
+                mRetrofitService = mRetrofit.create(mServiceClass)
             }
             return mRetrofitService
         }
