@@ -33,33 +33,33 @@ implementation 'com.github.DL-ZhangTeng:HttpUtils:2.0.0'
 ```
 
 ## 属性
-属性名| 描述
---- | -----
-setBaseUrl| ConfigGlobalHttpUtils()全局的BaseUrl；ConfigSingleInstance()单独设置BaseUrl
-addCallAdapterFactory| 设置CallAdapter.Factory,默认FlowCallAdapterFactory.create()、CoroutineCallAdapterFactory.create()、RxJava2CallAdapterFactory.create()
-addConverterFactory| 设置Converter.Factory,默认GsonConverterFactory.create()
-setDns| 自定义域名解析
-setCache| 开启缓存策略
-addHeader| 全局的单个请求头信息
-setHeaders| 全局的请求头信息，设置静态请求头：更新请求头时不需要重新设置，对Map元素进行移除添加即可；设置动态请求头：如token等需要根据登录状态实时变化的请求头参数，最小支持api 24
-setHttpCallBack| 设置网络请求前后回调函数 onHttpResponse:可以先客户端一步拿到每一次Http请求的结果 onHttpRequest:可以在请求服务器之前拿到
-setSign| 全局验签，appKey与后端匹配即可，具体规则参考：https://blog.csdn.net/duoluo9/article/details/105214983
-setEnAndDecryption| 全局加解密(AES+RSA)。1、公钥请求路径HttpUrl.get(BuildConfig.HOST + "/getPublicKey")；2、公钥响应结果{"result": {"publicKey": ""},"message": "查询成功!","status": 100}
-setCookie|全局持久话cookie,保存本地每次都会携带在header中
-addInterceptor|添加拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)
-addInterceptors|添加拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)
-addNetworkInterceptor|添加网络拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)
-addNetworkInterceptors|添加网络拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)
-setSslSocketFactory| 全局ssl证书认证。1、信任所有证书,不安全有风险，setSslSocketFactory()；2、使用预埋证书，校验服务端证书（自签名证书），setSslSocketFactory(getAssets().open("your.cer"))；3、使用bks证书和密码管理客户端证书（双向认证），使用预埋证书，校验服务端证书（自签名证书），setSslSocketFactory(getAssets().open("your.bks"), "123456", getAssets().open("your.cer"))
-setReadTimeOut|全局超时配置
-setWriteTimeOut|全局超时配置
-setConnectionTimeOut| 全局超时配置
-setLog| 全局是否打开请求log日志
+| 属性名                    | 描述                                                                                                                                                                                                                                                                  |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| setBaseUrl             | ConfigGlobalHttpUtils()全局的BaseUrl；ConfigSingleInstance()单独设置BaseUrl                                                                                                                                                                                                 |
+| addCallAdapterFactory  | 设置CallAdapter.Factory,默认FlowCallAdapterFactory.create()、CoroutineCallAdapterFactory.create()、RxJava2CallAdapterFactory.create()                                                                                                                                     |
+| addConverterFactory    | 设置Converter.Factory,默认GsonConverterFactory.create()                                                                                                                                                                                                                 |
+| setDns                 | 自定义域名解析                                                                                                                                                                                                                                                             |
+| setCache               | 开启缓存策略                                                                                                                                                                                                                                                              |
+| addHeader              | 全局的单个请求头信息                                                                                                                                                                                                                                                          |
+| setHeaders             | 全局的请求头信息，设置静态请求头：更新请求头时不需要重新设置，对Map元素进行移除添加即可；设置动态请求头：如token等需要根据登录状态实时变化的请求头参数，最小支持api 24                                                                                                                                                                          |
+| setHttpCallBack        | 设置网络请求前后回调函数 onHttpResponse:可以先客户端一步拿到每一次Http请求的结果 onHttpRequest:可以在请求服务器之前拿到                                                                                                                                                                                       |
+| setSign                | 全局验签，appKey与后端匹配即可，具体规则参考：https://blog.csdn.net/duoluo9/article/details/105214983                                                                                                                                                                                   |
+| setEnAndDecryption     | 全局加解密(AES+RSA)。1、公钥请求路径HttpUrl.get(BuildConfig.HOST + "/getPublicKey")；2、公钥响应结果{"result": {"publicKey": ""},"message": "查询成功!","status": 100}                                                                                                                       |
+| setCookie              | 全局持久话cookie,保存本地每次都会携带在header中                                                                                                                                                                                                                                      |
+| addInterceptor         | 添加拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)                                                                                                                                                                                               |
+| addInterceptors        | 添加拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)                                                                                                                                                                                               |
+| addNetworkInterceptor  | 添加网络拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)                                                                                                                                                                                             |
+| addNetworkInterceptors | 添加网络拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)                                                                                                                                                                                             |
+| setSslSocketFactory    | 全局ssl证书认证。1、信任所有证书,不安全有风险，setSslSocketFactory()；2、使用预埋证书，校验服务端证书（自签名证书），setSslSocketFactory(getAssets().open("your.cer"))；3、使用bks证书和密码管理客户端证书（双向认证），使用预埋证书，校验服务端证书（自签名证书），setSslSocketFactory(getAssets().open("your.bks"), "123456", getAssets().open("your.cer")) |
+| setReadTimeOut         | 全局超时配置                                                                                                                                                                                                                                                              |
+| setWriteTimeOut        | 全局超时配置                                                                                                                                                                                                                                                              |
+| setConnectionTimeOut   | 全局超时配置                                                                                                                                                                                                                                                              |
+| setLog                 | 全局是否打开请求log日志                                                                                                                                                                                                                                                       |
 
 ## 使用
 
 ### 初始化
-```java
+```kotlin
 class HttpUtilsApplication : Application() {
 
     override fun onCreate() {
@@ -166,7 +166,7 @@ class HttpUtilsApplication : Application() {
 ```
 
 ### ICallBack回调（更多请求方式请参考MainActivity）
-```java
+```kotlin
     fun deferredGo_ICallBack() {
         GlobalScope.launch {
             HttpUtils.instance.ConfigGlobalHttpUtils()
@@ -304,10 +304,11 @@ class HttpUtilsApplication : Application() {
 
 ## 混淆
 -keep public class com.zhangteng.**.*{ *; }
+
 ## 历史版本
-版本| 更新| 更新时间
--------- | ----- | -----
-v2.0.0|Retrofit网络加载库二次封装支持RxJava与Flow-HttpUtils|2022/9/15 at 0:17
+| 版本     | 更新                                       | 更新时间              |
+|--------|------------------------------------------|-------------------|
+| v2.0.0 | Retrofit网络加载库二次封装支持RxJava与Flow-HttpUtils | 2022/9/15 at 0:17 |
 
 ## 赞赏
 如果您喜欢HttpUtils，或感觉HttpUtils帮助到了您，可以点右上角“Star”支持一下，您的支持就是我的动力，谢谢
