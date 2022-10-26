@@ -28,8 +28,7 @@ implementation 'com.github.DL-ZhangTeng:HttpUtils:2.0.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 
-    //noinspection GradleDynamicVersion
-    implementation 'com.github.DL-ZhangTeng:Utils:2.0.+'
+    implementation 'com.github.DL-ZhangTeng:Utils:2.0.1'
 ```
 
 ## 属性
