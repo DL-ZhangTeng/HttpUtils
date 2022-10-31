@@ -1,9 +1,12 @@
 # Retrofit网络加载库二次封装支持RxJava与Flow-HttpUtils
+
 HttpUtils是Retrofit网络加载库二次封装支持RxJava与Flow，包含网络加载动画、activity销毁自动取消请求、网络缓存、公共参数、RSA+AES加密等
 [GitHub仓库地址](https://github.com/DL-ZhangTeng/HttpUtils)
+
 ## 引入
 
 ### gradle
+
 ```groovy
 allprojects {
     repositories {
@@ -12,26 +15,27 @@ allprojects {
 }
 
 implementation 'com.github.DL-ZhangTeng:HttpUtils:2.1.0'
-    //库所使用的三方
-    implementation 'androidx.lifecycle:lifecycle-common:2.4.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.4.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-scalars:2.8.1'
-    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+//库所使用的三方
+implementation 'androidx.lifecycle:lifecycle-common:2.4.0'
+implementation 'androidx.lifecycle:lifecycle-runtime:2.4.0'
+implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+implementation 'com.squareup.retrofit2:converter-scalars:2.8.1'
+implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
+implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
-    //如果不需要rxjava不用导入
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+//如果不需要rxjava不用导入
+implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
+implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 
-    implementation 'com.github.DL-ZhangTeng:Utils:2.0.1'
+implementation 'com.github.DL-ZhangTeng:Utils:2.0.1'
 ```
 
 ## 属性
+
 | 属性名                    | 描述                                                                                                                                                                                                                                                                  |
 |------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | setBaseUrl             | ConfigGlobalHttpUtils()全局的BaseUrl；ConfigSingleInstance()单独设置BaseUrl                                                                                                                                                                                                 |
@@ -58,6 +62,7 @@ implementation 'com.github.DL-ZhangTeng:HttpUtils:2.1.0'
 ## 使用
 
 ### 初始化
+
 ```kotlin
 class HttpUtilsApplication : Application() {
 
@@ -165,136 +170,137 @@ class HttpUtilsApplication : Application() {
 ```
 
 ### ICallBack回调（更多请求方式请参考MainActivity）
+
 ```kotlin
     fun deferredGo_ICallBack() {
-        GlobalScope.launch {
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeListByDeferred(0)
-                .deferredGo(object :
-                    DeferredCallBack<BaseResult<HomeListBean>>(
-                        this@MainActivity
-                    ) {
-                    override fun isHideToast(): Boolean {
-                        return true
-                    }
-
-                    override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("deferredGo_ICallBack")
-                    }
-
-                    override fun onSuccess(t: BaseResult<HomeListBean>) {
-                        FailOverGson.failOverGson.toJson(t).e("deferredGo_ICallBack")
-                    }
-                })
-        }
-    }
-
-    fun deferredGoIResponse_ICallBack() {
-        GlobalScope.launch {
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeListByDeferred(0)
-                .deferredGoIResponse(object :
-                    DeferredCallBack<IResponse<HomeListBean>>(
-                        this@MainActivity
-                    ) {
-                    override fun isHideToast(): Boolean {
-                        return true
-                    }
-
-                    override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("deferredGoIResponse_ICallBack")
-                    }
-
-                    override fun onSuccess(t: IResponse<HomeListBean>) {
-                        FailOverGson.failOverGson.toJson(t).e("deferredGoIResponse_ICallBack")
-                    }
-                })
-        }
-    }
-
-    fun flowGo_ICallBack() {
-        GlobalScope.launch {
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeListByFlow(0)
-                .flowGo(object :
-                    FlowCallBack<BaseResult<HomeListBean>>(this@MainActivity) {
-                    override fun isHideToast(): Boolean {
-                        return true
-                    }
-
-                    override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("flowGo_ICallBack")
-                    }
-
-                    override fun onSuccess(t: BaseResult<HomeListBean>) {
-                        FailOverGson.failOverGson.toJson(t).e("flowGo_ICallBack")
-                    }
-                })
-        }
-    }
-
-    fun flowGoIResponse_ICallBack() {
-        GlobalScope.launch {
-            HttpUtils.instance.ConfigGlobalHttpUtils()
-                .createService(Api::class.java)
-                .getHomeListByFlow(0)
-                .flowGoIResponse(object :
-                    FlowCallBack<IResponse<HomeListBean>>(this@MainActivity) {
-                    override fun isHideToast(): Boolean {
-                        return true
-                    }
-
-                    override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("flowGoIResponse_ICallBack")
-                    }
-
-                    override fun onSuccess(t: IResponse<HomeListBean>) {
-                        FailOverGson.failOverGson.toJson(t).e("flowGoIResponse_ICallBack")
-                    }
-                })
-        }
-    }
-
-    fun observableGoCompose() {
-        HttpUtils.instance
-            .ConfigGlobalHttpUtils()
+    GlobalScope.launch {
+        HttpUtils.instance.ConfigGlobalHttpUtils()
             .createService(Api::class.java)
-            .getHomeListByObservable(0)
-            //页面销毁自动取消请求
-            .compose(LifecycleObservableTransformer(this@MainActivity))
-            //自动处理网络加载中动画
-            .compose(ProgressDialogObservableTransformer(this@MainActivity))
-            .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
-                override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+            .getHomeListByDeferred(0)
+            .deferredGo(object :
+                DeferredCallBack<BaseResult<HomeListBean>>(
+                    this@MainActivity
+                ) {
+                override fun isHideToast(): Boolean {
+                    return true
                 }
 
-                override fun onSuccess(t: IResponse<HomeListBean>) {
-                    FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
+                override fun onFailure(iException: IException?) {
+                    FailOverGson.failOverGson.toJson(iException).e("deferredGo_ICallBack")
+                }
+
+                override fun onSuccess(t: BaseResult<HomeListBean>) {
+                    FailOverGson.failOverGson.toJson(t).e("deferredGo_ICallBack")
                 }
             })
     }
+}
 
-    fun observableGoObserver() {
-        HttpUtils.instance
-            .ConfigGlobalHttpUtils()
+fun deferredGoIResponse_ICallBack() {
+    GlobalScope.launch {
+        HttpUtils.instance.ConfigGlobalHttpUtils()
             .createService(Api::class.java)
-            .getHomeListByObservable(0)
-            //页面销毁自动取消请求
-            //自动处理网络加载中动画
-            .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
+            .getHomeListByDeferred(0)
+            .deferredGoIResponse(object :
+                DeferredCallBack<IResponse<HomeListBean>>(
+                    this@MainActivity
+                ) {
+                override fun isHideToast(): Boolean {
+                    return true
+                }
+
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(iException).e("deferredGoIResponse_ICallBack")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
-                    FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(t).e("deferredGoIResponse_ICallBack")
                 }
             })
     }
+}
+
+fun flowGo_ICallBack() {
+    GlobalScope.launch {
+        HttpUtils.instance.ConfigGlobalHttpUtils()
+            .createService(Api::class.java)
+            .getHomeListByFlow(0)
+            .flowGo(object :
+                FlowCallBack<BaseResult<HomeListBean>>(this@MainActivity) {
+                override fun isHideToast(): Boolean {
+                    return true
+                }
+
+                override fun onFailure(iException: IException?) {
+                    FailOverGson.failOverGson.toJson(iException).e("flowGo_ICallBack")
+                }
+
+                override fun onSuccess(t: BaseResult<HomeListBean>) {
+                    FailOverGson.failOverGson.toJson(t).e("flowGo_ICallBack")
+                }
+            })
+    }
+}
+
+fun flowGoIResponse_ICallBack() {
+    GlobalScope.launch {
+        HttpUtils.instance.ConfigGlobalHttpUtils()
+            .createService(Api::class.java)
+            .getHomeListByFlow(0)
+            .flowGoIResponse(object :
+                FlowCallBack<IResponse<HomeListBean>>(this@MainActivity) {
+                override fun isHideToast(): Boolean {
+                    return true
+                }
+
+                override fun onFailure(iException: IException?) {
+                    FailOverGson.failOverGson.toJson(iException).e("flowGoIResponse_ICallBack")
+                }
+
+                override fun onSuccess(t: IResponse<HomeListBean>) {
+                    FailOverGson.failOverGson.toJson(t).e("flowGoIResponse_ICallBack")
+                }
+            })
+    }
+}
+
+fun observableGoCompose() {
+    HttpUtils.instance
+        .ConfigGlobalHttpUtils()
+        .createService(Api::class.java)
+        .getHomeListByObservable(0)
+        //页面销毁自动取消请求
+        .compose(LifecycleObservableTransformer(this@MainActivity))
+        //自动处理网络加载中动画
+        .compose(ProgressDialogObservableTransformer(this@MainActivity))
+        .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
+            override fun onFailure(iException: IException?) {
+                FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+            }
+
+            override fun onSuccess(t: IResponse<HomeListBean>) {
+                FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
+            }
+        })
+}
+
+fun observableGoObserver() {
+    HttpUtils.instance
+        .ConfigGlobalHttpUtils()
+        .createService(Api::class.java)
+        .getHomeListByObservable(0)
+        //页面销毁自动取消请求
+        //自动处理网络加载中动画
+        .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
+            override fun onFailure(iException: IException?) {
+                FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+            }
+
+            override fun onSuccess(t: IResponse<HomeListBean>) {
+                FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
+            }
+        })
+}
 
 //手动取消网络请求
 //        HttpUtils.instance.cancelSingleRequest(any);
@@ -302,20 +308,26 @@ class HttpUtilsApplication : Application() {
 ```
 
 ## 混淆
+
 -keep public class com.zhangteng.**.*{ *; }
 
 ## 历史版本
-| 版本     | 更新                                       | 更新时间              |
-|--------|------------------------------------------|-------------------|
-| v2.0.0 | Retrofit网络加载库二次封装支持RxJava与Flow-HttpUtils | 2022/9/15 at 0:17 |
+
+| 版本     | 更新                                       | 更新时间                |
+|--------|------------------------------------------|---------------------|
+| v2.1.0 | 常见数据解析容错处理                               | 2022/10/31 at 17:47 |
+| v2.0.0 | Retrofit网络加载库二次封装支持RxJava与Flow-HttpUtils | 2022/9/15 at 0:17   |
 
 ## 赞赏
+
 如果您喜欢HttpUtils，或感觉HttpUtils帮助到了您，可以点右上角“Star”支持一下，您的支持就是我的动力，谢谢
 
 ## 联系我
+
 邮箱：763263311@qq.com/ztxiaoran@foxmail.com
 
 ## License
+
 Copyright (c) [2020] [Swing]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
