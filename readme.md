@@ -133,7 +133,7 @@ class HttpUtilsApplication : Application() {
             //
             //    override fun onHttpRequest(chain: Interceptor.Chain, request: Request): Request {
             //        //这里可以在请求服务器之前拿到
-            //        Gson().toJson(request.headers).e()
+            //        FailOverGson.failOverGson.toJson(request.headers).e()
             //        val body: RequestBody? = request.body
             //        try {
             //            body?.contentLength().toString().e()
@@ -180,11 +180,11 @@ class HttpUtilsApplication : Application() {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("deferredGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("deferredGo_ICallBack")
                     }
 
                     override fun onSuccess(t: BaseResult<HomeListBean>) {
-                        Gson().toJson(t).e("deferredGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("deferredGo_ICallBack")
                     }
                 })
         }
@@ -204,11 +204,11 @@ class HttpUtilsApplication : Application() {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("deferredGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("deferredGoIResponse_ICallBack")
                     }
 
                     override fun onSuccess(t: IResponse<HomeListBean>) {
-                        Gson().toJson(t).e("deferredGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("deferredGoIResponse_ICallBack")
                     }
                 })
         }
@@ -226,11 +226,11 @@ class HttpUtilsApplication : Application() {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("flowGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("flowGo_ICallBack")
                     }
 
                     override fun onSuccess(t: BaseResult<HomeListBean>) {
-                        Gson().toJson(t).e("flowGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("flowGo_ICallBack")
                     }
                 })
         }
@@ -248,11 +248,11 @@ class HttpUtilsApplication : Application() {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("flowGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("flowGoIResponse_ICallBack")
                     }
 
                     override fun onSuccess(t: IResponse<HomeListBean>) {
-                        Gson().toJson(t).e("flowGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("flowGoIResponse_ICallBack")
                     }
                 })
         }
@@ -269,11 +269,11 @@ class HttpUtilsApplication : Application() {
             .compose(ProgressDialogObservableTransformer(this@MainActivity))
             .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
-                    Gson().toJson(t).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
                 }
             })
     }
@@ -287,11 +287,11 @@ class HttpUtilsApplication : Application() {
             //自动处理网络加载中动画
             .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
-                    Gson().toJson(t).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
                 }
             })
     }

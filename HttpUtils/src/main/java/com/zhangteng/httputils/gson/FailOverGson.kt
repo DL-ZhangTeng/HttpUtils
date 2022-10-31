@@ -17,8 +17,7 @@ object FailOverGson {
      * 创建 Gson 构建对象
      */
     private fun newGsonBuilder(): GsonBuilder {
-        val gsonBuilder = GsonBuilder()
-        return gsonBuilder
+        return GsonBuilder()
             .registerTypeAdapterFactory(
                 TypeAdapters.newFactory(
                     String::class.java,

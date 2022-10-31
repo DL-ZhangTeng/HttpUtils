@@ -4,10 +4,10 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.google.gson.Gson
 import com.zhangteng.app.http.Api
 import com.zhangteng.app.http.BaseResult
 import com.zhangteng.app.http.entity.HomeListBean
+import com.zhangteng.httputils.gson.FailOverGson
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.result.coroutine.*
 import com.zhangteng.httputils.result.coroutine.callback.DeferredCallBack
@@ -52,9 +52,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeList(0)
             }, {
-                Gson().toJson(it).e("launchGo_DeferredExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGo_DeferredExUtils")
             }, {
-                Gson().toJson(it).e("launchGo_DeferredExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGo_DeferredExUtils")
             }, {
 
             },
@@ -70,9 +70,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeList(0)
             }, {
-                Gson().toJson(it).e("launchGoIResponse_DeferredExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGoIResponse_DeferredExUtils")
             }, {
-                Gson().toJson(it).e("launchGoIResponse_DeferredExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGoIResponse_DeferredExUtils")
             }, {
 
             },
@@ -88,9 +88,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeListByDeferred(0)
             }, {
-                Gson().toJson(it).e("launchGoDeferred")
+                FailOverGson.failOverGson.toJson(it).e("launchGoDeferred")
             }, {
-                Gson().toJson(it).e("launchGoDeferred")
+                FailOverGson.failOverGson.toJson(it).e("launchGoDeferred")
             }, {
 
             },
@@ -106,9 +106,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeListByDeferred(0)
             }, {
-                Gson().toJson(it).e("launchGoDeferredIResponse")
+                FailOverGson.failOverGson.toJson(it).e("launchGoDeferredIResponse")
             }, {
-                Gson().toJson(it).e("launchGoDeferredIResponse")
+                FailOverGson.failOverGson.toJson(it).e("launchGoDeferredIResponse")
             }, {
 
             },
@@ -123,9 +123,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                 .createService(Api::class.java)
                 .getHomeListByDeferred(0)
                 .deferredGo({
-                    Gson().toJson(it).e("deferredGo")
+                    FailOverGson.failOverGson.toJson(it).e("deferredGo")
                 }, {
-                    Gson().toJson(it).e("deferredGo")
+                    FailOverGson.failOverGson.toJson(it).e("deferredGo")
                 }, {
 
                 },
@@ -140,9 +140,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                 .createService(Api::class.java)
                 .getHomeListByDeferred(0)
                 .deferredGoIResponse({
-                    Gson().toJson(it).e("deferredGoIResponse")
+                    FailOverGson.failOverGson.toJson(it).e("deferredGoIResponse")
                 }, {
-                    Gson().toJson(it).e("deferredGoIResponse")
+                    FailOverGson.failOverGson.toJson(it).e("deferredGoIResponse")
                 }, {
 
                 },
@@ -165,11 +165,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("deferredGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("deferredGo_ICallBack")
                     }
 
                     override fun onSuccess(t: BaseResult<HomeListBean>) {
-                        Gson().toJson(t).e("deferredGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("deferredGo_ICallBack")
                     }
                 })
         }
@@ -189,11 +189,12 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("deferredGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException)
+                            .e("deferredGoIResponse_ICallBack")
                     }
 
                     override fun onSuccess(t: IResponse<HomeListBean>) {
-                        Gson().toJson(t).e("deferredGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("deferredGoIResponse_ICallBack")
                     }
                 })
         }
@@ -206,9 +207,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeList(0)
             }, {
-                Gson().toJson(it).e("launchGo_FlowExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGo_FlowExUtils")
             }, {
-                Gson().toJson(it).e("launchGo_FlowExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGo_FlowExUtils")
             }, {
 
             },
@@ -224,9 +225,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeList(0)
             }, {
-                Gson().toJson(it).e("launchGoIResponse_FlowExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGoIResponse_FlowExUtils")
             }, {
-                Gson().toJson(it).e("launchGoIResponse_FlowExUtils")
+                FailOverGson.failOverGson.toJson(it).e("launchGoIResponse_FlowExUtils")
             }, {
 
             },
@@ -242,9 +243,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeListByFlow(0)
             }, {
-                Gson().toJson(it).e("launchGoFlow")
+                FailOverGson.failOverGson.toJson(it).e("launchGoFlow")
             }, {
-                Gson().toJson(it).e("launchGoFlow")
+                FailOverGson.failOverGson.toJson(it).e("launchGoFlow")
             }, {
 
             },
@@ -260,9 +261,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                     .createService(Api::class.java)
                     .getHomeListByFlow(0)
             }, {
-                Gson().toJson(it).e("launchGoFlowIResponse")
+                FailOverGson.failOverGson.toJson(it).e("launchGoFlowIResponse")
             }, {
-                Gson().toJson(it).e("launchGoFlowIResponse")
+                FailOverGson.failOverGson.toJson(it).e("launchGoFlowIResponse")
             }, {
 
             },
@@ -277,9 +278,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
                 .flowGo({
-                    Gson().toJson(it).e("flowGo")
+                    FailOverGson.failOverGson.toJson(it).e("flowGo")
                 }, {
-                    Gson().toJson(it).e("flowGo")
+                    FailOverGson.failOverGson.toJson(it).e("flowGo")
                 }, {
 
                 },
@@ -294,9 +295,9 @@ class MainActivity : AppCompatActivity(), IStateView {
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
                 .flowGoIResponse({
-                    Gson().toJson(it).e("flowGoIResponse")
+                    FailOverGson.failOverGson.toJson(it).e("flowGoIResponse")
                 }, {
-                    Gson().toJson(it).e("flowGoIResponse")
+                    FailOverGson.failOverGson.toJson(it).e("flowGoIResponse")
                 }, {
 
                 },
@@ -317,11 +318,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("flowGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("flowGo_ICallBack")
                     }
 
                     override fun onSuccess(t: BaseResult<HomeListBean>) {
-                        Gson().toJson(t).e("flowGo_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("flowGo_ICallBack")
                     }
                 })
         }
@@ -339,11 +340,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("flowGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(iException).e("flowGoIResponse_ICallBack")
                     }
 
                     override fun onSuccess(t: IResponse<HomeListBean>) {
-                        Gson().toJson(t).e("flowGoIResponse_ICallBack")
+                        FailOverGson.failOverGson.toJson(t).e("flowGoIResponse_ICallBack")
                     }
                 })
         }
@@ -360,11 +361,11 @@ class MainActivity : AppCompatActivity(), IStateView {
             .compose(ProgressDialogObservableTransformer(this@MainActivity))
             .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
-                    Gson().toJson(t).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
                 }
             })
     }
@@ -378,11 +379,11 @@ class MainActivity : AppCompatActivity(), IStateView {
             //自动处理网络加载中动画
             .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
-                    Gson().toJson(t).e("rxjavaGo")
+                    FailOverGson.failOverGson.toJson(t).e("rxjavaGo")
                 }
             })
     }
@@ -407,7 +408,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("downloadFileByDeferred")
+                        FailOverGson.failOverGson.toJson(iException).e("downloadFileByDeferred")
                     }
 
                 })
@@ -434,7 +435,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("downloadFileByFlow")
+                        FailOverGson.failOverGson.toJson(iException).e("downloadFileByFlow")
                     }
 
                 })
@@ -462,7 +463,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 }
 
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("downloadFileByObservable")
+                    FailOverGson.failOverGson.toJson(iException).e("downloadFileByObservable")
                 }
 
             })
@@ -479,11 +480,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("uploadFileByDeferred")
+                        FailOverGson.failOverGson.toJson(iException).e("uploadFileByDeferred")
                     }
 
                     override fun onSuccess(t: ResponseBody) {
-                        Gson().toJson(t).e("uploadFileByDeferred")
+                        FailOverGson.failOverGson.toJson(t).e("uploadFileByDeferred")
                     }
                 })
         }
@@ -500,11 +501,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("uploadFileByFlow")
+                        FailOverGson.failOverGson.toJson(iException).e("uploadFileByFlow")
                     }
 
                     override fun onSuccess(t: ResponseBody) {
-                        Gson().toJson(t).e("uploadFileByFlow")
+                        FailOverGson.failOverGson.toJson(t).e("uploadFileByFlow")
                     }
                 })
         }
@@ -517,11 +518,11 @@ class MainActivity : AppCompatActivity(), IStateView {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : CommonObserver<ResponseBody>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("uploadFileByObservable")
+                    FailOverGson.failOverGson.toJson(iException).e("uploadFileByObservable")
                 }
 
                 override fun onSuccess(t: ResponseBody) {
-                    Gson().toJson(t).e("uploadFileByObservable")
+                    FailOverGson.failOverGson.toJson(t).e("uploadFileByObservable")
                 }
             })
     }
@@ -537,11 +538,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("uploadFilesByDeferred")
+                        FailOverGson.failOverGson.toJson(iException).e("uploadFilesByDeferred")
                     }
 
                     override fun onSuccess(t: ResponseBody) {
-                        Gson().toJson(t).e("uploadFilesByDeferred")
+                        FailOverGson.failOverGson.toJson(t).e("uploadFilesByDeferred")
                     }
                 })
         }
@@ -558,11 +559,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        Gson().toJson(iException).e("uploadFilesByFlow")
+                        FailOverGson.failOverGson.toJson(iException).e("uploadFilesByFlow")
                     }
 
                     override fun onSuccess(t: ResponseBody) {
-                        Gson().toJson(t).e("uploadFilesByFlow")
+                        FailOverGson.failOverGson.toJson(t).e("uploadFilesByFlow")
                     }
                 })
         }
@@ -575,11 +576,11 @@ class MainActivity : AppCompatActivity(), IStateView {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : CommonObserver<ResponseBody>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
-                    Gson().toJson(iException).e("uploadFilesByObservable")
+                    FailOverGson.failOverGson.toJson(iException).e("uploadFilesByObservable")
                 }
 
                 override fun onSuccess(t: ResponseBody) {
-                    Gson().toJson(t).e("uploadFilesByObservable")
+                    FailOverGson.failOverGson.toJson(t).e("uploadFilesByObservable")
                 }
             })
     }

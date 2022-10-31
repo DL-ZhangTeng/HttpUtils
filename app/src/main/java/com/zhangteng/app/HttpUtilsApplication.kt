@@ -3,6 +3,7 @@ package com.zhangteng.app
 import android.app.Application
 import com.zhangteng.httputils.adapter.coroutine.CoroutineCallAdapterFactory
 import com.zhangteng.httputils.adapter.flow.FlowCallAdapterFactory
+import com.zhangteng.httputils.gson.FailOverGson
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.utils.R
 import com.zhangteng.utils.StateViewHelper
@@ -24,7 +25,7 @@ class HttpUtilsApplication : Application() {
             .addCallAdapterFactory(FlowCallAdapterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             //设置Converter.Factory,默认GsonConverterFactory.create()
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(FailOverGson.failOverGson))
             //设置自定义域名解析
             //.setDns(HttpDns.getInstance())
             //开启缓存策略
@@ -84,7 +85,7 @@ class HttpUtilsApplication : Application() {
             //
             //    override fun onHttpRequest(chain: Interceptor.Chain, request: Request): Request {
             //        //这里可以在请求服务器之前拿到
-            //        Gson().toJson(request.headers).e()
+            //        FailOverGson.failOverGson.toJson(request.headers).e()
             //        val body: RequestBody? = request.body
             //        try {
             //            body?.contentLength().toString().e()
