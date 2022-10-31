@@ -11,7 +11,7 @@ allprojects {
     }
 }
 
-implementation 'com.github.DL-ZhangTeng:HttpUtils:2.0.0'
+implementation 'com.github.DL-ZhangTeng:HttpUtils:2.1.0'
     //库所使用的三方
     implementation 'androidx.lifecycle:lifecycle-common:2.4.0'
     implementation 'androidx.lifecycle:lifecycle-runtime:2.4.0'
@@ -73,7 +73,7 @@ class HttpUtilsApplication : Application() {
             .addCallAdapterFactory(FlowCallAdapterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             //设置Converter.Factory,默认GsonConverterFactory.create()
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(FailOverGson.failOverGson))
             //设置自定义域名解析
             //.setDns(HttpDns.getInstance())
             //开启缓存策略
