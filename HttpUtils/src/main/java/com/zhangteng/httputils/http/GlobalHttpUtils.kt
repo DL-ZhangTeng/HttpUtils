@@ -6,6 +6,7 @@ import android.util.Log
 import com.zhangteng.httputils.adapter.coroutine.CoroutineCallAdapterFactory
 import com.zhangteng.httputils.adapter.flow.FlowCallAdapterFactory
 import com.zhangteng.httputils.config.EncryptConfig
+import com.zhangteng.httputils.gson.*
 import com.zhangteng.httputils.interceptor.*
 import com.zhangteng.httputils.interceptor.CallBackInterceptor.CallBack
 import com.zhangteng.httputils.utils.RetrofitServiceProxyHandler
@@ -28,6 +29,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.X509TrustManager
+
 
 /**
  * Created by swing on 2018/4/24.
@@ -90,7 +92,7 @@ class GlobalHttpUtils private constructor() {
             }
         }
         if (retrofitBuilder.converterFactories().isEmpty()) {
-            retrofitBuilder.addConverterFactory(GsonConverterFactory.create())
+            retrofitBuilder.addConverterFactory(GsonConverterFactory.create(FailOverGson.failOverGson))
         }
         retrofitBuilder.client(okHttpClient).build()
     }
