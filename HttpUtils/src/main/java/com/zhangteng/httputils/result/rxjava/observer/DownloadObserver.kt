@@ -12,7 +12,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import okhttp3.ResponseBody
-import java.io.IOException
+import java.io.File
 
 /**
  * Created by swing on 2018/4/24.
@@ -55,12 +55,14 @@ abstract class DownloadObserver(
             .just(t)
             .subscribeOn(Schedulers.io())
             .subscribe {
-                try {
-                    DownloadManager().saveFile(
-                        it,
-                        fileName,
-                        object : DownloadManager.ProgressListener {
-                            override fun onResponseProgress(
+                DownloadManager.Builder()
+                    .apply {
+                        progressListener = object : DownloadManager.ProgressListener {
+                            override fun onComplete(file: File) {
+
+                            }
+
+                            override fun onProgress(
                                 bytesRead: Long,
                                 contentLength: Long,
                                 progress: Float,
@@ -75,16 +77,20 @@ abstract class DownloadObserver(
                                         onSuccess(
                                             bytesRead,
                                             contentLength,
-                                            progress.toFloat(),
+                                            progress,
                                             done,
                                             filePath
                                         )
                                     }
                             }
-                        })
-                } catch (e: IOException) {
-                    doOnError(IException.handleException(e))
-                }
+
+                            override fun onError(e: Exception) {
+                                doOnError(IException.handleException(e))
+                            }
+                        }
+                    }
+                    .build()
+                    .saveFile(t, fileName)
             }
     }
 }

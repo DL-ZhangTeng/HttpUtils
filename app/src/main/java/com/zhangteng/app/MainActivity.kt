@@ -21,6 +21,7 @@ import com.zhangteng.httputils.result.rxjava.observer.CommonObserver
 import com.zhangteng.httputils.result.rxjava.observer.DownloadObserver
 import com.zhangteng.httputils.result.rxjava.transformer.LifecycleObservableTransformer
 import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
+import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -28,6 +29,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import java.io.File
 
 @OptIn(DelicateCoroutinesApi::class)
 class MainActivity : AppCompatActivity(), IStateView {
@@ -467,6 +469,35 @@ class MainActivity : AppCompatActivity(), IStateView {
                 }
 
             })
+    }
+
+    fun downloadFileByWorkerManager() {
+        DownloadManager.Builder()
+            .apply {
+                downloadUrl = ""
+                isNetworkReconnect = true
+                progressListener = object : DownloadManager.ProgressListener {
+                    override fun onComplete(file: File) {
+
+                    }
+
+                    override fun onProgress(
+                        bytesRead: Long,
+                        contentLength: Long,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?
+                    ) {
+
+                    }
+
+                    override fun onError(e: Exception) {
+
+                    }
+                }
+            }
+            .build()
+            .start()
     }
 
     fun uploadFileByDeferred() {

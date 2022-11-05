@@ -7,7 +7,7 @@ import com.zhangteng.utils.IException
 import com.zhangteng.utils.ILoadingView
 import com.zhangteng.utils.ThreadPoolUtils
 import okhttp3.ResponseBody
-import java.io.IOException
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -32,12 +32,14 @@ abstract class FlowDownloadCallBack(
 
     override fun onSuccess(t: ResponseBody) {
         ThreadPoolUtils.instance.addExecuteTask {
-            try {
-                DownloadManager().saveFile(
-                    t,
-                    fileName,
-                    object : DownloadManager.ProgressListener {
-                        override fun onResponseProgress(
+            DownloadManager.Builder()
+                .apply {
+                    progressListener = object : DownloadManager.ProgressListener {
+                        override fun onComplete(file: File) {
+
+                        }
+
+                        override fun onProgress(
                             bytesRead: Long,
                             contentLength: Long,
                             progress: Float,
@@ -47,15 +49,19 @@ abstract class FlowDownloadCallBack(
                             onSuccess(
                                 bytesRead,
                                 contentLength,
-                                progress.toFloat(),
+                                progress,
                                 done,
                                 filePath
                             )
                         }
-                    })
-            } catch (e: IOException) {
-                doOnError(IException.handleException(e))
-            }
+
+                        override fun onError(e: Exception) {
+                            doOnError(IException.handleException(e))
+                        }
+                    }
+                }
+                .build()
+                .saveFile(t, fileName)
         }
     }
 }
