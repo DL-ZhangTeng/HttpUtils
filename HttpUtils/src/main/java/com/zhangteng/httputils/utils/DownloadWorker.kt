@@ -5,11 +5,12 @@ import android.util.Log
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import okhttp3.OkHttpClient
+import com.zhangteng.httputils.http.HttpUtils
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.RandomAccessFile
+import java.net.HttpURLConnection
 
 /**
  * description: 下载任务
@@ -71,7 +72,7 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         val request: Request = Request.Builder()
             .url(url)
             .build()
-        val client = OkHttpClient()
+        val client = HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) {
             Log.d("DownloadWorker", "startDownload: 下载失败,正在准备重试")
@@ -106,13 +107,13 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
             .url(url)
             .addHeader("Range", "bytes=$startIndex-$totalSize")
             .build()
-        val client = OkHttpClient()
+        val client = HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) {
             Log.d("DownloadWorker", "下载失败,正在准备重试")
             return Result.retry()
         }
-        if (response.code == 206) {
+        if (response.code == HttpURLConnection.HTTP_PARTIAL) {
             var randomAccessFile: RandomAccessFile? = null
             try {
                 randomAccessFile = RandomAccessFile(file, "rwd")
@@ -152,7 +153,7 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         val request: Request = Request.Builder()
             .url(url)
             .build()
-        val client = OkHttpClient()
+        val client = HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient
         val response = client.newCall(request).execute()
         return if (response.body?.contentLength() != null) {
             response.body?.contentLength()!!
