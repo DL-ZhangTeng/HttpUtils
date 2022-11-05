@@ -16,15 +16,16 @@ allprojects {
 
 implementation 'com.github.DL-ZhangTeng:HttpUtils:2.1.0'
 //库所使用的三方
-implementation 'androidx.lifecycle:lifecycle-common:2.4.0'
-implementation 'androidx.lifecycle:lifecycle-runtime:2.4.0'
+implementation 'androidx.lifecycle:lifecycle-common:2.4.1'
+implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
 implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
 implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 implementation 'com.squareup.retrofit2:converter-scalars:2.8.1'
 implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
 implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
 //如果不需要rxjava不用导入
 implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
