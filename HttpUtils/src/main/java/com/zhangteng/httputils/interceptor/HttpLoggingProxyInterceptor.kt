@@ -9,7 +9,11 @@ class HttpLoggingProxyInterceptor(private val httpLoggingInterceptor: HttpLoggin
     PriorityInterceptor {
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
-        return httpLoggingInterceptor.intercept(chain)
+        return try {
+            httpLoggingInterceptor.intercept(chain)
+        } catch (e: Exception) {
+            chain.proceed(chain.request())
+        }
     }
 
     override val priority: Int

@@ -1,6 +1,6 @@
 package com.zhangteng.httputils.utils
 
-import android.text.TextUtils
+import android.os.Environment
 import android.util.Log
 import androidx.work.*
 import com.zhangteng.httputils.http.HttpUtils
@@ -20,8 +20,8 @@ class DownloadManager private constructor(var builder: Builder) {
      * description 使用WorkManager方式开启下载，实现了断点续传下载、断网重连下载
      */
     fun start() {
-        if (TextUtils.isEmpty(builder.downloadPath) || TextUtils.isEmpty(builder.downloadUrl)) {
-            Log.d("DownloadManager", "savePath or downloadUrl is null,This is illegal")
+        if (builder.downloadUrl.isNullOrEmpty()) {
+            Log.d("DownloadManager", "downloadUrl is null,This is illegal")
             return
         }
 
@@ -30,6 +30,7 @@ class DownloadManager private constructor(var builder: Builder) {
         data.putString(DownloadWorker.DOWNLOAD_WORKER_REQUEST_URL, builder.downloadUrl)
         //传入要存储的根目录，文件名字会根据downloadUrl进行截取
         data.putString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH, builder.downloadPath)
+
         val requestBuilder =
             OneTimeWorkRequest.Builder(DownloadWorker::class.java).setInputData(data.build())
 
@@ -42,85 +43,95 @@ class DownloadManager private constructor(var builder: Builder) {
         val request = requestBuilder.build()
 
         val manager = WorkManager.getInstance(HttpUtils.instance.context!!)
-        manager.getWorkInfoByIdLiveData(request.id).observeForever { workInfo ->
-            when (workInfo.state) {
-                WorkInfo.State.SUCCEEDED -> {
-                    val filePath =
-                        workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
-                    val progress =
-                        workInfo.outputData.getFloat(DownloadWorker.DOWNLOAD_WORKER_PROGRESS, 100f)
-                    val completed =
-                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_COMPLETED, 0L)
-                    val totalSize =
-                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                    builder.progressListener?.onProgress(
-                        completed,
-                        totalSize,
-                        progress,
-                        completed != totalSize,
-                        filePath
-                    )
-                    if (filePath.isNullOrEmpty()) {
+        manager.getWorkInfoByIdLiveData(request.id)
+            .observeForever { workInfo ->
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        val filePath =
+                            workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                        val progress =
+                            workInfo.outputData.getFloat(
+                                DownloadWorker.DOWNLOAD_WORKER_PROGRESS,
+                                100f
+                            )
+                        val completed =
+                            workInfo.outputData.getLong(
+                                DownloadWorker.DOWNLOAD_WORKER_COMPLETED,
+                                0L
+                            )
+                        val totalSize =
+                            workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                        builder.progressListener?.onProgress(
+                            completed,
+                            totalSize,
+                            progress,
+                            completed != totalSize || progress != 100f,
+                            filePath
+                        )
+                        if (filePath.isNullOrEmpty()) {
+                            builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
+                            Log.i("DownloadManager", "下载失败，请稍后重试")
+                        } else {
+                            builder.progressListener?.onComplete(File(filePath))
+                            Log.i("DownloadManager", "下载完成")
+                        }
+                    }
+                    WorkInfo.State.RUNNING -> {
+                        val filePath =
+                            workInfo.progress.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                        val progress =
+                            workInfo.progress.getFloat(DownloadWorker.DOWNLOAD_WORKER_PROGRESS, 0f)
+                        val completed =
+                            workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_COMPLETED, 0L)
+                        val totalSize =
+                            workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                        builder.progressListener?.onProgress(
+                            completed,
+                            totalSize,
+                            progress,
+                            completed == totalSize && progress == 100f,
+                            filePath
+                        )
+                        Log.i("DownloadManager", "正在下载：进度$progress 完成$completed 大小$totalSize")
+                    }
+                    WorkInfo.State.ENQUEUED -> {
+                        val filePath =
+                            workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                        val totalSize =
+                            workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                        builder.progressListener?.onProgress(
+                            0L,
+                            totalSize,
+                            0f,
+                            false,
+                            filePath
+                        )
+                        Log.i("DownloadManager", "等待下载")
+                    }
+                    WorkInfo.State.BLOCKED -> {
+                        val filePath =
+                            workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                        val totalSize =
+                            workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                        builder.progressListener?.onProgress(
+                            0L,
+                            totalSize,
+                            -1f,
+                            false,
+                            filePath
+                        )
+                        Log.i("DownloadManager", "下载阻塞")
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        builder.progressListener?.onError(Exception("取消下载"))
+                        Log.i("DownloadManager", "取消下载")
+                    }
+                    WorkInfo.State.FAILED -> {
                         builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
-                    } else {
-                        builder.progressListener?.onComplete(File(filePath))
+                        Log.i("DownloadManager", "下载失败，请稍后重试")
                     }
                 }
-                WorkInfo.State.RUNNING -> {
-                    val filePath =
-                        workInfo.progress.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
-                    val progress =
-                        workInfo.progress.getFloat(DownloadWorker.DOWNLOAD_WORKER_PROGRESS, 0f)
-                    val completed =
-                        workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_COMPLETED, 0L)
-                    val totalSize =
-                        workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                    builder.progressListener?.onProgress(
-                        completed,
-                        totalSize,
-                        progress,
-                        completed == totalSize,
-                        filePath
-                    )
-                }
-                WorkInfo.State.ENQUEUED -> {
-                    val filePath =
-                        workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
-                    val totalSize =
-                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                    builder.progressListener?.onProgress(
-                        0L,
-                        totalSize,
-                        0f,
-                        false,
-                        filePath
-                    )
-                    Log.i("DownloadManager", "等待下载")
-                }
-                WorkInfo.State.BLOCKED -> {
-                    val filePath =
-                        workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
-                    val totalSize =
-                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                    builder.progressListener?.onProgress(
-                        0L,
-                        totalSize,
-                        -1f,
-                        false,
-                        filePath
-                    )
-                    Log.i("DownloadManager", "下载阻塞")
-                }
-                WorkInfo.State.CANCELLED -> {
-                    builder.progressListener?.onError(Exception("取消下载"))
-                    Log.i("DownloadManager", "取消下载")
-                }
-                WorkInfo.State.FAILED -> {
-                    builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
-                    Log.i("DownloadManager", "下载失败，请稍后重试")
-                }
             }
-        }
         manager.enqueue(request)
     }
 
@@ -133,24 +144,20 @@ class DownloadManager private constructor(var builder: Builder) {
      * @param destFileName 文件名（包括文件后缀）
      */
     fun saveFile(response: ResponseBody, destFileName: String?): File? {
-
-        val destFileDir: String =
-            builder.downloadPath ?: (HttpUtils.instance.context!!.getExternalFilesDir(null)
-                .toString() + File.separator + "download" + File.separator)
-        val contentLength: Long?
         var inputStream: InputStream? = null
-        val buf = ByteArray(2048)
-        var len: Int
         var fos: FileOutputStream? = null
         return try {
-            contentLength = response.contentLength()
-            inputStream = response.byteStream()
+            val destFileDir: String = builder.downloadPath!!
+            val buf = ByteArray(2048)
+            var len: Int
+            val contentLength: Long = response.contentLength()
             var sum: Long = 0
             val dir = File(destFileDir)
             if (!dir.exists()) {
                 dir.mkdirs()
             }
             val file = File(dir, destFileName ?: UUID.randomUUID().toString())
+            inputStream = response.byteStream()
             fos = FileOutputStream(file)
             while (inputStream.read(buf).also { len = it } != -1) {
                 sum += len.toLong()
@@ -186,7 +193,7 @@ class DownloadManager private constructor(var builder: Builder) {
         /**
          * description: 文件的url，断点续传下载参数
          */
-        var downloadUrl: String? = ""
+        var downloadUrl: String? = null
 
         /**
          * description: 是否需要断网重连 默认不重连，断点续传下载参数
@@ -199,6 +206,13 @@ class DownloadManager private constructor(var builder: Builder) {
         var progressListener: ProgressListener? = null
 
         fun build(): DownloadManager {
+            if (downloadPath.isNullOrEmpty()) {
+                downloadPath = if (HttpUtils.instance.context == null) {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + File.separator
+                } else {
+                    HttpUtils.instance.context!!.getExternalFilesDir(null)!!.absolutePath + File.separator + "download" + File.separator
+                }
+            }
             return DownloadManager(this)
         }
 

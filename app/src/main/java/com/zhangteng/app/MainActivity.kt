@@ -2,6 +2,7 @@ package com.zhangteng.app
 
 import android.content.DialogInterface
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.zhangteng.app.http.Api
@@ -39,7 +40,7 @@ class MainActivity : AppCompatActivity(), IStateView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        launchGo_DeferredExUtils()
+        downloadFileByWorkerManager()
     }
 
     override fun onDestroy() {
@@ -474,11 +475,11 @@ class MainActivity : AppCompatActivity(), IStateView {
     fun downloadFileByWorkerManager() {
         DownloadManager.Builder()
             .apply {
-                downloadUrl = ""
+                downloadUrl = "https://tp.kaishuihu.com/apk/fdy_1-1.0.0-2021-12-23.apk"
                 isNetworkReconnect = true
                 progressListener = object : DownloadManager.ProgressListener {
                     override fun onComplete(file: File) {
-
+                        Log.i("MainActivity", "下载成功")
                     }
 
                     override fun onProgress(
@@ -488,11 +489,11 @@ class MainActivity : AppCompatActivity(), IStateView {
                         done: Boolean,
                         filePath: String?
                     ) {
-
+                        Log.i("MainActivity", "正在下载：进度$progress 完成$bytesRead 大小$contentLength")
                     }
 
                     override fun onError(e: Exception) {
-
+                        Log.i("MainActivity", "下载失败")
                     }
                 }
             }
