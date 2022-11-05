@@ -56,27 +56,8 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
                 continuousDownload(url, startIndex, totalSize, file)
             } else {
                 //如果下载完成，直接回调成功
-                val data =
-                    Data.Builder().putString(DOWNLOAD_WORKER_FILE_PATH, file.absolutePath).build()
-                return Result.success(data)
+                return Result.success(getData(file, totalSize))
             }
-        }
-    }
-
-    /**
-     * description 获取文件总长度
-     * @param url 请求路径
-     */
-    private fun getFileLength(url: String): Long {
-        val request: Request = Request.Builder()
-            .url(url)
-            .build()
-        val client = OkHttpClient()
-        val response = client.newCall(request).execute()
-        return if (response.body?.contentLength() != null) {
-            response.body?.contentLength()!!
-        } else {
-            -1
         }
     }
 
@@ -84,9 +65,9 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
      * description 普通下载任务开始
      * @param url 请求路径
      * @param file 本地下载文件
-     * @param fileLength 文件长度
+     * @param totalSize 文件长度
      */
-    private fun startDownload(url: String, file: File, fileLength: Long): Result {
+    private fun startDownload(url: String, file: File, totalSize: Long): Result {
         val request: Request = Request.Builder()
             .url(url)
             .build()
@@ -102,29 +83,28 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         var len: Int
         while (inputStream.read(buf).also { len = it } != -1) {
             fos.write(buf, 0, len)
-            noticeProgress(file, fileLength)
+            setProgressAsync(getData(file, totalSize))
         }
         fos.flush()
-        val data = Data.Builder().putString(DOWNLOAD_WORKER_FILE_PATH, file.absolutePath).build()
-        return Result.success(data)
+        return Result.success(getData(file, totalSize))
     }
 
     /**
      * description 续传下载任务开始
      * @param url 请求路径
      * @param startIndex 开始下载位置
-     * @param fileLength 文件长度
+     * @param totalSize 文件长度
      * @param file 本地下载文件
      */
     private fun continuousDownload(
         url: String,
         startIndex: Long,
-        fileLength: Long,
+        totalSize: Long,
         file: File,
     ): Result {
         val request: Request = Request.Builder()
             .url(url)
-            .addHeader("Range", "bytes=$startIndex-$fileLength")
+            .addHeader("Range", "bytes=$startIndex-$totalSize")
             .build()
         val client = OkHttpClient()
         val response = client.newCall(request).execute()
@@ -142,11 +122,9 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
                 var len: Int
                 while (inputStream.read(buffer).also { len = it } != -1) {
                     randomAccessFile.write(buffer, 0, len)
-                    noticeProgress(file, fileLength)
+                    setProgressAsync(getData(file, totalSize))
                 }
-                val data =
-                    Data.Builder().putString(DOWNLOAD_WORKER_FILE_PATH, file.absolutePath).build()
-                return Result.success(data)
+                return Result.success(getData(file, totalSize))
             } catch (e: Exception) {
                 Log.d("DownloadWorker", "下载失败,正在准备重试")
                 return Result.retry()
@@ -167,31 +145,51 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     /**
-     * description 通知下载进度刷新
-     * @param file 本地下载文件
-     * @param fileLength 文件长度
+     * description 获取文件总长度
+     * @param url 请求路径
      */
-    private fun noticeProgress(file: File, fileLength: Long) {
-        if (file.exists()) {
-            val saveFileLength: Long = file.length()
-            if (fileLength != 0L) {
-                val builder = Data.Builder()
-                    .putFloat(DOWNLOAD_WORKER_PROGRESS, saveFileLength * 100f / fileLength)
-                setProgressAsync(builder.build())
-            } else {
-                val builder = Data.Builder()
-                    .putFloat(DOWNLOAD_WORKER_PROGRESS, 0f)
-                setProgressAsync(builder.build())
-            }
+    private fun getFileLength(url: String): Long {
+        val request: Request = Request.Builder()
+            .url(url)
+            .build()
+        val client = OkHttpClient()
+        val response = client.newCall(request).execute()
+        return if (response.body?.contentLength() != null) {
+            response.body?.contentLength()!!
         } else {
-            val builder = Data.Builder().putFloat(DOWNLOAD_WORKER_PROGRESS, 0f)
-            setProgressAsync(builder.build())
+            -1
         }
+    }
+
+    /**
+     * description 获取Data
+     * @param file 已下载文件
+     * @param totalSize 文件总长度
+     */
+    private fun getData(file: File, totalSize: Long): Data {
+        val builder: Data.Builder = Data.Builder()
+        builder.putString(DOWNLOAD_WORKER_FILE_PATH, file.absolutePath)
+        if (file.exists()) {
+            if (totalSize != 0L) {
+                builder.putFloat(DOWNLOAD_WORKER_PROGRESS, file.length() * 100f / totalSize)
+            } else {
+                builder.putFloat(DOWNLOAD_WORKER_PROGRESS, -2f)
+            }
+            builder.putLong(DOWNLOAD_WORKER_COMPLETED, file.length())
+            builder.putLong(DOWNLOAD_WORKER_TOTAL, totalSize)
+        } else {
+            builder.putFloat(DOWNLOAD_WORKER_PROGRESS, 0f)
+            builder.putLong(DOWNLOAD_WORKER_COMPLETED, 0L)
+            builder.putLong(DOWNLOAD_WORKER_TOTAL, totalSize)
+        }
+        return builder.build()
     }
 
     companion object {
         const val DOWNLOAD_WORKER_REQUEST_URL = "download_worker_request_url"
         const val DOWNLOAD_WORKER_FILE_PATH = "download_worker_file_path"
         const val DOWNLOAD_WORKER_PROGRESS = "download_worker_progress"
+        const val DOWNLOAD_WORKER_COMPLETED = "download_worker_completed"
+        const val DOWNLOAD_WORKER_TOTAL = "download_worker_total"
     }
 }

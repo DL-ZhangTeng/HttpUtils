@@ -45,25 +45,70 @@ class DownloadManager private constructor(var builder: Builder) {
         manager.getWorkInfoByIdLiveData(request.id).observeForever { workInfo ->
             when (workInfo.state) {
                 WorkInfo.State.SUCCEEDED -> {
-                    val outputData: Data = workInfo.outputData
-                    val filePath = outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                    val filePath =
+                        workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                    val progress =
+                        workInfo.outputData.getFloat(DownloadWorker.DOWNLOAD_WORKER_PROGRESS, 100f)
+                    val completed =
+                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_COMPLETED, 0L)
+                    val totalSize =
+                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                    builder.progressListener?.onProgress(
+                        completed,
+                        totalSize,
+                        progress,
+                        completed != totalSize,
+                        filePath
+                    )
                     if (filePath.isNullOrEmpty()) {
                         builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
                     } else {
-                        builder.progressListener?.onProgress(progress = 100f, done = true)
                         builder.progressListener?.onComplete(File(filePath))
                     }
                 }
                 WorkInfo.State.RUNNING -> {
-                    val progress = workInfo.progress.getFloat(DownloadWorker.DOWNLOAD_WORKER_PROGRESS, 0f)
-                    builder.progressListener?.onProgress(progress = progress)
+                    val filePath =
+                        workInfo.progress.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                    val progress =
+                        workInfo.progress.getFloat(DownloadWorker.DOWNLOAD_WORKER_PROGRESS, 0f)
+                    val completed =
+                        workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_COMPLETED, 0L)
+                    val totalSize =
+                        workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                    builder.progressListener?.onProgress(
+                        completed,
+                        totalSize,
+                        progress,
+                        completed == totalSize,
+                        filePath
+                    )
                 }
                 WorkInfo.State.ENQUEUED -> {
-                    builder.progressListener?.onProgress(progress = 0f)
+                    val filePath =
+                        workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                    val totalSize =
+                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                    builder.progressListener?.onProgress(
+                        0L,
+                        totalSize,
+                        0f,
+                        false,
+                        filePath
+                    )
                     Log.i("DownloadManager", "等待下载")
                 }
                 WorkInfo.State.BLOCKED -> {
-                    builder.progressListener?.onProgress(progress = -1f)
+                    val filePath =
+                        workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
+                    val totalSize =
+                        workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                    builder.progressListener?.onProgress(
+                        0L,
+                        totalSize,
+                        -1f,
+                        false,
+                        filePath
+                    )
                     Log.i("DownloadManager", "下载阻塞")
                 }
                 WorkInfo.State.CANCELLED -> {
@@ -170,16 +215,16 @@ class DownloadManager private constructor(var builder: Builder) {
          *
          * @param bytesRead     已经下载文件的大小
          * @param contentLength 文件的大小
-         * @param progress      当前进度，-1：任务被阻塞;0：任务待开始;100：下载成功
+         * @param progress      当前进度，-2:后端返回得文件长度<=0；-1：任务被阻塞;0：任务待开始;100：下载成功
          * @param done          是否下载完成，false：下载中；true：下载成功
          * @param filePath      文件路径
          */
         fun onProgress(
-            bytesRead: Long = -1,
-            contentLength: Long = -1,
-            progress: Float = 0f,
-            done: Boolean = false,
-            filePath: String? = null
+            bytesRead: Long,
+            contentLength: Long,
+            progress: Float,
+            done: Boolean,
+            filePath: String?
         )
 
         fun onError(e: Exception)
