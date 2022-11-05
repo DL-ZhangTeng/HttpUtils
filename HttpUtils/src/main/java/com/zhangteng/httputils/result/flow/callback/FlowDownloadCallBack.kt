@@ -40,7 +40,7 @@ abstract class FlowDownloadCallBack(
                         override fun onResponseProgress(
                             bytesRead: Long,
                             contentLength: Long,
-                            progress: Int,
+                            progress: Float,
                             done: Boolean,
                             filePath: String?
                         ) {

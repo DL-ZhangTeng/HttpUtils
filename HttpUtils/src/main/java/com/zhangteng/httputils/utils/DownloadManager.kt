@@ -51,7 +51,7 @@ class DownloadManager {
                 progressListener.onResponseProgress(
                     finalSum,
                     contentLength,
-                    (finalSum * 1.0f / contentLength * 100).toInt(),
+                    finalSum * 1.0f / contentLength * 100,
                     finalSum == contentLength,
                     file.absolutePath
                 )
@@ -81,7 +81,7 @@ class DownloadManager {
         fun onResponseProgress(
             bytesRead: Long,
             contentLength: Long,
-            progress: Int,
+            progress: Float,
             done: Boolean,
             filePath: String?
         )
