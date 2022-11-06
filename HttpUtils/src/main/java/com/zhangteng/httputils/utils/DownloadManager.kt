@@ -61,18 +61,19 @@ class DownloadManager private constructor(var builder: Builder) {
                             )
                         val totalSize =
                             workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                        builder.progressListener?.onProgress(
-                            completed,
-                            totalSize,
-                            progress,
-                            completed != totalSize || progress != 100f,
-                            filePath
-                        )
                         if (filePath.isNullOrEmpty()) {
                             builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
                             Log.i("DownloadManager", "下载失败，请稍后重试")
                         } else {
+                            builder.progressListener?.onProgress(
+                                completed,
+                                totalSize,
+                                progress,
+                                completed != totalSize || progress != 100f,
+                                filePath
+                            )
                             builder.progressListener?.onComplete(File(filePath))
+                            Log.i("DownloadManager", "正在下载：进度$progress 完成$completed 大小$totalSize")
                             Log.i("DownloadManager", "下载完成")
                         }
                     }
@@ -85,14 +86,16 @@ class DownloadManager private constructor(var builder: Builder) {
                             workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_COMPLETED, 0L)
                         val totalSize =
                             workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                        builder.progressListener?.onProgress(
-                            completed,
-                            totalSize,
-                            progress,
-                            completed == totalSize && progress == 100f,
-                            filePath
-                        )
-                        Log.i("DownloadManager", "正在下载：进度$progress 完成$completed 大小$totalSize")
+                        if (!filePath.isNullOrEmpty()) {
+                            builder.progressListener?.onProgress(
+                                completed,
+                                totalSize,
+                                progress,
+                                completed == totalSize && progress == 100f,
+                                filePath
+                            )
+                            Log.i("DownloadManager", "正在下载：进度$progress 完成$completed 大小$totalSize")
+                        }
                     }
                     WorkInfo.State.ENQUEUED -> {
                         val filePath =
@@ -113,14 +116,16 @@ class DownloadManager private constructor(var builder: Builder) {
                             workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
                         val totalSize =
                             workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                        builder.progressListener?.onProgress(
-                            0L,
-                            totalSize,
-                            -1f,
-                            false,
-                            filePath
-                        )
-                        Log.i("DownloadManager", "下载阻塞")
+                        if (!filePath.isNullOrEmpty()) {
+                            builder.progressListener?.onProgress(
+                                0L,
+                                totalSize,
+                                -1f,
+                                false,
+                                filePath
+                            )
+                            Log.i("DownloadManager", "下载阻塞")
+                        }
                     }
                     WorkInfo.State.CANCELLED -> {
                         builder.progressListener?.onError(Exception("取消下载"))

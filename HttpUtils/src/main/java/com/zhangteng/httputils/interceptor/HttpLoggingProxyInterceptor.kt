@@ -7,7 +7,7 @@ import java.io.IOException
 
 class HttpLoggingProxyInterceptor(private val httpLoggingInterceptor: HttpLoggingInterceptor) :
     PriorityInterceptor {
-    @Throws(IOException::class)
+
     override fun intercept(chain: Interceptor.Chain): Response {
         return try {
             httpLoggingInterceptor.intercept(chain)

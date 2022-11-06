@@ -6,7 +6,6 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.zhangteng.httputils.http.HttpUtils
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
@@ -54,7 +53,7 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
                 continuousDownload(url, startIndex, totalSize, file)
             } else {
                 //如果下载完成，直接回调成功
-                return Result.success(getData(file, totalSize))
+                Result.success(getData(file, totalSize))
             }
         }
     }
@@ -91,9 +90,14 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         val inputStream = response.body!!.byteStream()
         val buf = ByteArray(1024)
         var len: Int
+        var index: Long = 0
         while (inputStream.read(buf).also { len = it } != -1) {
             fos.write(buf, 0, len)
-            setProgressAsync(getData(file, totalSize))
+            if (index % 1024 == 0L) {
+                //每1m通知一次进度
+                setProgressAsync(getData(file, totalSize))
+            }
+            index++
         }
         fos.flush()
         return Result.success(getData(file, totalSize))
@@ -132,9 +136,14 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
                 val inputStream = response.body!!.byteStream()
                 val buffer = ByteArray(1024)
                 var len: Int
+                var index: Long = 0
                 while (inputStream.read(buffer).also { len = it } != -1) {
                     randomAccessFile.write(buffer, 0, len)
-                    setProgressAsync(getData(file, totalSize))
+                    if (index % 1024 == 0L) {
+                        //每1m通知一次进度
+                        setProgressAsync(getData(file, totalSize))
+                    }
+                    index++
                 }
                 return Result.success(getData(file, totalSize))
             } catch (e: Exception) {
@@ -184,12 +193,14 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         val builder: Data.Builder = Data.Builder()
         builder.putString(DOWNLOAD_WORKER_FILE_PATH, file.absolutePath)
         if (file.exists()) {
+            val completed = file.length()
+            Log.i("DownloadWorker", "正在下载：完成$completed 大小$totalSize")
             if (totalSize != 0L) {
-                builder.putFloat(DOWNLOAD_WORKER_PROGRESS, file.length() * 100f / totalSize)
+                builder.putFloat(DOWNLOAD_WORKER_PROGRESS, completed * 100f / totalSize)
             } else {
                 builder.putFloat(DOWNLOAD_WORKER_PROGRESS, -2f)
             }
-            builder.putLong(DOWNLOAD_WORKER_COMPLETED, file.length())
+            builder.putLong(DOWNLOAD_WORKER_COMPLETED, completed)
             builder.putLong(DOWNLOAD_WORKER_TOTAL, totalSize)
         } else {
             builder.putFloat(DOWNLOAD_WORKER_PROGRESS, 0f)
