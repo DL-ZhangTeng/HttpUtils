@@ -1,14 +1,13 @@
 package com.zhangteng.httputils.fileload.upload
 
+import com.zhangteng.httputils.utils.UploadManager
+import com.zhangteng.utils.IResponse
 import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
-import retrofit2.http.Url
+import retrofit2.http.*
 
 /**
  * Created by swing on 2018/4/24.
@@ -103,4 +102,53 @@ interface UploadFileObservableApi {
         @Url uploadUrl: String,
         @Part files: List<MultipartBody.Part>
     ): Observable<ResponseBody>
+}
+
+/**
+ * description: 分片上传
+ * author: Swing
+ * date: 2022/11/7
+ */
+interface UploadFileSliceApi {
+
+    /**
+     * 上传
+     *
+     * @param uploadUrl 地址
+     * @param file      文件
+     * @param busType   文件类型
+     * @param checkSum  文件md5
+     * @param chunk     切片编号
+     * @param chunks    切片总数
+     * @param chunkSize 分片大小
+     * @return UploadEntity
+     */
+    @Multipart
+    @POST
+    fun uploadFile(
+        @Url uploadUrl: String?,
+        @Part file: MultipartBody.Part,
+        @Query("busType") busType: String?,
+        @Query("checkSum") checkSum: String?,
+        @Query("chunk") chunk: Int?,
+        @Query("chunks") chunks: Int?,
+        @Query("chunkSize") chunkSize: Long?,
+    ): IResponse<UploadManager.SliceFileEntity>
+
+    /**
+     * 文件校验
+     * @param busType      文件类型
+     * @param checkSum     文件md5
+     * @param fileName     文件名
+     * @param fileSize     文件大小
+     * @return CheckFileEntity
+     */
+    @GET
+    fun checkFile(
+        @Url checkUrl: String?,
+        @Query("busType") busType: String?,
+        @Query("checkSum") checkSum: String?,
+        @Query("fileName") fileName: String?,
+        @Query("fileSize") fileSize: Long?
+    ): IResponse<UploadManager.SliceFileEntity>
 }

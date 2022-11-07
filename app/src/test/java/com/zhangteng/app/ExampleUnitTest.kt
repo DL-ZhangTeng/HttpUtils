@@ -1,4 +1,4 @@
-package com.zhangteng.httputils
+package com.zhangteng.app
 
 import org.junit.Test
 
