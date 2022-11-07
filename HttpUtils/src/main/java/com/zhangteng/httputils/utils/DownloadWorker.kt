@@ -5,8 +5,8 @@ import android.util.Log
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.zhangteng.httputils.http.HttpUtils
-import okhttp3.Request
+import com.zhangteng.httputils.fileload.download.DownloadRangeApi
+import com.zhangteng.httputils.fileload.download.DownloadRetrofit
 import java.io.File
 import java.io.FileOutputStream
 import java.io.RandomAccessFile
@@ -64,21 +64,19 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
      * @param file 本地下载文件
      */
     private fun startDownload(url: String, file: File): Result {
-        val request: Request = Request.Builder()
-            .url(url)
-            .addHeader("Content-Type", "application/octet-stream")
-            .addHeader("Accept-Encoding", "identity")
-            .build()
-        val client = HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient
-        val response = client.newCall(request).execute()
+        val response = DownloadRetrofit.instance
+            .retrofit
+            .create(DownloadRangeApi::class.java)
+            .downloadFile(url)
+            .execute()
         if (!response.isSuccessful) {
             Log.i("DownloadWorker", "startDownload: 下载失败,正在准备重试")
             return Result.retry()
         }
 
         //获取文件总长度
-        val totalSize = if (response.body?.contentLength() != null) {
-            response.body?.contentLength()!!
+        val totalSize = if (response.body()?.contentLength() != null) {
+            response.body()?.contentLength()!!
         } else {
             -1
         }
@@ -87,7 +85,7 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         }
 
         val fos = FileOutputStream(file)
-        val inputStream = response.body!!.byteStream()
+        val inputStream = response.body()!!.byteStream()
         val buf = ByteArray(1024)
         var len: Int
         var index: Long = 0
@@ -116,24 +114,21 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         totalSize: Long,
         file: File,
     ): Result {
-        val request: Request = Request.Builder()
-            .url(url)
-            .addHeader("Range", "bytes=$startIndex-$totalSize")
-            .addHeader("Content-Type", "application/octet-stream")
-            .addHeader("Accept-Encoding", "identity")
-            .build()
-        val client = HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient
-        val response = client.newCall(request).execute()
+        val response = DownloadRetrofit.instance
+            .retrofit
+            .create(DownloadRangeApi::class.java)
+            .downloadFileByRange(url, "bytes=$startIndex-$totalSize")
+            .execute()
         if (!response.isSuccessful) {
             Log.i("DownloadWorker", "断点下载失败,正在准备重试")
             return Result.retry()
         }
-        if (response.code == HttpURLConnection.HTTP_PARTIAL) {
+        if (response.code() == HttpURLConnection.HTTP_PARTIAL) {
             var randomAccessFile: RandomAccessFile? = null
             try {
                 randomAccessFile = RandomAccessFile(file, "rwd")
                 randomAccessFile.seek(startIndex)
-                val inputStream = response.body!!.byteStream()
+                val inputStream = response.body()!!.byteStream()
                 val buffer = ByteArray(1024)
                 var len: Int
                 var index: Long = 0
@@ -170,15 +165,13 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
      * @param url 请求路径
      */
     private fun getFileLength(url: String): Long {
-        val request: Request = Request.Builder()
-            .url(url)
-            .addHeader("Content-Type", "application/octet-stream")
-            .addHeader("Accept-Encoding", "identity")
-            .build()
-        val client = HttpUtils.instance.ConfigGlobalHttpUtils().okHttpClient
-        val response = client.newCall(request).execute()
-        return if (response.body?.contentLength() != null) {
-            response.body?.contentLength()!!
+        val response = DownloadRetrofit.instance
+            .retrofit
+            .create(DownloadRangeApi::class.java)
+            .downloadFile(url)
+            .execute()
+        return if (response.body()?.contentLength() != null) {
+            response.body()?.contentLength()!!
         } else {
             -1
         }
