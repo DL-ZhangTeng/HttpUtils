@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.zhangteng.app.http.Api
 import com.zhangteng.app.http.BaseResult
 import com.zhangteng.app.http.entity.HomeListBean
+import com.zhangteng.app.http.entity.SliceFileBean
 import com.zhangteng.httputils.gson.FailOverGson
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.result.coroutine.*
@@ -23,6 +24,7 @@ import com.zhangteng.httputils.result.rxjava.observer.DownloadObserver
 import com.zhangteng.httputils.result.rxjava.transformer.LifecycleObservableTransformer
 import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
 import com.zhangteng.httputils.utils.DownloadManager
+import com.zhangteng.httputils.utils.UploadManager
 import com.zhangteng.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -40,7 +42,7 @@ class MainActivity : AppCompatActivity(), IStateView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        downloadFileByWorkerManager()
+        downloadFileByDownloadManager()
     }
 
     override fun onDestroy() {
@@ -472,14 +474,19 @@ class MainActivity : AppCompatActivity(), IStateView {
             })
     }
 
-    fun downloadFileByWorkerManager() {
+    /**
+     * description 使用WorkerManager下载文件
+     * @param
+     * @return
+     */
+    fun downloadFileByDownloadManager() {
         DownloadManager.Builder()
             .apply {
                 downloadUrl = "https://tp.kaishuihu.com/apk/fdy_1-1.0.0-2021-12-23.apk"
                 isNetworkReconnect = true
                 progressListener = object : DownloadManager.ProgressListener {
-                    override fun onComplete(file: File) {
-                        Log.i("MainActivity", "下载成功")
+                    override fun start() {
+                        Log.i("MainActivity", "开始下载")
                     }
 
                     override fun onProgress(
@@ -492,13 +499,17 @@ class MainActivity : AppCompatActivity(), IStateView {
                         Log.i("MainActivity", "正在下载：进度$progress 完成$bytesRead 大小$contentLength")
                     }
 
+                    override fun onComplete(file: File) {
+                        Log.i("MainActivity", "下载成功")
+                    }
+
                     override fun onError(e: Exception) {
                         Log.i("MainActivity", "下载失败")
                     }
                 }
             }
             .build()
-            .start()
+            .startByWorker()
     }
 
     fun uploadFileByDeferred() {
@@ -615,6 +626,49 @@ class MainActivity : AppCompatActivity(), IStateView {
                     FailOverGson.failOverGson.toJson(t).e("uploadFilesByObservable")
                 }
             })
+    }
+
+    /**
+     * description 使用WorkerManager上传文件
+     * @param
+     * @return
+     */
+    fun uploadFilesByUploadManager() {
+        UploadManager.Builder<SliceFileBean, BaseResult<SliceFileBean>>()
+            .apply {
+                checkUrl = ""
+                uploadUrl = ""
+                filePath = ""
+                sliceFileSize = 10 * 1024 * 1024
+                isNetworkReconnect = true
+                onUpLoadListener = object : UploadManager.OnUpLoadListener {
+                    override fun start() {
+                        Log.i("MainActivity", "开始上传")
+                    }
+
+                    override fun onUpload(
+                        currentNum: Int,
+                        allNum: Int,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?,
+                        sourceId: String?
+                    ) {
+                        Log.i("MainActivity", "正在上传：进度$progress 完成$currentNum 大小$allNum")
+                    }
+
+                    override fun onComplete(file: File?, sourceId: String?) {
+                        Log.i("MainActivity", "上传成功")
+                    }
+
+                    override fun onError(e: Exception) {
+                        Log.i("MainActivity", "上传失败")
+                    }
+
+                }
+            }
+            .build()
+            .startByWorker()
     }
 
     /**

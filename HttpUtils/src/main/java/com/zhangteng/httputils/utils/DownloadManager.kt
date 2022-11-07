@@ -19,7 +19,7 @@ class DownloadManager private constructor(var builder: Builder) {
     /**
      * description 使用WorkManager方式开启下载，实现了断点续传下载、断网重连下载
      */
-    fun start() {
+    fun startByWorker() {
         if (builder.downloadUrl.isNullOrEmpty()) {
             Log.d("DownloadManager", "downloadUrl is null,This is illegal")
             return
@@ -69,7 +69,7 @@ class DownloadManager private constructor(var builder: Builder) {
                                 completed,
                                 totalSize,
                                 progress,
-                                completed != totalSize || progress != 100f,
+                                completed == totalSize && progress == 100f,
                                 filePath
                             )
                             builder.progressListener?.onComplete(File(filePath))
@@ -102,6 +102,7 @@ class DownloadManager private constructor(var builder: Builder) {
                             workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
                         val totalSize =
                             workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
+                        builder.progressListener?.start()
                         builder.progressListener?.onProgress(
                             0L,
                             totalSize,
@@ -227,7 +228,7 @@ class DownloadManager private constructor(var builder: Builder) {
      * Created by swing on 2018/4/24.
      */
     interface ProgressListener {
-        fun onComplete(file: File)
+        fun start()
 
         /**
          * 下载进度监听
@@ -245,6 +246,8 @@ class DownloadManager private constructor(var builder: Builder) {
             done: Boolean,
             filePath: String?
         )
+
+        fun onComplete(file: File)
 
         fun onError(e: Exception)
     }

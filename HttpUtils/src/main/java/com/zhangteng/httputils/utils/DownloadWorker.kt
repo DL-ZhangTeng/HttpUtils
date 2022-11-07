@@ -31,7 +31,7 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
         if (!dir.exists()) {
             dir.mkdirs()
         }
-        val fileName = getFileName(url)
+        val fileName = url.substring(url.lastIndexOf("/") + 1)
         val file = File(path, fileName)
 
         //如果文件不存在，说明是第一次下载，创建一个新的文件,并开始下载
@@ -158,14 +158,6 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     /**
-     * description 通过url获取保存的文件名字
-     * @param url 请求路径
-     */
-    private fun getFileName(url: String): String {
-        return url.substring(url.lastIndexOf("/") + 1)
-    }
-
-    /**
      * description 获取Data
      * @param file 已下载文件
      * @param totalSize 文件总长度
@@ -194,6 +186,7 @@ class DownloadWorker(context: Context, workerParams: WorkerParameters) :
     companion object {
         const val DOWNLOAD_WORKER_REQUEST_URL = "download_worker_request_url"
         const val DOWNLOAD_WORKER_FILE_PATH = "download_worker_file_path"
+
         const val DOWNLOAD_WORKER_PROGRESS = "download_worker_progress"
         const val DOWNLOAD_WORKER_COMPLETED = "download_worker_completed"
         const val DOWNLOAD_WORKER_TOTAL = "download_worker_total"

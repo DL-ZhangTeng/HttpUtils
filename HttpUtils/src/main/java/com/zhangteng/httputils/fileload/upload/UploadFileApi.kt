@@ -7,6 +7,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
+import retrofit2.Call
 import retrofit2.http.*
 
 /**
@@ -118,22 +119,22 @@ interface UploadFileSliceApi {
      * @param file      文件
      * @param busType   文件类型
      * @param checkSum  文件md5
-     * @param chunk     切片编号
-     * @param chunks    切片总数
-     * @param chunkSize 分片大小
+     * @param slice     切片编号
+     * @param slices    切片总数
+     * @param sliceSize 分片大小
      * @return UploadEntity
      */
     @Multipart
     @POST
-    fun uploadFile(
+    fun <T : UploadManager.ISliceFile, R : IResponse<T>> uploadFile(
         @Url uploadUrl: String?,
         @Part file: MultipartBody.Part,
         @Query("busType") busType: String?,
         @Query("checkSum") checkSum: String?,
-        @Query("chunk") chunk: Int?,
-        @Query("chunks") chunks: Int?,
-        @Query("chunkSize") chunkSize: Long?,
-    ): IResponse<UploadManager.SliceFileEntity>
+        @Query("slice") slice: Int?,
+        @Query("slices") slices: Int?,
+        @Query("sliceSize") sliceSize: Long?,
+    ): Call<R>
 
     /**
      * 文件校验
@@ -144,11 +145,11 @@ interface UploadFileSliceApi {
      * @return CheckFileEntity
      */
     @GET
-    fun checkFile(
+    fun <T : UploadManager.ISliceFile, R : IResponse<T>> checkFile(
         @Url checkUrl: String?,
         @Query("busType") busType: String?,
         @Query("checkSum") checkSum: String?,
         @Query("fileName") fileName: String?,
         @Query("fileSize") fileSize: Long?
-    ): IResponse<UploadManager.SliceFileEntity>
+    ): Call<R>
 }
