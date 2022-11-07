@@ -73,6 +73,11 @@ interface DownloadRangeApi {
      *
      * @param fileUrl 地址
      * @param range 按照固定位置下载文件
+     *              Range: bytes=0-499表示第0~499字节范围的内容。
+     *              Range: bytes=500-999表示第500~999字节范围的内容。
+     *              Range: bytes=-500表示最后500字节的内容。
+     *              Range: bytes=500-表示从第500字节开始到文件结束部分的内容。
+     *              Range: bytes=0-表示第一个字节到最后一个字节，即完整的文件内容。
      * @return ResponseBody
      */
     @Streaming
