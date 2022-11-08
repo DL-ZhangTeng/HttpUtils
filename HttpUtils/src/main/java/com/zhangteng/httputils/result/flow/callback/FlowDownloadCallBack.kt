@@ -35,7 +35,7 @@ abstract class FlowDownloadCallBack(
             DownloadManager.Builder()
                 .apply {
                     progressListener = object : DownloadManager.ProgressListener {
-                        override fun onComplete(file: File) {
+                        override fun start() {
 
                         }
 
@@ -53,6 +53,10 @@ abstract class FlowDownloadCallBack(
                                 done,
                                 filePath
                             )
+                        }
+
+                        override fun onComplete(file: File) {
+
                         }
 
                         override fun onError(e: Exception) {

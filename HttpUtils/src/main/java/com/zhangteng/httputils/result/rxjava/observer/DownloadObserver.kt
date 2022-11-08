@@ -58,7 +58,7 @@ abstract class DownloadObserver(
                 DownloadManager.Builder()
                     .apply {
                         progressListener = object : DownloadManager.ProgressListener {
-                            override fun onComplete(file: File) {
+                            override fun start() {
 
                             }
 
@@ -82,6 +82,10 @@ abstract class DownloadObserver(
                                             filePath
                                         )
                                     }
+                            }
+
+                            override fun onComplete(file: File) {
+
                             }
 
                             override fun onError(e: Exception) {

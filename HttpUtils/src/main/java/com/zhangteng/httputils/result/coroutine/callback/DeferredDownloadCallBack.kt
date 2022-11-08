@@ -30,7 +30,7 @@ abstract class DeferredDownloadCallBack(
             DownloadManager.Builder()
                 .apply {
                     progressListener = object : DownloadManager.ProgressListener {
-                        override fun onComplete(file: File) {
+                        override fun start() {
 
                         }
 
@@ -48,6 +48,10 @@ abstract class DeferredDownloadCallBack(
                                 done,
                                 filePath
                             )
+                        }
+
+                        override fun onComplete(file: File) {
+
                         }
 
                         override fun onError(e: Exception) {
