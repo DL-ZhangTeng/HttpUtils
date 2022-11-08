@@ -10,7 +10,7 @@ import com.zhangteng.utils.IResponse
  * date: 2022/11/8
  */
 abstract class UploadCallBack<T : ISliceFile, R : IResponse<T>, D>(
-    protected var currentNum: Int = 1,
+    protected var currentNum: Int = 0,
     protected var allNum: Int = 1,
     iLoadingView: ILoadingView? = null
 ) : CommonCallBack<R, D>(iLoadingView) {

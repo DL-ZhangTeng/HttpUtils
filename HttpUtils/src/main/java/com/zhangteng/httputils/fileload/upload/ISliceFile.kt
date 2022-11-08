@@ -7,11 +7,6 @@ package com.zhangteng.httputils.fileload.upload
  */
 interface ISliceFile {
     /**
-     * description 文件是否存在
-     */
-    fun isFileExists(): Boolean?
-
-    /**
      * description 文件资源id
      */
     fun getSourceId(): String?
@@ -20,6 +15,11 @@ interface ISliceFile {
      * description 文件路径
      */
     fun getSourcePath(): String?
+
+    /**
+     * description 文件是否存在,校验文件是否上传完成时使用
+     */
+    fun isFileExists(): Boolean?
 
     /**
      * description 已上传的分片序号,校验文件是否上传完成时使用

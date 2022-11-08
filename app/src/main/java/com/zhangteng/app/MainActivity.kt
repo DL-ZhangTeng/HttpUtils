@@ -522,7 +522,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 .uploadFileByDeferred<SliceFileBean, BaseResult<SliceFileBean>>("", "", "")
                 .deferredGo(object :
                     DeferredUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
-                        1,
+                        0,
                         100,
                         this@MainActivity
                     ) {
@@ -559,7 +559,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 .uploadFileByFlow<SliceFileBean, BaseResult<SliceFileBean>>("", "", "")
                 .flowGo(object :
                     FlowUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
-                        1,
+                        0,
                         100,
                         this@MainActivity
                     ) {
@@ -597,7 +597,7 @@ class MainActivity : AppCompatActivity(), IStateView {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object :
                 UploadObserver<SliceFileBean, BaseResult<SliceFileBean>>(
-                    1,
+                    0,
                     100,
                     this@MainActivity
                 ) {
@@ -633,7 +633,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 )
                 .deferredGo(object :
                     DeferredUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
-                        1,
+                        0,
                         100,
                         this@MainActivity
                     ) {
@@ -674,7 +674,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 )
                 .flowGo(object :
                     FlowUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
-                        1,
+                        0,
                         100,
                         this@MainActivity
                     ) {
@@ -715,7 +715,7 @@ class MainActivity : AppCompatActivity(), IStateView {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : UploadObserver<SliceFileBean, BaseResult<SliceFileBean>>(
-                1,
+                0,
                 100,
                 this@MainActivity
             ) {

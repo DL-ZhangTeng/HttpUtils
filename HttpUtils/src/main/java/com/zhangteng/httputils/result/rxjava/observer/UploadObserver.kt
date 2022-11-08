@@ -18,7 +18,7 @@ import io.reactivex.schedulers.Schedulers
  * date: 2022/11/8
  */
 abstract class UploadObserver<T : ISliceFile, R : IResponse<T>>(
-    currentNum: Int = 1,
+    currentNum: Int = 0,
     allNum: Int = 1,
     iLoadingView: ILoadingView? = null
 ) : UploadCallBack<T, R, Disposable>(currentNum, allNum, iLoadingView), Observer<R> {
@@ -56,30 +56,19 @@ abstract class UploadObserver<T : ISliceFile, R : IResponse<T>>(
             .subscribeOn(Schedulers.io())
             .subscribe {
                 if (t.isSuccess()) {
-                    if (t.getResult().isFileExists() == true) {
-                        onSuccess(
-                            currentNum,
-                            allNum,
-                            100f,
-                            true,
-                            t.getResult().getSourcePath(),
-                            t.getResult().getSourceId()
-                        )
-                    } else {
-                        onSuccess(
-                            currentNum,
-                            allNum,
-                            0f,
-                            false,
-                            t.getResult().getSourcePath(),
-                            t.getResult().getSourceId()
-                        )
-                    }
+                    onSuccess(
+                        currentNum,
+                        allNum,
+                        (currentNum + 1) * 100f / allNum,
+                        true,
+                        t.getResult().getSourcePath(),
+                        t.getResult().getSourceId()
+                    )
                 } else {
                     onSuccess(
                         currentNum,
                         allNum,
-                        0f,
+                        currentNum * 100f / allNum,
                         false,
                         t.getResult().getSourcePath(),
                         t.getResult().getSourceId()
