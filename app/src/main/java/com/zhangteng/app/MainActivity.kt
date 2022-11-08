@@ -9,29 +9,33 @@ import com.zhangteng.app.http.Api
 import com.zhangteng.app.http.BaseResult
 import com.zhangteng.app.http.entity.HomeListBean
 import com.zhangteng.app.http.entity.SliceFileBean
+import com.zhangteng.httputils.fileload.download.DownloadManager
+import com.zhangteng.httputils.fileload.download.OnDownloadListener
+import com.zhangteng.httputils.fileload.upload.OnUpLoadListener
+import com.zhangteng.httputils.fileload.upload.UploadManager
 import com.zhangteng.httputils.gson.FailOverGson
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.result.coroutine.*
 import com.zhangteng.httputils.result.coroutine.callback.DeferredCallBack
 import com.zhangteng.httputils.result.coroutine.callback.DeferredDownloadCallBack
+import com.zhangteng.httputils.result.coroutine.callback.DeferredUploadCallBack
 import com.zhangteng.httputils.result.flow.callback.FlowCallBack
 import com.zhangteng.httputils.result.flow.callback.FlowDownloadCallBack
+import com.zhangteng.httputils.result.flow.callback.FlowUploadCallBack
 import com.zhangteng.httputils.result.flow.flowGo
 import com.zhangteng.httputils.result.flow.flowGoIResponse
 import com.zhangteng.httputils.result.flow.launchGoFlowIResponse
 import com.zhangteng.httputils.result.rxjava.observer.CommonObserver
 import com.zhangteng.httputils.result.rxjava.observer.DownloadObserver
+import com.zhangteng.httputils.result.rxjava.observer.UploadObserver
 import com.zhangteng.httputils.result.rxjava.transformer.LifecycleObservableTransformer
 import com.zhangteng.httputils.result.rxjava.transformer.ProgressDialogObservableTransformer
-import com.zhangteng.httputils.utils.DownloadManager
-import com.zhangteng.httputils.utils.UploadManager
 import com.zhangteng.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
 import java.io.File
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -484,12 +488,12 @@ class MainActivity : AppCompatActivity(), IStateView {
             .apply {
                 downloadUrl = "https://tp.kaishuihu.com/apk/fdy_1-1.0.0-2021-12-23.apk"
                 isNetworkReconnect = true
-                progressListener = object : DownloadManager.ProgressListener {
+                onDownloadListener = object : OnDownloadListener {
                     override fun start() {
                         Log.i("MainActivity", "开始下载")
                     }
 
-                    override fun onProgress(
+                    override fun onDownload(
                         bytesRead: Long,
                         contentLength: Long,
                         progress: Float,
@@ -515,9 +519,13 @@ class MainActivity : AppCompatActivity(), IStateView {
     fun uploadFileByDeferred() {
         GlobalScope.launch {
             HttpUtils.instance.UploadRetrofit()
-                .uploadFileByDeferred("", "", "")
+                .uploadFileByDeferred<SliceFileBean, BaseResult<SliceFileBean>>("", "", "")
                 .deferredGo(object :
-                    DeferredCallBack<ResponseBody>(this@MainActivity) {
+                    DeferredUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
+                        1,
+                        100,
+                        this@MainActivity
+                    ) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -526,8 +534,20 @@ class MainActivity : AppCompatActivity(), IStateView {
                         FailOverGson.failOverGson.toJson(iException).e("uploadFileByDeferred")
                     }
 
-                    override fun onSuccess(t: ResponseBody) {
+                    override fun onSuccess(t: BaseResult<SliceFileBean>) {
+                        super.onSuccess(t)
                         FailOverGson.failOverGson.toJson(t).e("uploadFileByDeferred")
+                    }
+
+                    override fun onSuccess(
+                        currentNum: Int,
+                        allNum: Int,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?,
+                        sourceId: String?
+                    ) {
+
                     }
                 })
         }
@@ -536,9 +556,13 @@ class MainActivity : AppCompatActivity(), IStateView {
     fun uploadFileByFlow() {
         GlobalScope.launch {
             HttpUtils.instance.UploadRetrofit()
-                .uploadFileByFlow("", "", "")
+                .uploadFileByFlow<SliceFileBean, BaseResult<SliceFileBean>>("", "", "")
                 .flowGo(object :
-                    FlowCallBack<ResponseBody>(this@MainActivity) {
+                    FlowUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
+                        1,
+                        100,
+                        this@MainActivity
+                    ) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -547,8 +571,20 @@ class MainActivity : AppCompatActivity(), IStateView {
                         FailOverGson.failOverGson.toJson(iException).e("uploadFileByFlow")
                     }
 
-                    override fun onSuccess(t: ResponseBody) {
+                    override fun onSuccess(t: BaseResult<SliceFileBean>) {
+                        super.onSuccess(t)
                         FailOverGson.failOverGson.toJson(t).e("uploadFileByFlow")
+                    }
+
+                    override fun onSuccess(
+                        currentNum: Int,
+                        allNum: Int,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?,
+                        sourceId: String?
+                    ) {
+
                     }
                 })
         }
@@ -556,16 +592,33 @@ class MainActivity : AppCompatActivity(), IStateView {
 
     fun uploadFileByObservable() {
         HttpUtils.instance.UploadRetrofit()
-            .uploadFileByObservable("", "")
+            .uploadFileByObservable<SliceFileBean, BaseResult<SliceFileBean>>("", "")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : CommonObserver<ResponseBody>(this@MainActivity) {
+            .subscribe(object :
+                UploadObserver<SliceFileBean, BaseResult<SliceFileBean>>(
+                    1,
+                    100,
+                    this@MainActivity
+                ) {
                 override fun onFailure(iException: IException?) {
                     FailOverGson.failOverGson.toJson(iException).e("uploadFileByObservable")
                 }
 
-                override fun onSuccess(t: ResponseBody) {
+                override fun onSuccess(t: BaseResult<SliceFileBean>) {
+                    super.onSuccess(t)
                     FailOverGson.failOverGson.toJson(t).e("uploadFileByObservable")
+                }
+
+                override fun onSuccess(
+                    currentNum: Int,
+                    allNum: Int,
+                    progress: Float,
+                    done: Boolean,
+                    filePath: String?,
+                    sourceId: String?
+                ) {
+
                 }
             })
     }
@@ -573,9 +626,17 @@ class MainActivity : AppCompatActivity(), IStateView {
     fun uploadFilesByDeferred() {
         GlobalScope.launch {
             HttpUtils.instance.UploadRetrofit()
-                .uploadFilesByDeferred("", listOf(""), listOf(""))
+                .uploadFilesByDeferred<SliceFileBean, BaseResult<SliceFileBean>>(
+                    "",
+                    listOf(""),
+                    listOf("")
+                )
                 .deferredGo(object :
-                    DeferredCallBack<ResponseBody>(this@MainActivity) {
+                    DeferredUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
+                        1,
+                        100,
+                        this@MainActivity
+                    ) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -584,8 +645,20 @@ class MainActivity : AppCompatActivity(), IStateView {
                         FailOverGson.failOverGson.toJson(iException).e("uploadFilesByDeferred")
                     }
 
-                    override fun onSuccess(t: ResponseBody) {
+                    override fun onSuccess(t: BaseResult<SliceFileBean>) {
+                        super.onSuccess(t)
                         FailOverGson.failOverGson.toJson(t).e("uploadFilesByDeferred")
+                    }
+
+                    override fun onSuccess(
+                        currentNum: Int,
+                        allNum: Int,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?,
+                        sourceId: String?
+                    ) {
+
                     }
                 })
         }
@@ -594,9 +667,17 @@ class MainActivity : AppCompatActivity(), IStateView {
     fun uploadFilesByFlow() {
         GlobalScope.launch {
             HttpUtils.instance.UploadRetrofit()
-                .uploadFilesByFlow("", listOf(""), listOf(""))
+                .uploadFilesByFlow<SliceFileBean, BaseResult<SliceFileBean>>(
+                    "",
+                    listOf(""),
+                    listOf("")
+                )
                 .flowGo(object :
-                    FlowCallBack<ResponseBody>(this@MainActivity) {
+                    FlowUploadCallBack<SliceFileBean, BaseResult<SliceFileBean>>(
+                        1,
+                        100,
+                        this@MainActivity
+                    ) {
                     override fun isHideToast(): Boolean {
                         return true
                     }
@@ -605,8 +686,20 @@ class MainActivity : AppCompatActivity(), IStateView {
                         FailOverGson.failOverGson.toJson(iException).e("uploadFilesByFlow")
                     }
 
-                    override fun onSuccess(t: ResponseBody) {
+                    override fun onSuccess(t: BaseResult<SliceFileBean>) {
+                        super.onSuccess(t)
                         FailOverGson.failOverGson.toJson(t).e("uploadFilesByFlow")
+                    }
+
+                    override fun onSuccess(
+                        currentNum: Int,
+                        allNum: Int,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?,
+                        sourceId: String?
+                    ) {
+
                     }
                 })
         }
@@ -614,16 +707,36 @@ class MainActivity : AppCompatActivity(), IStateView {
 
     fun uploadFilesByObservable() {
         HttpUtils.instance.UploadRetrofit()
-            .uploadFilesByObservable("", listOf(""), listOf(""))
+            .uploadFilesByObservable<SliceFileBean, BaseResult<SliceFileBean>>(
+                "",
+                listOf(""),
+                listOf("")
+            )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : CommonObserver<ResponseBody>(this@MainActivity) {
+            .subscribe(object : UploadObserver<SliceFileBean, BaseResult<SliceFileBean>>(
+                1,
+                100,
+                this@MainActivity
+            ) {
                 override fun onFailure(iException: IException?) {
                     FailOverGson.failOverGson.toJson(iException).e("uploadFilesByObservable")
                 }
 
-                override fun onSuccess(t: ResponseBody) {
+                override fun onSuccess(t: BaseResult<SliceFileBean>) {
+                    super.onSuccess(t)
                     FailOverGson.failOverGson.toJson(t).e("uploadFilesByObservable")
+                }
+
+                override fun onSuccess(
+                    currentNum: Int,
+                    allNum: Int,
+                    progress: Float,
+                    done: Boolean,
+                    filePath: String?,
+                    sourceId: String?
+                ) {
+
                 }
             })
     }
@@ -641,7 +754,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 filePath = ""
                 sliceFileSize = 10 * 1024 * 1024
                 isNetworkReconnect = true
-                onUpLoadListener = object : UploadManager.OnUpLoadListener {
+                onUpLoadListener = object : OnUpLoadListener {
                     override fun start() {
                         Log.i("MainActivity", "开始上传")
                     }

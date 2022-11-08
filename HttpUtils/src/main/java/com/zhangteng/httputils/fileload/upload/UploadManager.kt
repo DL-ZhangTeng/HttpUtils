@@ -1,12 +1,10 @@
-package com.zhangteng.httputils.utils
+package com.zhangteng.httputils.fileload.upload
 
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
 import androidx.work.*
-import com.zhangteng.httputils.fileload.upload.UploadFileSliceApi
-import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.utils.FileSliceUtils
 import com.zhangteng.utils.IResponse
@@ -23,7 +21,7 @@ import java.io.File
  * author: Swing
  * date: 2022/11/7
  */
-class UploadManager<T : UploadManager.ISliceFile, R : IResponse<T>> private constructor(var builder: Builder<T, R>) {
+class UploadManager<T : ISliceFile, R : IResponse<T>> private constructor(var builder: Builder<T, R>) {
 
     private val mHandler: Handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
@@ -283,36 +281,15 @@ class UploadManager<T : UploadManager.ISliceFile, R : IResponse<T>> private cons
                             File(builder.filePath!!),
                             iResponse.getResult().getSourceId()
                         )
-                        builder.filePath = ""
-                        builder.fileName = ""
-                        builder.busType = ""
-                        builder.fileMD5 = ""
-                        builder.sliceFileCount = 0
-                        builder.hasUploadFileNum.clear()
-                        builder.sliceFileList.clear()
-                        builder.fileSliceUtils.deleteSliceFiles()
+                        builder.clear()
                     }
                 } else {
                     builder.onUpLoadListener?.onError(Exception(iResponse?.getMsg()))
-                    builder.filePath = ""
-                    builder.fileName = ""
-                    builder.busType = ""
-                    builder.fileMD5 = ""
-                    builder.sliceFileCount = 0
-                    builder.hasUploadFileNum.clear()
-                    builder.sliceFileList.clear()
-                    builder.fileSliceUtils.deleteSliceFiles()
+                    builder.clear()
                 }
             } else {
                 builder.onUpLoadListener?.onError(Exception(response.errorBody()?.string()))
-                builder.filePath = ""
-                builder.fileName = ""
-                builder.busType = ""
-                builder.fileMD5 = ""
-                builder.sliceFileCount = 0
-                builder.hasUploadFileNum.clear()
-                builder.sliceFileList.clear()
-                builder.fileSliceUtils.deleteSliceFiles()
+                builder.clear()
             }
         }
     }
@@ -413,63 +390,16 @@ class UploadManager<T : UploadManager.ISliceFile, R : IResponse<T>> private cons
             }
             return UploadManager(this)
         }
-    }
 
-    /**
-     * description: 上传回调
-     * author: Swing
-     * date: 2022/11/7
-     */
-    interface OnUpLoadListener {
-        fun start()
-
-        /**
-         * 上传进度监听
-         *
-         * @param currentNum     当前上传文件编号
-         * @param allNum 全部文件编号
-         * @param progress      当前进度，0：任务待开始;100：上传成功
-         * @param done          是否上传完成，false：上传中；true：上传成功
-         * @param filePath      文件路径
-         * @param sourceId      文件资源id
-         */
-        fun onUpload(
-            currentNum: Int,
-            allNum: Int,
-            progress: Float,
-            done: Boolean,
-            filePath: String?,
-            sourceId: String?
-        )
-
-        fun onComplete(file: File?, sourceId: String?)
-        fun onError(e: Exception)
-    }
-
-    /**
-     * description: 校验或分片文件上传响应体
-     * author: Swing
-     * date: 2022/11/7
-     */
-    interface ISliceFile {
-        /**
-         * description 文件是否存在
-         */
-        fun isFileExists(): Boolean?
-
-        /**
-         * description 文件资源id
-         */
-        fun getSourceId(): String?
-
-        /**
-         * description 文件路径
-         */
-        fun getSourcePath(): String?
-
-        /**
-         * description 文件分片列表
-         */
-        fun getSliceList(): ArrayList<Int>?
+        fun clear() {
+            filePath = ""
+            fileName = ""
+            busType = ""
+            fileMD5 = ""
+            sliceFileCount = 0
+            hasUploadFileNum.clear()
+            sliceFileList.clear()
+            fileSliceUtils.deleteSliceFiles()
+        }
     }
 }

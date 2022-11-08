@@ -2,6 +2,7 @@ package com.zhangteng.httputils.fileload.upload
 
 import android.text.TextUtils
 import com.zhangteng.httputils.http.HttpUtils
+import com.zhangteng.utils.IResponse
 import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +12,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.ResponseBody
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -113,13 +113,13 @@ class UploadRetrofit private constructor() {
      * @param uploadUrl 后台url
      * @param fieldName 后台接收图片流的参数名
      * @param filePath  文件路径
-     * @return Deferred<ResponseBody>
+     * @return Deferred<IResponse<ISliceFile>>
      */
-    fun uploadFileByDeferred(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFileByDeferred(
         uploadUrl: String,
         filePath: String,
         fieldName: String = "uploaded_file"
-    ): Deferred<ResponseBody> {
+    ): Deferred<R> {
         val file = File(filePath)
         val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
         val body: MultipartBody.Part =
@@ -136,13 +136,13 @@ class UploadRetrofit private constructor() {
      * @param uploadUrl 后台url
      * @param fieldName 后台接收图片流的参数名
      * @param filePath  文件路径
-     * @return Flow<ResponseBody>
+     * @return Flow<IResponse<ISliceFile>>
      */
-    fun uploadFileByFlow(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFileByFlow(
         uploadUrl: String,
         filePath: String,
         fieldName: String = "uploaded_file"
-    ): Flow<ResponseBody> {
+    ): Flow<R> {
         val file = File(filePath)
         val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
         val body: MultipartBody.Part =
@@ -159,13 +159,13 @@ class UploadRetrofit private constructor() {
      * @param uploadUrl 后台url
      * @param fieldName 后台接收图片流的参数名
      * @param filePath  文件路径
-     * @return Observable<ResponseBody>
+     * @return Observable<IResponse<ISliceFile>>
      */
-    fun uploadFileByObservable(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFileByObservable(
         uploadUrl: String,
         filePath: String,
         fieldName: String = "uploaded_file"
-    ): Observable<ResponseBody> {
+    ): Observable<R> {
         val file = File(filePath)
         val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
         val body: MultipartBody.Part =
@@ -181,12 +181,12 @@ class UploadRetrofit private constructor() {
      *
      * @param uploadUrl 后台url
      * @param filePaths 文件路径
-     * @return Deferred<ResponseBody>
+     * @return Deferred<IResponse<ISliceFile>>
      */
-    fun uploadFilesByDeferred(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByDeferred(
         uploadUrl: String,
         filePaths: List<String>
-    ): Deferred<ResponseBody> {
+    ): Deferred<R> {
         val fieldNames: MutableList<String> = ArrayList()
         for (i in filePaths.indices) {
             fieldNames.add("uploaded_file$i")
@@ -199,9 +199,12 @@ class UploadRetrofit private constructor() {
      *
      * @param uploadUrl 后台url
      * @param filePaths 文件路径
-     * @return Flow<ResponseBody>
+     * @return Flow<IResponse<ISliceFile>>
      */
-    fun uploadFilesByFlow(uploadUrl: String, filePaths: List<String>): Flow<ResponseBody> {
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByFlow(
+        uploadUrl: String,
+        filePaths: List<String>
+    ): Flow<R> {
         val fieldNames: MutableList<String> = ArrayList()
         for (i in filePaths.indices) {
             fieldNames.add("uploaded_file$i")
@@ -214,12 +217,12 @@ class UploadRetrofit private constructor() {
      *
      * @param uploadUrl 后台url
      * @param filePaths 文件路径
-     * @return Observable<ResponseBody>
+     * @return Observable<IResponse<ISliceFile>>
      */
-    fun uploadFilesByObservable(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByObservable(
         uploadUrl: String,
         filePaths: List<String>
-    ): Observable<ResponseBody> {
+    ): Observable<R> {
         val fieldNames: MutableList<String> = ArrayList()
         for (i in filePaths.indices) {
             fieldNames.add("uploaded_file$i")
@@ -233,13 +236,13 @@ class UploadRetrofit private constructor() {
      * @param uploadUrl  后台url
      * @param fieldNames 后台接收图片流的参数名
      * @param filePaths  文件路径
-     * @return Deferred<ResponseBody>
+     * @return Deferred<IResponse<ISliceFile>>
      */
-    fun uploadFilesByDeferred(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByDeferred(
         uploadUrl: String,
         fieldNames: List<String>,
         filePaths: List<String>
-    ): Deferred<ResponseBody> {
+    ): Deferred<R> {
         val builder: MultipartBody.Builder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
         for (i in filePaths.indices) {
@@ -261,13 +264,13 @@ class UploadRetrofit private constructor() {
      * @param uploadUrl  后台url
      * @param fieldNames 后台接收图片流的参数名
      * @param filePaths  文件路径
-     * @return Flow<ResponseBody>
+     * @return Flow<IResponse<ISliceFile>>
      */
-    fun uploadFilesByFlow(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByFlow(
         uploadUrl: String,
         fieldNames: List<String>,
         filePaths: List<String>
-    ): Flow<ResponseBody> {
+    ): Flow<R> {
         val builder: MultipartBody.Builder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
         for (i in filePaths.indices) {
@@ -289,13 +292,13 @@ class UploadRetrofit private constructor() {
      * @param uploadUrl  后台url
      * @param fieldNames 后台接收图片流的参数名
      * @param filePaths  文件路径
-     * @return Observable<ResponseBody>
+     * @return Observable<IResponse<ISliceFile>>
      */
-    fun uploadFilesByObservable(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByObservable(
         uploadUrl: String,
         fieldNames: List<String>,
         filePaths: List<String>
-    ): Observable<ResponseBody> {
+    ): Observable<R> {
         val builder: MultipartBody.Builder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
         for (i in filePaths.indices) {

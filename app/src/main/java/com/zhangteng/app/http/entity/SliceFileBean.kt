@@ -1,13 +1,13 @@
 package com.zhangteng.app.http.entity
 
-import com.zhangteng.httputils.utils.UploadManager
+import com.zhangteng.httputils.fileload.upload.ISliceFile
 
 data class SliceFileBean(
     private val isFileExists: Boolean?,
     private val sourceId: String?,
     private val sourcePath: String?,
     private val sliceList: ArrayList<Int>?,
-) : UploadManager.ISliceFile {
+) : ISliceFile {
     override fun isFileExists(): Boolean? {
         return isFileExists
     }

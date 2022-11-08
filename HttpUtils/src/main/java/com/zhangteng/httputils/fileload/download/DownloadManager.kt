@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.utils
+package com.zhangteng.httputils.fileload.download
 
 import android.os.Environment
 import android.util.Log
@@ -62,17 +62,17 @@ class DownloadManager private constructor(var builder: Builder) {
                         val totalSize =
                             workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
                         if (filePath.isNullOrEmpty()) {
-                            builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
+                            builder.onDownloadListener?.onError(Exception("下载失败，请稍后重试"))
                             Log.i("DownloadManager", "下载失败，请稍后重试")
                         } else {
-                            builder.progressListener?.onProgress(
+                            builder.onDownloadListener?.onDownload(
                                 completed,
                                 totalSize,
                                 progress,
                                 completed == totalSize && progress == 100f,
                                 filePath
                             )
-                            builder.progressListener?.onComplete(File(filePath))
+                            builder.onDownloadListener?.onComplete(File(filePath))
                             Log.i("DownloadManager", "正在下载：进度$progress 完成$completed 大小$totalSize")
                             Log.i("DownloadManager", "下载完成")
                         }
@@ -87,7 +87,7 @@ class DownloadManager private constructor(var builder: Builder) {
                         val totalSize =
                             workInfo.progress.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
                         if (!filePath.isNullOrEmpty()) {
-                            builder.progressListener?.onProgress(
+                            builder.onDownloadListener?.onDownload(
                                 completed,
                                 totalSize,
                                 progress,
@@ -102,8 +102,8 @@ class DownloadManager private constructor(var builder: Builder) {
                             workInfo.outputData.getString(DownloadWorker.DOWNLOAD_WORKER_FILE_PATH)
                         val totalSize =
                             workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
-                        builder.progressListener?.start()
-                        builder.progressListener?.onProgress(
+                        builder.onDownloadListener?.start()
+                        builder.onDownloadListener?.onDownload(
                             0L,
                             totalSize,
                             0f,
@@ -118,7 +118,7 @@ class DownloadManager private constructor(var builder: Builder) {
                         val totalSize =
                             workInfo.outputData.getLong(DownloadWorker.DOWNLOAD_WORKER_TOTAL, 0L)
                         if (!filePath.isNullOrEmpty()) {
-                            builder.progressListener?.onProgress(
+                            builder.onDownloadListener?.onDownload(
                                 0L,
                                 totalSize,
                                 -1f,
@@ -129,11 +129,11 @@ class DownloadManager private constructor(var builder: Builder) {
                         }
                     }
                     WorkInfo.State.CANCELLED -> {
-                        builder.progressListener?.onError(Exception("取消下载"))
+                        builder.onDownloadListener?.onError(Exception("取消下载"))
                         Log.i("DownloadManager", "取消下载")
                     }
                     WorkInfo.State.FAILED -> {
-                        builder.progressListener?.onError(Exception("下载失败，请稍后重试"))
+                        builder.onDownloadListener?.onError(Exception("下载失败，请稍后重试"))
                         Log.i("DownloadManager", "下载失败，请稍后重试")
                     }
                 }
@@ -169,7 +169,7 @@ class DownloadManager private constructor(var builder: Builder) {
                 sum += len.toLong()
                 fos.write(buf, 0, len)
                 val finalSum = sum
-                builder.progressListener?.onProgress(
+                builder.onDownloadListener?.onDownload(
                     finalSum,
                     contentLength,
                     finalSum * 1.0f / contentLength * 100,
@@ -178,10 +178,10 @@ class DownloadManager private constructor(var builder: Builder) {
                 )
             }
             fos.flush()
-            builder.progressListener?.onComplete(file)
+            builder.onDownloadListener?.onComplete(file)
             file
         } catch (e: IOException) {
-            builder.progressListener?.onError(e)
+            builder.onDownloadListener?.onError(e)
             null
         } finally {
             response.close()
@@ -209,7 +209,7 @@ class DownloadManager private constructor(var builder: Builder) {
         /**
          * description: 进度回调
          */
-        var progressListener: ProgressListener? = null
+        var onDownloadListener: OnDownloadListener? = null
 
         fun build(): DownloadManager {
             if (downloadPath.isNullOrEmpty()) {
@@ -221,34 +221,5 @@ class DownloadManager private constructor(var builder: Builder) {
             }
             return DownloadManager(this)
         }
-
-    }
-
-    /**
-     * Created by swing on 2018/4/24.
-     */
-    interface ProgressListener {
-        fun start()
-
-        /**
-         * 下载进度监听
-         *
-         * @param bytesRead     已经下载文件的大小
-         * @param contentLength 文件的大小
-         * @param progress      当前进度，-2:后端返回得文件长度<=0；-1：任务被阻塞;0：任务待开始;100：下载成功
-         * @param done          是否下载完成，false：下载中；true：下载成功
-         * @param filePath      文件路径
-         */
-        fun onProgress(
-            bytesRead: Long,
-            contentLength: Long,
-            progress: Float,
-            done: Boolean,
-            filePath: String?
-        )
-
-        fun onComplete(file: File)
-
-        fun onError(e: Exception)
     }
 }

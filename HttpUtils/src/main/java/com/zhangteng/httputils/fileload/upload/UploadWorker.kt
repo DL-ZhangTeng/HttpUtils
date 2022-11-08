@@ -1,12 +1,10 @@
-package com.zhangteng.httputils.utils
+package com.zhangteng.httputils.fileload.upload
 
 import android.content.Context
 import android.util.Log
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.zhangteng.httputils.fileload.upload.UploadFileSliceApi
-import com.zhangteng.httputils.fileload.upload.UploadRetrofit
 import com.zhangteng.utils.FileSliceUtils
 import com.zhangteng.utils.IResponse
 import com.zhangteng.utils.MD5Util
@@ -22,7 +20,7 @@ import java.io.File
  * author: Swing
  * date: 2022/11/5
  */
-class UploadWorker<T : UploadManager.ISliceFile, R : IResponse<T>>(
+class UploadWorker<T : ISliceFile, R : IResponse<T>>(
     context: Context,
     workerParams: WorkerParameters
 ) : Worker(context, workerParams) {

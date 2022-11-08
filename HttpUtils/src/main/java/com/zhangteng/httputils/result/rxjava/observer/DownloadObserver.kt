@@ -1,9 +1,10 @@
 package com.zhangteng.httputils.result.rxjava.observer
 
 import android.annotation.SuppressLint
+import com.zhangteng.httputils.fileload.download.DownloadManager
+import com.zhangteng.httputils.fileload.download.OnDownloadListener
 import com.zhangteng.httputils.lifecycle.cancelSingleRequest
 import com.zhangteng.httputils.result.callback.DownloadCallBack
-import com.zhangteng.httputils.utils.DownloadManager
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.ILoadingView
 import io.reactivex.Observable
@@ -57,12 +58,12 @@ abstract class DownloadObserver(
             .subscribe {
                 DownloadManager.Builder()
                     .apply {
-                        progressListener = object : DownloadManager.ProgressListener {
+                        onDownloadListener = object : OnDownloadListener {
                             override fun start() {
 
                             }
 
-                            override fun onProgress(
+                            override fun onDownload(
                                 bytesRead: Long,
                                 contentLength: Long,
                                 progress: Float,

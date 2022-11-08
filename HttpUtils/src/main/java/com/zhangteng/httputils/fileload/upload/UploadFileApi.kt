@@ -1,12 +1,10 @@
 package com.zhangteng.httputils.fileload.upload
 
-import com.zhangteng.httputils.utils.UploadManager
 import com.zhangteng.utils.IResponse
 import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
-import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -23,10 +21,10 @@ interface UploadFileApi {
      */
     @Multipart
     @POST
-    fun uploadFileByDeferred(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFileByDeferred(
         @Url uploadUrl: String,
         @Part file: MultipartBody.Part
-    ): Deferred<ResponseBody>
+    ): Deferred<R>
 
     /**
      * 上传
@@ -37,10 +35,10 @@ interface UploadFileApi {
      */
     @Multipart
     @POST
-    fun uploadFileByFlow(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFileByFlow(
         @Url uploadUrl: String,
         @Part file: MultipartBody.Part
-    ): Flow<ResponseBody>
+    ): Flow<R>
 
     /**
      * 上传多个文件
@@ -51,10 +49,10 @@ interface UploadFileApi {
      */
     @Multipart
     @POST
-    fun uploadFilesByDeferred(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByDeferred(
         @Url uploadUrl: String,
         @Part files: List<MultipartBody.Part>
-    ): Deferred<ResponseBody>
+    ): Deferred<R>
 
     /**
      * 上传多个文件
@@ -65,10 +63,10 @@ interface UploadFileApi {
      */
     @Multipart
     @POST
-    fun uploadFilesByFlow(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByFlow(
         @Url uploadUrl: String,
         @Part files: List<MultipartBody.Part>
-    ): Flow<ResponseBody>
+    ): Flow<R>
 }
 
 /**
@@ -85,10 +83,10 @@ interface UploadFileObservableApi {
      */
     @Multipart
     @POST
-    fun uploadFileByObservable(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFileByObservable(
         @Url uploadUrl: String,
         @Part file: MultipartBody.Part
-    ): Observable<ResponseBody>
+    ): Observable<R>
 
     /**
      * 上传多个文件
@@ -99,10 +97,10 @@ interface UploadFileObservableApi {
      */
     @Multipart
     @POST
-    fun uploadFilesByObservable(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFilesByObservable(
         @Url uploadUrl: String,
         @Part files: List<MultipartBody.Part>
-    ): Observable<ResponseBody>
+    ): Observable<R>
 }
 
 /**
@@ -111,7 +109,6 @@ interface UploadFileObservableApi {
  * date: 2022/11/7
  */
 interface UploadFileSliceApi {
-
     /**
      * 上传
      *
@@ -126,7 +123,7 @@ interface UploadFileSliceApi {
      */
     @Multipart
     @POST
-    fun <T : UploadManager.ISliceFile, R : IResponse<T>> uploadFile(
+    fun <T : ISliceFile, R : IResponse<T>> uploadFile(
         @Url uploadUrl: String?,
         @Part file: MultipartBody.Part,
         @Query("busType") busType: String?,
@@ -145,7 +142,7 @@ interface UploadFileSliceApi {
      * @return CheckFileEntity
      */
     @GET
-    fun <T : UploadManager.ISliceFile, R : IResponse<T>> checkFile(
+    fun <T : ISliceFile, R : IResponse<T>> checkFile(
         @Url checkUrl: String?,
         @Query("busType") busType: String?,
         @Query("checkSum") checkSum: String?,

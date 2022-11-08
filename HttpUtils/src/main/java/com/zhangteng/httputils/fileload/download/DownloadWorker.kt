@@ -1,12 +1,10 @@
-package com.zhangteng.httputils.utils
+package com.zhangteng.httputils.fileload.download
 
 import android.content.Context
 import android.util.Log
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.zhangteng.httputils.fileload.download.DownloadRangeApi
-import com.zhangteng.httputils.fileload.download.DownloadRetrofit
 import java.io.File
 import java.io.FileOutputStream
 import java.io.RandomAccessFile
