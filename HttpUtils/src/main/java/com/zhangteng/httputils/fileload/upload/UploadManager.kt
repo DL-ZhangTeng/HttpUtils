@@ -9,6 +9,7 @@ import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.utils.FileSliceUtils
 import com.zhangteng.utils.IResponse
 import com.zhangteng.utils.MD5Util.getFileMD5
+import com.zhangteng.utils.ThreadPoolUtils
 import com.zhangteng.utils.getFileOrFilesSize
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -27,7 +28,9 @@ class UploadManager<T : ISliceFile, R : IResponse<T>> private constructor(var bu
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
             if (msg.what == 0x123) {
-                checkFile()
+                ThreadPoolUtils.instance.addExecuteTask {
+                    checkFile()
+                }
             }
         }
     }
@@ -360,7 +363,7 @@ class UploadManager<T : ISliceFile, R : IResponse<T>> private constructor(var bu
         var isNetworkReconnect: Boolean = false
 
         /**
-         * description: 文件上传回调
+         * description: 文件上传回调，不使用worker时在子线程回调
          */
         var onUpLoadListener: OnUpLoadListener? = null
 

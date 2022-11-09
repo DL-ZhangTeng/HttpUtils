@@ -513,7 +513,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 }
             }
             .build()
-            .startByWorker()
+            .start()
     }
 
     fun uploadFileByDeferred() {
