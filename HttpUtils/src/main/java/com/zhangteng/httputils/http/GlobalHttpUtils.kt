@@ -3,10 +3,10 @@ package com.zhangteng.httputils.http
 import android.app.ActivityManager
 import android.content.Context
 import android.util.Log
-import com.zhangteng.httputils.adapter.coroutine.CoroutineCallAdapterFactory
-import com.zhangteng.httputils.adapter.flow.FlowCallAdapterFactory
+import com.zhangteng.httputils.calladapter.coroutine.CoroutineCallAdapterFactory
+import com.zhangteng.httputils.calladapter.flow.FlowCallAdapterFactory
 import com.zhangteng.httputils.config.EncryptConfig
-import com.zhangteng.httputils.gson.*
+import com.zhangteng.httputils.gsonadapter.*
 import com.zhangteng.httputils.interceptor.*
 import com.zhangteng.httputils.interceptor.CallBackInterceptor.CallBack
 import com.zhangteng.httputils.utils.RetrofitServiceProxyHandler

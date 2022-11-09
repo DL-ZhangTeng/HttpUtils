@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.gson
+package com.zhangteng.httputils.gsonadapter
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.adapter.flow
+package com.zhangteng.httputils.calladapter.flow
 
 import kotlinx.coroutines.flow.Flow
 import retrofit2.CallAdapter

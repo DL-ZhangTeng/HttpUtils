@@ -13,7 +13,7 @@ import com.zhangteng.httputils.fileload.download.DownloadManager
 import com.zhangteng.httputils.fileload.download.OnDownloadListener
 import com.zhangteng.httputils.fileload.upload.OnUpLoadListener
 import com.zhangteng.httputils.fileload.upload.UploadManager
-import com.zhangteng.httputils.gson.FailOverGson
+import com.zhangteng.httputils.gsonadapter.FailOverGson
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.result.coroutine.*
 import com.zhangteng.httputils.result.coroutine.callback.DeferredCallBack

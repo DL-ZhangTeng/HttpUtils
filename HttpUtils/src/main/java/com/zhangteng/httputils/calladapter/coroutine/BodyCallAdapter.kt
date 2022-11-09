@@ -1,22 +1,19 @@
-package com.zhangteng.httputils.adapter.coroutine
+package com.zhangteng.httputils.calladapter.coroutine
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import retrofit2.Call
-import retrofit2.CallAdapter
-import retrofit2.Callback
-import retrofit2.Response
+import retrofit2.*
 import java.lang.reflect.Type
 
-class ResponseCallAdapter<T>(
+class BodyCallAdapter<T>(
     private val isAsync: Boolean,
     private val responseType: T
-) : CallAdapter<T, Deferred<Response<T>>> {
+) : CallAdapter<T, Deferred<T>> {
 
     override fun responseType() = responseType as Type
 
-    override fun adapt(call: Call<T>): Deferred<Response<T>> {
-        val deferred = CompletableDeferred<Response<T>>()
+    override fun adapt(call: Call<T>): Deferred<T> {
+        val deferred = CompletableDeferred<T>()
 
         deferred.invokeOnCompletion {
             if (deferred.isCancelled) {
@@ -31,13 +28,21 @@ class ResponseCallAdapter<T>(
                 }
 
                 override fun onResponse(call: Call<T>, response: Response<T>) {
-                    deferred.complete(response)
+                    if (response.isSuccessful) {
+                        deferred.complete(response.body()!!)
+                    } else {
+                        deferred.completeExceptionally(HttpException(response))
+                    }
                 }
             })
         } else {
             try {
                 val response = call.execute()
-                deferred.complete(response)
+                if (response.isSuccessful) {
+                    deferred.complete(response.body()!!)
+                } else {
+                    deferred.completeExceptionally(HttpException(response))
+                }
             } catch (e: Exception) {
                 deferred.completeExceptionally(e)
             }

@@ -1,26 +1,26 @@
-package com.zhangteng.httputils.gson
+package com.zhangteng.httputils.gsonadapter
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import java.io.IOException
+import java.math.BigDecimal
 
 /**
- * description: double / Double 类型解析适配器
+ * description: BigDecimal 类型解析适配器
  * author: Swing
  * date: 2022/10/31
  */
-class DoubleTypeAdapter : TypeAdapter<Double?>() {
+class BigDecimalTypeAdapter : TypeAdapter<BigDecimal?>() {
     @Throws(IOException::class)
-    override fun read(jsonReader: JsonReader): Double? {
+    override fun read(jsonReader: JsonReader): BigDecimal? {
         return when (jsonReader.peek()) {
-            JsonToken.NUMBER -> jsonReader.nextDouble()
-            JsonToken.STRING -> {
+            JsonToken.NUMBER, JsonToken.STRING -> {
                 val result = jsonReader.nextString()
                 if (result == null || "" == result) {
-                    0.0
-                } else result.toDouble()
+                    BigDecimal(0)
+                } else BigDecimal(result)
             }
             JsonToken.NULL -> {
                 jsonReader.nextNull()
@@ -28,13 +28,13 @@ class DoubleTypeAdapter : TypeAdapter<Double?>() {
             }
             else -> {
                 jsonReader.skipValue()
-                throw IllegalArgumentException()
+                null
             }
         }
     }
 
     @Throws(IOException::class)
-    override fun write(out: JsonWriter, value: Double?) {
+    override fun write(out: JsonWriter, value: BigDecimal?) {
         out.value(value)
     }
 }

@@ -1,23 +1,27 @@
-package com.zhangteng.httputils.gson
+package com.zhangteng.httputils.gsonadapter
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import java.io.IOException
-import java.lang.Boolean
 
 /**
- * description: String 类型解析适配器
+ * description: double / Double 类型解析适配器
  * author: Swing
  * date: 2022/10/31
  */
-class StringTypeAdapter : TypeAdapter<String?>() {
+class DoubleTypeAdapter : TypeAdapter<Double?>() {
     @Throws(IOException::class)
-    override fun read(jsonReader: JsonReader): String? {
+    override fun read(jsonReader: JsonReader): Double? {
         return when (jsonReader.peek()) {
-            JsonToken.STRING, JsonToken.NUMBER -> jsonReader.nextString()
-            JsonToken.BOOLEAN -> Boolean.toString(jsonReader.nextBoolean())
+            JsonToken.NUMBER -> jsonReader.nextDouble()
+            JsonToken.STRING -> {
+                val result = jsonReader.nextString()
+                if (result == null || "" == result) {
+                    0.0
+                } else result.toDouble()
+            }
             JsonToken.NULL -> {
                 jsonReader.nextNull()
                 null
@@ -30,7 +34,7 @@ class StringTypeAdapter : TypeAdapter<String?>() {
     }
 
     @Throws(IOException::class)
-    override fun write(out: JsonWriter, value: String?) {
+    override fun write(out: JsonWriter, value: Double?) {
         out.value(value)
     }
 }

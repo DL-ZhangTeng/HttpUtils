@@ -1,9 +1,9 @@
 package com.zhangteng.app
 
 import android.app.Application
-import com.zhangteng.httputils.adapter.coroutine.CoroutineCallAdapterFactory
-import com.zhangteng.httputils.adapter.flow.FlowCallAdapterFactory
-import com.zhangteng.httputils.gson.FailOverGson
+import com.zhangteng.httputils.calladapter.coroutine.CoroutineCallAdapterFactory
+import com.zhangteng.httputils.calladapter.flow.FlowCallAdapterFactory
+import com.zhangteng.httputils.gsonadapter.FailOverGson
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.utils.R
 import com.zhangteng.utils.StateViewHelper

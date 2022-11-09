@@ -1,4 +1,4 @@
-package com.zhangteng.httputils.adapter.coroutine
+package com.zhangteng.httputils.calladapter.coroutine
 
 import kotlinx.coroutines.Deferred
 import retrofit2.CallAdapter
