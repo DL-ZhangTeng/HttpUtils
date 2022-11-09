@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity(), IStateView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        downloadFileByDownloadManager()
     }
 
     override fun onDestroy() {
@@ -479,14 +478,14 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     /**
-     * description 使用WorkerManager下载文件
+     * description 使用DownloadManager下载文件
      * @param
      * @return
      */
     fun downloadFileByDownloadManager() {
         DownloadManager.Builder()
             .apply {
-                downloadUrl = "https://tp.kaishuihu.com/apk/fdy_1-1.0.0-2021-12-23.apk"
+                downloadUrl = ""
                 isNetworkReconnect = true
                 onDownloadListener = object : OnDownloadListener {
                     override fun start() {
@@ -514,6 +513,44 @@ class MainActivity : AppCompatActivity(), IStateView {
             }
             .build()
             .start()
+    }
+
+    /**
+     * description 使用WorkerManager下载文件
+     * @param
+     * @return
+     */
+    fun downloadFileByWorkerManager() {
+        DownloadManager.Builder()
+            .apply {
+                downloadUrl = ""
+                isNetworkReconnect = true
+                onDownloadListener = object : OnDownloadListener {
+                    override fun start() {
+                        Log.i("MainActivity", "开始下载")
+                    }
+
+                    override fun onDownload(
+                        bytesRead: Long,
+                        contentLength: Long,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?
+                    ) {
+                        Log.i("MainActivity", "正在下载：进度$progress 完成$bytesRead 大小$contentLength")
+                    }
+
+                    override fun onComplete(file: File) {
+                        Log.i("MainActivity", "下载成功")
+                    }
+
+                    override fun onError(e: Exception) {
+                        Log.i("MainActivity", "下载失败")
+                    }
+                }
+            }
+            .build()
+            .startByWorker()
     }
 
     fun uploadFileByDeferred() {
@@ -742,11 +779,54 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     /**
-     * description 使用WorkerManager上传文件
+     * description 使用UploadManager上传文件
      * @param
      * @return
      */
     fun uploadFilesByUploadManager() {
+        UploadManager.Builder<SliceFileBean, BaseResult<SliceFileBean>>()
+            .apply {
+                checkUrl = ""
+                uploadUrl = ""
+                filePath = ""
+                sliceFileSize = 10 * 1024 * 1024
+                isNetworkReconnect = true
+                onUpLoadListener = object : OnUpLoadListener {
+                    override fun start() {
+                        Log.i("MainActivity", "开始上传")
+                    }
+
+                    override fun onUpload(
+                        currentNum: Int,
+                        allNum: Int,
+                        progress: Float,
+                        done: Boolean,
+                        filePath: String?,
+                        sourceId: String?
+                    ) {
+                        Log.i("MainActivity", "正在上传：进度$progress 完成$currentNum 大小$allNum")
+                    }
+
+                    override fun onComplete(file: File?, sourceId: String?) {
+                        Log.i("MainActivity", "上传成功")
+                    }
+
+                    override fun onError(e: Exception) {
+                        Log.i("MainActivity", "上传失败")
+                    }
+
+                }
+            }
+            .build()
+            .start()
+    }
+
+    /**
+     * description 使用WorkerManager上传文件
+     * @param
+     * @return
+     */
+    fun uploadFilesByWorkerManager() {
         UploadManager.Builder<SliceFileBean, BaseResult<SliceFileBean>>()
             .apply {
                 checkUrl = ""
