@@ -79,6 +79,9 @@ interface DownloadRangeApi {
      *              Range: bytes=500-表示从第500字节开始到文件结束部分的内容。
      *              Range: bytes=0-表示第一个字节到最后一个字节，即完整的文件内容。
      * @return ResponseBody
+     *              Content-Range: bytes 0-499/1000表示第0-499字节范围的内容，斜杠后面的1000表示文件的大小
+     *              206 OK 成功
+     *              416 InvalidRange 通过HTTP Range请求获取大文件的部分内容时，选取了无效的范围
      */
     @Streaming
     @Headers("Content-Type: application/octet-stream", "Accept-Encoding: identity")
