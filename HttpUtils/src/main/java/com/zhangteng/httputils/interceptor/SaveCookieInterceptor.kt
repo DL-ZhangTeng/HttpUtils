@@ -23,13 +23,13 @@ class SaveCookieInterceptor : PriorityInterceptor {
                 cookies.add(header)
             }
             HttpUtils.instance.context
-                .putToSP(SPConfig.FILE_NAME, SPConfig.COOKIE, cookies)
+                .putToSP(SPConfig.COOKIE, cookies, SPConfig.FILE_NAME)
         }
         //获取服务器相应时间--用于计算倒计时的时间差
         if (!originalResponse.header("Date")!!.isEmpty()) {
             val date = dateToStamp(originalResponse.header("Date"))
             HttpUtils.instance.context
-                .putToSP(SPConfig.FILE_NAME, SPConfig.DATE, date)
+                .putToSP(SPConfig.DATE, date, SPConfig.FILE_NAME)
         }
         return originalResponse
     }

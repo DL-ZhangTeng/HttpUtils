@@ -63,9 +63,9 @@ class HttpUtils private constructor() {
 
     fun getCookie(): HashSet<String>? {
         return Companion.context.getFromSPToSet(
-            SPConfig.FILE_NAME,
             SPConfig.COOKIE,
-            HashSet()
+            HashSet(),
+            SPConfig.FILE_NAME
         ) as HashSet<String>?
     }
 

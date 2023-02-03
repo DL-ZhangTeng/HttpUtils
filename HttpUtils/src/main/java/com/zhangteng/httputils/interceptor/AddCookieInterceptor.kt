@@ -17,9 +17,9 @@ class AddCookieInterceptor : PriorityInterceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val builder: Request.Builder = chain.request().newBuilder()
         val preferences = HttpUtils.instance.context.getFromSPToSet(
-            SPConfig.FILE_NAME,
             SPConfig.COOKIE,
-            HashSet<String>()
+            HashSet<String>(),
+            SPConfig.FILE_NAME
         ) as HashSet<String>
         if (preferences != null) {
             for (cookie in preferences) {
