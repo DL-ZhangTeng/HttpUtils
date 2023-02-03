@@ -1,5 +1,7 @@
 package com.zhangteng.httputils.result.callback
 
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.LifecycleOwner
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.lifecycle.HttpLifecycleEventObserver
@@ -8,6 +10,7 @@ import com.zhangteng.httputils.result.callback.interfaces.ICallBack
 import com.zhangteng.utils.IException
 import com.zhangteng.utils.ILoadingView
 import com.zhangteng.utils.showShortToast
+
 
 /**
  * description: 下载回调
@@ -55,10 +58,13 @@ abstract class CommonCallBack<T, D>(
         if (isInterruptByLifecycle(iLoadingView)) return
         iLoadingView?.dismissProgressDialog()
         if (!isHideToast()) {
-            try {
+            if (Looper.myLooper() != null && Looper.myLooper() == Looper.getMainLooper()) {
                 HttpUtils.instance.context.showShortToast(iException.message)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } else {
+                Handler(Looper.getMainLooper())
+                    .post {
+                        HttpUtils.instance.context.showShortToast(iException.message)
+                    }
             }
         }
         onFailure(iException)
