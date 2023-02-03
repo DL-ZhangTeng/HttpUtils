@@ -55,7 +55,11 @@ abstract class CommonCallBack<T, D>(
         if (isInterruptByLifecycle(iLoadingView)) return
         iLoadingView?.dismissProgressDialog()
         if (!isHideToast()) {
-            HttpUtils.instance.context.showShortToast(iException.message)
+            try {
+                HttpUtils.instance.context.showShortToast(iException.message)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         onFailure(iException)
     }
