@@ -34,7 +34,7 @@ class FlowCallAdapterFactory private constructor(private val isAsync: Boolean) :
             val responseBodyType = getParameterUpperBound(0, flowableType)
             ResponseFlowCallAdapter(isAsync, responseBodyType)
         } else {
-            BodyFlowCallAdapter(isAsync, returnType)
+            BodyFlowCallAdapter(isAsync, flowableType)
         }
     }
 

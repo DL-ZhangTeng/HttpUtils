@@ -19,50 +19,48 @@ class ResponseFlowCallAdapter<R>(private val isAsync: Boolean, private val respo
     CallAdapter<R, Flow<Response<R>>> {
     override fun responseType() = responseBodyType as Type
 
-    override fun adapt(call: Call<R>): Flow<Response<R>> =
-        if (isAsync)
-            flow {
-                try {
-                    suspendCancellableCoroutine<Response<R>> { continuation ->
-                        continuation.invokeOnCancellation {
-                            call.cancel()
-                        }
-                        call.enqueue(object : Callback<R> {
-                            override fun onResponse(call: Call<R>, response: Response<R>) {
-                                continuation.resume(response)
-                            }
-
-                            override fun onFailure(call: Call<R>, t: Throwable) {
-                                continuation.resumeWithException(t)
-                            }
-
-                        })
-                    }.let {
-                        emit(it)
-                    }
-                } catch (e: Exception) {
-                    suspendCoroutineUninterceptedOrReturn<Nothing> { continuation ->
-                        Dispatchers.Default.dispatch(continuation.context) {
-                            continuation.intercepted().resumeWithException(e)
-                        }
-                        COROUTINE_SUSPENDED
-                    }
-                }
-            }
-        else
-            flow {
+    override fun adapt(call: Call<R>): Flow<Response<R>> = flow {
+        if (isAsync) {
+            try {
                 suspendCancellableCoroutine<Response<R>> { continuation ->
                     continuation.invokeOnCancellation {
                         call.cancel()
                     }
-                    try {
-                        val response = call.execute()
-                        continuation.resume(response)
-                    } catch (e: Exception) {
-                        continuation.resumeWithException(e)
-                    }
+                    call.enqueue(object : Callback<R> {
+                        override fun onResponse(call: Call<R>, response: Response<R>) {
+                            continuation.resume(response)
+                        }
+
+                        override fun onFailure(call: Call<R>, t: Throwable) {
+                            continuation.resumeWithException(t)
+                        }
+
+                    })
                 }.let {
                     emit(it)
                 }
+            } catch (e: Exception) {
+                suspendCoroutineUninterceptedOrReturn<Nothing> { continuation ->
+                    Dispatchers.Default.dispatch(continuation.context) {
+                        continuation.intercepted().resumeWithException(e)
+                    }
+                    COROUTINE_SUSPENDED
+                }
             }
+        } else {
+            suspendCancellableCoroutine<Response<R>> { continuation ->
+                continuation.invokeOnCancellation {
+                    call.cancel()
+                }
+                try {
+                    val response = call.execute()
+                    continuation.resume(response)
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
+                }
+            }.let {
+                emit(it)
+            }
+        }
+    }
 }
