@@ -45,12 +45,15 @@ class MainActivity : AppCompatActivity(), IStateView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        launchGoFlowIResponse()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         HttpUtils.instance.cancelAllRequest()
+    }
+
+    fun onClick(view: View) {
+        deferredGo_ICallBack()
     }
 
     fun launchGo_DeferredExUtils() {
@@ -499,7 +502,10 @@ class MainActivity : AppCompatActivity(), IStateView {
                         done: Boolean,
                         filePath: String?
                     ) {
-                        Log.i("MainActivity", "正在下载：进度$progress 完成$bytesRead 大小$contentLength")
+                        Log.i(
+                            "MainActivity",
+                            "正在下载：进度$progress 完成$bytesRead 大小$contentLength"
+                        )
                     }
 
                     override fun onComplete(file: File) {
@@ -537,7 +543,10 @@ class MainActivity : AppCompatActivity(), IStateView {
                         done: Boolean,
                         filePath: String?
                     ) {
-                        Log.i("MainActivity", "正在下载：进度$progress 完成$bytesRead 大小$contentLength")
+                        Log.i(
+                            "MainActivity",
+                            "正在下载：进度$progress 完成$bytesRead 大小$contentLength"
+                        )
                     }
 
                     override fun onComplete(file: File) {
