@@ -34,6 +34,7 @@ import com.zhangteng.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -212,7 +213,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun launchGo_FlowExUtils() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             com.zhangteng.httputils.result.flow.launchGo({
                 HttpUtils.instance.ConfigGlobalHttpUtils()
                     .createService(Api::class.java)
@@ -230,7 +231,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun launchGoIResponse_FlowExUtils() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             com.zhangteng.httputils.result.flow.launchGoIResponse({
                 HttpUtils.instance.ConfigGlobalHttpUtils()
                     .createService(Api::class.java)
@@ -248,7 +249,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun launchGoFlow() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             com.zhangteng.httputils.result.flow.launchGoFlow({
                 HttpUtils.instance.ConfigGlobalHttpUtils()
                     .createService(Api::class.java)
@@ -266,7 +267,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun launchGoFlowIResponse() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             launchGoFlowIResponse({
                 HttpUtils.instance.ConfigGlobalHttpUtils()
                     .createService(Api::class.java)
@@ -284,7 +285,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun flowGo() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.ConfigGlobalHttpUtils()
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
@@ -301,7 +302,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun flowGoIResponse() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.ConfigGlobalHttpUtils()
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
@@ -318,7 +319,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun flowGo_ICallBack() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.ConfigGlobalHttpUtils()
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
@@ -340,7 +341,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun flowGoIResponse_ICallBack() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.ConfigGlobalHttpUtils()
                 .createService(Api::class.java)
                 .getHomeListByFlow(0)
@@ -427,7 +428,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun downloadFileByFlow() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.DownloadRetrofit()
                 .downloadFileByFlow("")
                 .flowGo(object :
@@ -600,7 +601,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun uploadFileByFlow() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.UploadRetrofit()
                 .uploadFileByFlow<SliceFileBean, BaseResult<SliceFileBean>>("", "", "")
                 .flowGo(object :
@@ -711,7 +712,7 @@ class MainActivity : AppCompatActivity(), IStateView {
     }
 
     fun uploadFilesByFlow() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             HttpUtils.instance.UploadRetrofit()
                 .uploadFilesByFlow<SliceFileBean, BaseResult<SliceFileBean>>(
                     "",

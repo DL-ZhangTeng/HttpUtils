@@ -222,7 +222,7 @@ fun deferredGoIResponse_ICallBack() {
 }
 
 fun flowGo_ICallBack() {
-    GlobalScope.launch {
+    GlobalScope.launch(Dispatchers.Main) {
         HttpUtils.instance.ConfigGlobalHttpUtils()
             .createService(Api::class.java)
             .getHomeListByFlow(0)
@@ -244,7 +244,7 @@ fun flowGo_ICallBack() {
 }
 
 fun flowGoIResponse_ICallBack() {
-    GlobalScope.launch {
+    GlobalScope.launch(Dispatchers.Main) {
         HttpUtils.instance.ConfigGlobalHttpUtils()
             .createService(Api::class.java)
             .getHomeListByFlow(0)
