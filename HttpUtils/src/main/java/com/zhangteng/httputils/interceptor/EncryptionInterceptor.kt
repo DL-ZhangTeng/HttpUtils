@@ -7,9 +7,8 @@ import com.zhangteng.httputils.config.SPConfig
 import com.zhangteng.httputils.http.GlobalHttpUtils
 import com.zhangteng.httputils.http.HttpUtils
 import com.zhangteng.httputils.utils.DiskLruCacheUtils
-import com.zhangteng.utils.AESUtils.encrypt
-import com.zhangteng.utils.AESUtils.key
-import com.zhangteng.utils.RSAUtils.encryptByPublicKey
+import com.zhangteng.utils.AESUtils
+import com.zhangteng.utils.RSAUtils
 import com.zhangteng.utils.getFromSP
 import com.zhangteng.utils.putToSP
 import okhttp3.*
@@ -50,10 +49,12 @@ class EncryptionInterceptor : PriorityInterceptor {
                 && !jsonElement.isJsonNull
                 && EncryptConfig.SECRET_ERROR.toString() == jsonElement.asString
             ) {
+                //服务端响应加解密错误清除本地秘钥
                 HttpUtils.instance.context
-                    .putToSP(SPConfig.FILE_NAME, EncryptConfig.SECRET, "")
+                    .putToSP(EncryptConfig.SECRET, "", SPConfig.FILE_NAME)
                 DiskLruCacheUtils.remove(EncryptConfig.publicKeyUrl)
                 DiskLruCacheUtils.flush()
+                //重新发起加密请求
                 secretRequest = buildRequest(request)
                 if (secretRequest == null) {
                     return getErrorSecretResponse(request)
@@ -71,7 +72,7 @@ class EncryptionInterceptor : PriorityInterceptor {
     }
 
     /**
-     * description 保证加密时优先执行且避免特殊情况需要广域晚于解密之前执行的Interceptor因此返回Integer.MAX_VALUE - 1
+     * description 保证加密时较晚执行且避免特殊情况需要加密之后执行的Interceptor因此返回Integer.MAX_VALUE - 1
      */
     override val priority: Int
         get() = Int.MAX_VALUE - 1
@@ -79,55 +80,52 @@ class EncryptionInterceptor : PriorityInterceptor {
     /**
      * 构建加密请求
      *
+     * 1、客户端与服务端交换秘钥
+     * 2、客户端生成AES秘钥
+     * 3、客户端使用客户端私钥加密AES秘钥并放入请求头
+     * 4、客户端使用AES秘钥加密请求数据放入请求体
+     * 5、服务端使用客户端公钥解密请求头密文，获取AES秘钥
+     * 6、服务端使用AES秘钥解密请求体获取请求数据
+     * 7、服务端返回处理结果(使用AES加密数据放入响应体，使用客户端公钥加密AES秘钥后放入响应头)
+     * 8、客户端使用客户端私钥解密响应头密文，获取AES秘钥
+     * 9、客户端使用AES秘钥解密响应体获取响应数据
+     *
      * @param request 原请求
      */
     @Throws(IOException::class)
     protected fun buildRequest(request: Request): Request? {
-        if (TextUtils.isEmpty(
-                HttpUtils.instance.context
-                    .getFromSP(SPConfig.FILE_NAME, EncryptConfig.SECRET, "") as CharSequence
-            )
-        ) {
-            val secretResponse: Response = GlobalHttpUtils.instance.okHttpClient
-                .newCall(Request.Builder().url(EncryptConfig.publicKeyUrl!!).build()).execute()
-            if (secretResponse.code == 200) {
-                try {
-                    val secretResponseString = secretResponse.body?.string()
-                    val jsonObject = JsonParser().parse(secretResponseString).asJsonObject
-                    val jsonElement = jsonObject["result"].asJsonObject["publicKey"]
-                    HttpUtils.instance.context
-                        .putToSP(SPConfig.FILE_NAME, EncryptConfig.SECRET, jsonElement.asString)
-                } catch (exception: NullPointerException) {
-                    return null
-                }
-            } else {
-                return null
-            }
-        }
-        val aesRequestKey = key
+        //1、客户端与服务端交换秘钥
+        exchangeSecretKey()
+
+        //2、客户端生成AES秘钥
+        val aesRequestKey = AESUtils.key
+        //3、客户端使用客户端私钥加密AES秘钥并放入请求头
         val requestBuilder: Request.Builder = request.newBuilder()
-        requestBuilder.removeHeader(EncryptConfig.SECRET)
         try {
-            requestBuilder.addHeader(
+            requestBuilder.removeHeader(EncryptConfig.SECRET)
+            val keyPair = HttpUtils.instance.context.getFromSP(
                 EncryptConfig.SECRET,
-                encryptByPublicKey(
-                    aesRequestKey,
-                    HttpUtils.instance.context.getFromSP(
-                        SPConfig.FILE_NAME,
-                        EncryptConfig.SECRET,
-                        EncryptConfig.publicKey
-                    ) as String
-                )
-            )
+                "",
+                SPConfig.FILE_NAME,
+            ) as String?
+            //如果本地未存储客户端私钥则使用默认服务器公钥交换数据
+            val m = if (keyPair.isNullOrEmpty()) {
+                RSAUtils.encryptByPublicKey(aesRequestKey, EncryptConfig.publicKey)
+            } else {
+                RSAUtils.encryptByPrivateKey(aesRequestKey, keyPair)
+            }
+            requestBuilder.addHeader(EncryptConfig.SECRET, m)
+
         } catch (e: Exception) {
             return null
         }
+        //4、客户端使用AES秘钥加密请求数据放入请求体
         if (METHOD_GET == request.method) {
             val url = request.url.toUrl().toString()
             val paramsBuilder = url.substring(url.indexOf("?") + 1)
             try {
                 val encryptParams =
-                    encrypt(paramsBuilder, aesRequestKey, aesRequestKey.substring(0, 16))
+                    AESUtils.encrypt(paramsBuilder, aesRequestKey, aesRequestKey.substring(0, 16))
                 requestBuilder.url(url.substring(0, url.indexOf("?")) + "?" + encryptParams)
             } catch (e: Exception) {
                 return null
@@ -143,7 +141,7 @@ class EncryptionInterceptor : PriorityInterceptor {
                             for (i in 0 until formBody.size) {
                                 val value = formBody.encodedValue(i)
                                 if (!TextUtils.isEmpty(value)) {
-                                    val encryptParams = encrypt(
+                                    val encryptParams = AESUtils.encrypt(
                                         value,
                                         aesRequestKey,
                                         aesRequestKey.substring(0, 16)
@@ -168,7 +166,11 @@ class EncryptionInterceptor : PriorityInterceptor {
                     if (!TextUtils.isEmpty(paramsRaw)) {
                         try {
                             val encryptParams =
-                                encrypt(paramsRaw, aesRequestKey, aesRequestKey.substring(0, 16))
+                                AESUtils.encrypt(
+                                    paramsRaw,
+                                    aesRequestKey,
+                                    aesRequestKey.substring(0, 16)
+                                )
                             requestBuilder.post(
                                 encryptParams
                                     .toRequestBody(requestBody.contentType())
@@ -181,6 +183,66 @@ class EncryptionInterceptor : PriorityInterceptor {
             }
         }
         return requestBuilder.build()
+    }
+
+    /**
+     * 客户端与服务端交换秘钥
+     *
+     * 1、客户端获取服务端公钥sPubKey
+     * 2、客户端生成客户端RSA秘钥对cPriKey、cPubKey
+     * 3、客户端使用服务端公钥sPubKey加密客户端公钥cPubKey 生成 m1
+     * 4、客户端将m1放入请求头
+     * 5、服务端使用私钥s_pri_key解密获取客户端公钥cPubKey
+     * 6、客户端获取交换结果200，存储客户端私钥cPriKey，秘钥交换完成
+     */
+    protected fun exchangeSecretKey() {
+        val localKeyPair = HttpUtils.instance.context.getFromSP(
+            EncryptConfig.SECRET,
+            "",
+            SPConfig.FILE_NAME
+        ) as String?
+        if (localKeyPair.isNullOrEmpty()) {
+            //1、获取服务端公钥sPubKey
+            val secretResponse: Response = GlobalHttpUtils.instance.okHttpClient
+                .newCall(Request.Builder().url(EncryptConfig.publicKeyUrl!!).build()).execute()
+            if (secretResponse.code == 200) {
+                try {
+                    val secretResponseString = secretResponse.body?.string()
+                    val result = JsonParser().parse(secretResponseString).asJsonObject
+                    val sPubKey = result["result"].asJsonObject["publicKey"].asString
+                    //2、生成客户端RSA秘钥对cPriKey、cPubKey
+                    val keyPair = RSAUtils.generateRSAKeyPair(1024)
+                    val cPriKey = keyPair?.private?.toString()
+                    val cPubKey = keyPair?.public?.toString()
+                    if (cPriKey.isNullOrEmpty() || cPubKey.isNullOrEmpty()) {
+                        return
+                    }
+                    //3、客户端使用服务端公钥sPubKey加密客户端公钥cPubKey 生成 m1
+                    val m1 = RSAUtils.encryptByPublicKey(cPubKey, sPubKey)
+                    //4、客户端将m1放入请求头（避免缓存影响，移除交换接口缓存）
+                    DiskLruCacheUtils.remove(EncryptConfig.publicKeyUrl)
+                    DiskLruCacheUtils.flush()
+                    val requestBuilder: Request.Builder =
+                        Request.Builder().url(EncryptConfig.publicKeyUrl!!)
+                    requestBuilder.removeHeader(EncryptConfig.SECRET)
+                    requestBuilder.addHeader(EncryptConfig.SECRET, m1)
+                    val secretResponse2: Response = GlobalHttpUtils.instance.okHttpClient
+                        .newCall(requestBuilder.build()).execute()
+                    //5、服务端使用私钥s_pri_key解密获取客户端公钥cPubKey
+                    //6、客户端获取交换结果200，秘钥交换完成，存储客户端私钥cPriKey
+                    if (secretResponse2.code == 200) {
+                        HttpUtils.instance.context
+                            .putToSP(EncryptConfig.SECRET, cPriKey, SPConfig.FILE_NAME)
+                    } else {
+                        return
+                    }
+                } catch (exception: NullPointerException) {
+                    return
+                }
+            } else {
+                return
+            }
+        }
     }
 
     /**

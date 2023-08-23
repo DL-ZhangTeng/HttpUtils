@@ -4,8 +4,8 @@ import android.text.TextUtils
 import com.zhangteng.httputils.config.EncryptConfig
 import com.zhangteng.httputils.config.SPConfig
 import com.zhangteng.httputils.http.HttpUtils
-import com.zhangteng.utils.AESUtils.decrypt
-import com.zhangteng.utils.RSAUtils.decryptByPublicKey
+import com.zhangteng.utils.AESUtils
+import com.zhangteng.utils.RSAUtils
 import com.zhangteng.utils.getFromSP
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -32,19 +32,26 @@ class DecryptionInterceptor : PriorityInterceptor {
             if (EncryptConfig.SECRET.contains(name) && !TextUtils.isEmpty(responseHeaders[name])) {
                 return try {
                     val encryptKey = responseHeaders[name]
-                    val aesResponseKey = decryptByPublicKey(
-                        encryptKey,
-                        HttpUtils.instance.context.getFromSP(
-                            SPConfig.FILE_NAME,
-                            EncryptConfig.SECRET,
-                            EncryptConfig.publicKey
-                        ) as String
-                    )
+                    val keyPair = HttpUtils.instance.context.getFromSP(
+                        EncryptConfig.SECRET,
+                        "",
+                        SPConfig.FILE_NAME,
+                    ) as String?
+                    //如果本地未存储客户端私钥则使用默认服务器公钥交换数据
+                    val aesResponseKey = if (keyPair.isNullOrEmpty()) {
+                        RSAUtils.decryptByPublicKey(encryptKey, EncryptConfig.publicKey)
+                    } else {
+                        RSAUtils.decryptByPrivateKey(encryptKey, keyPair)
+                    }
                     val mediaType =
                         if (responseBody != null) responseBody.contentType() else "application/json;charset=UTF-8".toMediaTypeOrNull()
                     val responseStr = responseBody?.string() ?: ""
                     val rawResponseStr =
-                        decrypt(responseStr, aesResponseKey, aesResponseKey.substring(0, 16))
+                        AESUtils.decrypt(
+                            responseStr,
+                            aesResponseKey,
+                            aesResponseKey.substring(0, 16)
+                        )
                     responseBuilder.body(ResponseBody.create(mediaType, rawResponseStr))
                     responseBuilder.build()
                 } catch (e: Exception) {
