@@ -879,16 +879,16 @@ class MainActivity : AppCompatActivity(), IStateView {
      */
     override fun createStateViewHelper(): StateViewHelper {
         return StateViewHelper().apply {
-            againRequestListener = object : StateViewHelper.AgainRequestListener {
+            againRequestListeners.add(object : StateViewHelper.AgainRequestListener {
                 override fun request(view: View) {
                     againRequestByStateViewHelper(view)
                 }
-            }
-            cancelRequestListener = object : StateViewHelper.CancelRequestListener {
+            })
+            cancelRequestListeners.add(object : StateViewHelper.CancelRequestListener {
                 override fun cancel(dialog: DialogInterface) {
                     cancelRequestByStateViewHelper(dialog)
                 }
-            }
+            })
         }
     }
 

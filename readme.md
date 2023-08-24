@@ -14,7 +14,7 @@ allprojects {
     }
 }
 
-implementation 'com.github.DL-ZhangTeng:HttpUtils:2.3.0'
+implementation 'com.github.DL-ZhangTeng:HttpUtils:2.4.0'
 //库所使用的三方
 implementation 'androidx.lifecycle:lifecycle-common:2.4.1'
 implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
@@ -32,7 +32,7 @@ implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 
-implementation 'com.github.DL-ZhangTeng:Utils:2.1.1'
+implementation 'com.github.DL-ZhangTeng:Utils:2.3.0'
 ```
 
 ## 属性
@@ -316,6 +316,7 @@ fun observableGoObserver() {
 
 | 版本     | 更新                                       | 更新时间                |
 |--------|------------------------------------------|---------------------|
+| v2.4.0 | 优化客户端获取服务端公钥时明文，造成服务器响应数据泄露              | 2023/8/24 at 10:32  |
 | v2.3.0 | Flow功能数据解析问题修复                           | 2023/2/3 at 21:05   |
 | v2.2.0 | 增加文件分片上传断点下载                             | 2022/11/9 at 16:41  |
 | v2.1.0 | 常见数据解析容错处理                               | 2022/10/31 at 17:47 |
