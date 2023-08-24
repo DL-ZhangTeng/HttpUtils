@@ -299,12 +299,18 @@ class GlobalHttpUtils private constructor() {
      * description 数据加解密
      * 数据加密，防止信息截取，具体加解密方案参考https://blog.csdn.net/duoluo9/article/details/105214983?spm=1001.2014.3001.5501
      *
-     * @param publicKeyUrl rsa公钥失效后重新请求秘钥的接口
-     * @param publicKey    rsa公钥
+     * @param publicKeyUrl 服务端公钥获取接口
+     * @param exchangeKeyPairUrl 秘钥交换接口
+     * @param publicKey    服务端公钥
      */
-    fun setEnAndDecryption(publicKeyUrl: HttpUrl?, publicKey: String?): GlobalHttpUtils {
+    fun setEnAndDecryption(
+        publicKeyUrl: HttpUrl?,
+        exchangeKeyPairUrl: HttpUrl?,
+        publicKey: String?
+    ): GlobalHttpUtils {
         EncryptConfig.publicKeyUrl = publicKeyUrl
-        EncryptConfig.publicKey = publicKey!!
+        EncryptConfig.exchangeKeyPairUrl = exchangeKeyPairUrl
+        EncryptConfig.publicKey = publicKey
         priorityInterceptors.add(EncryptionInterceptor())
         networkInterceptors.add(DecryptionInterceptor())
         return this

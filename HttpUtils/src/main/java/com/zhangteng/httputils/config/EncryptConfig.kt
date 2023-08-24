@@ -16,10 +16,15 @@ object EncryptConfig {
     /**
      * 服务端公钥，如果交换秘钥失败，使用客户端默认公钥完成后续交互
      */
-    var publicKey = ""
+    var publicKey: String? = null
+
+    /**
+     * 服务端公钥获取接口
+     */
+    var publicKeyUrl: HttpUrl? = null
 
     /**
      * 秘钥交换接口
      */
-    var publicKeyUrl: HttpUrl? = null
+    var exchangeKeyPairUrl: HttpUrl? = null
 }
