@@ -177,7 +177,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("deferredGo_ICallBack")
+                        iException?.message.e("deferredGo_ICallBack")
                     }
 
                     override fun onSuccess(t: BaseResult<HomeListBean>) {
@@ -201,7 +201,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException)
+                        iException?.message
                             .e("deferredGoIResponse_ICallBack")
                     }
 
@@ -330,7 +330,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("flowGo_ICallBack")
+                        iException?.message.e("flowGo_ICallBack")
                     }
 
                     override fun onSuccess(t: BaseResult<HomeListBean>) {
@@ -352,7 +352,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("flowGoIResponse_ICallBack")
+                        iException?.message.e("flowGoIResponse_ICallBack")
                     }
 
                     override fun onSuccess(t: IResponse<HomeListBean>) {
@@ -373,7 +373,7 @@ class MainActivity : AppCompatActivity(), IStateView {
             .compose(ProgressDialogObservableTransformer(this@MainActivity))
             .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+                    iException?.message.e("rxjavaGo")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
@@ -391,7 +391,7 @@ class MainActivity : AppCompatActivity(), IStateView {
             //自动处理网络加载中动画
             .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+                    iException?.message.e("rxjavaGo")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
@@ -420,7 +420,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("downloadFileByDeferred")
+                        iException?.message.e("downloadFileByDeferred")
                     }
 
                 })
@@ -447,7 +447,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("downloadFileByFlow")
+                        iException?.message.e("downloadFileByFlow")
                     }
 
                 })
@@ -475,7 +475,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 }
 
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("downloadFileByObservable")
+                    iException?.message.e("downloadFileByObservable")
                 }
 
             })
@@ -578,7 +578,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("uploadFileByDeferred")
+                        iException?.message.e("uploadFileByDeferred")
                     }
 
                     override fun onSuccess(t: BaseResult<SliceFileBean>) {
@@ -615,7 +615,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("uploadFileByFlow")
+                        iException?.message.e("uploadFileByFlow")
                     }
 
                     override fun onSuccess(t: BaseResult<SliceFileBean>) {
@@ -649,7 +649,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     this@MainActivity
                 ) {
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("uploadFileByObservable")
+                    iException?.message.e("uploadFileByObservable")
                 }
 
                 override fun onSuccess(t: BaseResult<SliceFileBean>) {
@@ -689,7 +689,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("uploadFilesByDeferred")
+                        iException?.message.e("uploadFilesByDeferred")
                     }
 
                     override fun onSuccess(t: BaseResult<SliceFileBean>) {
@@ -730,7 +730,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                     }
 
                     override fun onFailure(iException: IException?) {
-                        FailOverGson.failOverGson.toJson(iException).e("uploadFilesByFlow")
+                        iException?.message.e("uploadFilesByFlow")
                     }
 
                     override fun onSuccess(t: BaseResult<SliceFileBean>) {
@@ -767,7 +767,7 @@ class MainActivity : AppCompatActivity(), IStateView {
                 this@MainActivity
             ) {
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("uploadFilesByObservable")
+                    iException?.message.e("uploadFilesByObservable")
                 }
 
                 override fun onSuccess(t: BaseResult<SliceFileBean>) {

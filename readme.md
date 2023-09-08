@@ -187,7 +187,7 @@ class HttpUtilsApplication : Application() {
                 }
 
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("deferredGo_ICallBack")
+                    iException?.message.e("deferredGo_ICallBack")
                 }
 
                 override fun onSuccess(t: BaseResult<HomeListBean>) {
@@ -211,7 +211,7 @@ fun deferredGoIResponse_ICallBack() {
                 }
 
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("deferredGoIResponse_ICallBack")
+                    iException?.message.e("deferredGoIResponse_ICallBack")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
@@ -233,7 +233,7 @@ fun flowGo_ICallBack() {
                 }
 
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("flowGo_ICallBack")
+                    iException?.message.e("flowGo_ICallBack")
                 }
 
                 override fun onSuccess(t: BaseResult<HomeListBean>) {
@@ -255,7 +255,7 @@ fun flowGoIResponse_ICallBack() {
                 }
 
                 override fun onFailure(iException: IException?) {
-                    FailOverGson.failOverGson.toJson(iException).e("flowGoIResponse_ICallBack")
+                    iException?.message.e("flowGoIResponse_ICallBack")
                 }
 
                 override fun onSuccess(t: IResponse<HomeListBean>) {
@@ -276,7 +276,7 @@ fun observableGoCompose() {
         .compose(ProgressDialogObservableTransformer(this@MainActivity))
         .subscribe(object : CommonObserver<IResponse<HomeListBean>>() {
             override fun onFailure(iException: IException?) {
-                FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+                iException?.message.e("rxjavaGo")
             }
 
             override fun onSuccess(t: IResponse<HomeListBean>) {
@@ -294,7 +294,7 @@ fun observableGoObserver() {
         //自动处理网络加载中动画
         .subscribe(object : CommonObserver<IResponse<HomeListBean>>(this@MainActivity) {
             override fun onFailure(iException: IException?) {
-                FailOverGson.failOverGson.toJson(iException).e("rxjavaGo")
+                iException?.message.e("rxjavaGo")
             }
 
             override fun onSuccess(t: IResponse<HomeListBean>) {
