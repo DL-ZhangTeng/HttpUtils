@@ -14,7 +14,7 @@ allprojects {
     }
 }
 
-implementation 'com.github.DL-ZhangTeng:HttpUtils:2.4.0'
+implementation 'com.github.DL-ZhangTeng:HttpUtils:2.5.0'
 //库所使用的三方
 implementation 'androidx.lifecycle:lifecycle-common:2.4.1'
 implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
@@ -32,7 +32,7 @@ implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 
-implementation 'com.github.DL-ZhangTeng:Utils:2.3.0'
+implementation 'com.github.DL-ZhangTeng:Utils:2.3.1'
 ```
 
 ## 属性
@@ -48,7 +48,7 @@ implementation 'com.github.DL-ZhangTeng:Utils:2.3.0'
 | setHeaders             | 全局的请求头信息，设置静态请求头：更新请求头时不需要重新设置，对Map元素进行移除添加即可；设置动态请求头：如token等需要根据登录状态实时变化的请求头参数，最小支持api 24                                                                                                                                                                          |
 | setHttpCallBack        | 设置网络请求前后回调函数 onHttpResponse:可以先客户端一步拿到每一次Http请求的结果 onHttpRequest:可以在请求服务器之前拿到                                                                                                                                                                                       |
 | setSign                | 全局验签，appKey与后端匹配即可，具体规则参考：https://blog.csdn.net/duoluo9/article/details/105214983                                                                                                                                                                                   |
-| setEnAndDecryption     | 全局加解密(AES+RSA)。1、公钥请求路径HttpUrl.get(BuildConfig.HOST + "/getPublicKey")；2、公钥响应结果{"result": {"publicKey": ""},"message": "查询成功!","status": 100}                                                                                                                       |
+| setEnAndDecryption     | 全局加解密(AES+RSA)。公钥响应结果{"result": {"publicKey": ""},"message": "查询成功!","status": 100}                                                                                                                                                                                 |
 | setCookie              | 全局持久话cookie,保存本地每次都会携带在header中                                                                                                                                                                                                                                      |
 | addInterceptor         | 添加拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)                                                                                                                                                                                               |
 | addInterceptors        | 添加拦截器(继承PriorityInterceptor重写getPriority方法自定义顺序，自定义拦截器Priority必须>=10)                                                                                                                                                                                               |
@@ -316,6 +316,7 @@ fun observableGoObserver() {
 
 | 版本     | 更新                                       | 更新时间                |
 |--------|------------------------------------------|---------------------|
+| v2.5.0 | 简化加解密流程                                  | 2023/12/25 at 14:50 |
 | v2.4.0 | 优化客户端获取服务端公钥时明文，造成服务器响应数据泄露              | 2023/8/24 at 10:32  |
 | v2.3.0 | Flow功能数据解析问题修复                           | 2023/2/3 at 21:05   |
 | v2.2.0 | 增加文件分片上传断点下载                             | 2022/11/9 at 16:41  |
