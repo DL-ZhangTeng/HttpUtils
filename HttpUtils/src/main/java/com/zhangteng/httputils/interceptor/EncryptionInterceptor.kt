@@ -83,13 +83,12 @@ class EncryptionInterceptor : PriorityInterceptor {
      *
      * 1、客户端与服务端交换秘钥
      * 2、客户端生成AES秘钥
-     * 3、客户端使用客户端私钥加密AES秘钥并放入请求头
+     * 3、客户端使用RSA秘钥加密AES秘钥并放入请求头
      * 4、客户端使用AES秘钥加密请求数据放入请求体
-     * 5、服务端使用客户端公钥解密请求头密文，获取AES秘钥
+     * 5、服务端使用RSA秘钥解密请求头密文，获取AES秘钥
      * 6、服务端使用AES秘钥解密请求体获取请求数据
-     * 7、服务端返回处理结果(使用AES加密数据放入响应体，使用客户端公钥加密AES秘钥后放入响应头)
-     * 8、客户端使用客户端私钥解密响应头密文，获取AES秘钥
-     * 9、客户端使用AES秘钥解密响应体获取响应数据
+     * 7、服务端返回处理结果(使用AES加密数据放入响应体)
+     * 8、客户端使用AES秘钥解密响应体获取响应数据
      *
      * @param request 原请求
      */
@@ -100,7 +99,7 @@ class EncryptionInterceptor : PriorityInterceptor {
 
         //2、客户端生成AES秘钥
         val aesRequestKey = AESUtils.key
-        //3、客户端使用客户端私钥加密AES秘钥并放入请求头
+        //3、客户端使用RSA秘钥加密AES秘钥并放入请求头
         val requestBuilder: Request.Builder = request.newBuilder()
         try {
             requestBuilder.removeHeader(EncryptConfig.SECRET)
@@ -116,7 +115,8 @@ class EncryptionInterceptor : PriorityInterceptor {
                 RSAUtils.encryptByPrivateKey(aesRequestKey, keyPair)
             }
             requestBuilder.addHeader(EncryptConfig.SECRET, m)
-
+            //用AES秘钥的密文作为key，AES秘钥作为value添加到请求头中，在解密拦截器中取出使用
+            requestBuilder.addHeader(m, aesRequestKey)
         } catch (e: Exception) {
             return null
         }
@@ -188,13 +188,6 @@ class EncryptionInterceptor : PriorityInterceptor {
 
     /**
      * 客户端与服务端交换秘钥
-     *
-     * 1、客户端获取服务端公钥sPubKey
-     * 2、客户端生成客户端RSA秘钥对cPriKey、cPubKey
-     * 3、客户端使用服务端公钥sPubKey加密客户端公钥cPubKey 生成 m1
-     * 4、客户端将m1放入请求头
-     * 5、服务端使用私钥s_pri_key解密获取客户端公钥cPubKey
-     * 6、客户端获取交换结果200，存储客户端私钥cPriKey，秘钥交换完成
      */
     protected fun exchangeSecretKey() {
         val localKeyPair = HttpUtils.instance.context.getFromSP(
@@ -208,7 +201,7 @@ class EncryptionInterceptor : PriorityInterceptor {
                 Log.i("EncryptionInterceptor", "未设置服务端公钥获取接口")
                 return
             }
-            //1、获取服务端公钥sPubKey
+            //获取服务端公钥sPubKey
             val secretResponse: Response = GlobalHttpUtils.instance.okHttpClient
                 .newCall(Request.Builder().url(EncryptConfig.publicKeyUrl!!).build()).execute()
             if (secretResponse.code == 200) {
@@ -216,43 +209,8 @@ class EncryptionInterceptor : PriorityInterceptor {
                     val secretResponseString = secretResponse.body?.string()
                     val result = JsonParser().parse(secretResponseString).asJsonObject
                     val sPubKey = result["result"].asJsonObject["publicKey"].asString
-                    //未设置服务端公钥获取接口时使用服务端公钥sPubKey交互
-                    if (EncryptConfig.exchangeKeyPairUrl == null) {
-                        EncryptConfig.publicKey = sPubKey
-                        Log.i(
-                            "EncryptionInterceptor",
-                            "未设置服务端公钥获取接口时使用服务端公钥交互"
-                        )
-                        return
-                    }
-                    //2、生成客户端RSA秘钥对cPriKey、cPubKey
-                    val keyPair = RSAUtils.generateRSAKeyPair(1024)
-                    val cPriKey = keyPair?.private?.toString()
-                    val cPubKey = keyPair?.public?.toString()
-                    if (cPriKey.isNullOrEmpty() || cPubKey.isNullOrEmpty()) {
-                        Log.i("EncryptionInterceptor", "无法生成客户端秘钥对")
-                        return
-                    }
-                    //3、客户端使用服务端公钥sPubKey加密客户端公钥cPubKey 生成 m1
-                    val m1 = RSAUtils.encryptByPublicKey(cPubKey, sPubKey)
-                    //4、客户端将m1放入请求头（避免缓存影响，移除交换接口缓存）
-                    DiskLruCacheUtils.remove(EncryptConfig.exchangeKeyPairUrl)
-                    DiskLruCacheUtils.flush()
-                    val requestBuilder: Request.Builder =
-                        Request.Builder().url(EncryptConfig.exchangeKeyPairUrl!!)
-                    requestBuilder.removeHeader(EncryptConfig.SECRET)
-                    requestBuilder.addHeader(EncryptConfig.SECRET, m1)
-                    val secretResponse2: Response = GlobalHttpUtils.instance.okHttpClient
-                        .newCall(requestBuilder.build()).execute()
-                    //5、服务端使用私钥s_pri_key解密获取客户端公钥cPubKey
-                    //6、客户端获取交换结果200，秘钥交换完成，存储客户端私钥cPriKey
-                    if (secretResponse2.code == 200) {
-                        HttpUtils.instance.context
-                            .putToSP(EncryptConfig.SECRET, cPriKey, SPConfig.FILE_NAME)
-                    } else {
-                        Log.i("EncryptionInterceptor", "秘钥交换失败")
-                        return
-                    }
+                    HttpUtils.instance.context
+                        .putToSP(EncryptConfig.SECRET, sPubKey, SPConfig.FILE_NAME)
                 } catch (exception: NullPointerException) {
                     Log.i("EncryptionInterceptor", "秘钥交换失败")
                     return
